@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
@@ -33,9 +35,17 @@ Route::group([
         // Thống kê tổng quan
         $route->get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+        // Quản lý danh mục sản phẩm
+        $route->get('/category', [CategoryController::class, 'index'])->name('category');
+        $route->get('/category/getData', [CategoryController::class, 'getData'])->name('category.get_data');
+        $route->post('/category/store', [CategoryController::class, 'store'])->name('category.store');
+        $route->get('/category/detail/{id}', [CategoryController::class, 'detail'])->name('category.detail');
+        $route->put('/category/update/{id}', [CategoryController::class, 'update'])->name('category.update');
+        $route->delete('/category/delete/{id}', [CategoryController::class, 'delete'])->name('category.delete');
+
         // Quản lý sản phẩm
-        $route->get('/product', [AdminDashboardController::class, 'index'])->name('product');
-        $route->get('/product/create', [AdminDashboardController::class, 'index'])->name('product.create');
+        $route->get('/product', [ProductController::class, 'index'])->name('product');
+        $route->get('/product/getData', [ProductController::class, 'getData'])->name('product.get_data');
 
         // Quản lý nhân viến
         $route->get('/staff', [UserController::class, 'index'])->name('staff');
