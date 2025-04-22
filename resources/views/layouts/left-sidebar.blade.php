@@ -12,12 +12,19 @@
             'icon' => '<i class="uil-cart"></i>',
             'sub_menu' => [
                 [
-                    'name' => 'Thêm mới sản phẩm',
-                    'link' => route('admin.product.create'),
-                ],
-                [
                     'name' => 'Danh sách sản phẩm',
                     'link' => route('admin.product'),
+                ],
+            ],
+        ],
+        [
+            'name' => 'Quản lý Danh mục',
+            'link' => route('admin.product'),
+            'icon' => '<i class="dripicons-checklist"></i>',
+            'sub_menu' => [
+                [
+                    'name' => 'Danh sách danh mục',
+                    'link' => route('admin.category'),
                 ],
             ],
         ],
