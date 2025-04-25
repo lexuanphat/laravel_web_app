@@ -2,7 +2,7 @@
 @section('content')
     <div class="bg-white p-2 my-2">
         <div class="button-actions">
-            <button type="button" class="btn btn-primary mb-2" data-toggle="modal" data-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới danh mục</button>
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới danh mục</button>
         </div>
         <table id="table_manage" data-action="{{route('admin.category.get_data')}}" class="table dt-responsive w-100">
             <thead>

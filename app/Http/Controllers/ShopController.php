@@ -30,8 +30,8 @@ class ShopController extends Controller
                 $action_delete = route('admin.shop.delete', ['id' => $store->id]);
                 return "
                     <div class='button-list'>
-                        <button class='btn btn-warning edit-record' data-action='{$action_edit}' data-record='{$store->id}'><i class='dripicons-document-edit'></i>{$view_loading}</button>
-                        <button class='btn btn-danger remove-record' data-action='{$action_delete}' data-record='{$store->id}'><i class='dripicons-trash'></i></button>
+                        <button class='btn btn-warning edit-record' data-action='{$action_edit}' data-record='{$store->id}'><i class='ri-edit-box-fill'></i>{$view_loading}</button>
+                        <button class='btn btn-danger remove-record' data-action='{$action_delete}' data-record='{$store->id}'><i class='ri-delete-bin-fill'></i></button>
                     </div>
                 ";
             }

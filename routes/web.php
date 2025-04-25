@@ -46,6 +46,10 @@ Route::group([
         // Quản lý sản phẩm
         $route->get('/product', [ProductController::class, 'index'])->name('product');
         $route->get('/product/getData', [ProductController::class, 'getData'])->name('product.get_data');
+        $route->post('/product/store', [ProductController::class, 'store'])->name('product.store');
+        $route->get('/product/detail/{id}', [ProductController::class, 'detail'])->name('product.detail');
+        $route->put('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
+        $route->delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
 
         // Quản lý nhân viến
         $route->get('/staff', [UserController::class, 'index'])->name('staff');
