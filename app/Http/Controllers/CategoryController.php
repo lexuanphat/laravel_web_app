@@ -14,9 +14,8 @@ class CategoryController extends Controller
     }
 
     public function getData(Request $request) {
-        $model = Category::with('user:id,full_name')->orderBy('id', 'desc');
+        $model = Category::with('user:id,full_name')->withCount('products')->orderBy('id', 'desc');
         $datatables = DataTables::eloquent($model)
-        ->with('user:full_name')
         ->order(function($query){
             if(request()->has('order')) {
                 $query->orderBy('name', request()->order[0]['dir']);
@@ -36,8 +35,8 @@ class CategoryController extends Controller
                 ";
             }
         )
-        ->addColumn('total_product', function($category){
-            return "<div>0</div>";
+        ->addColumn('products_count', function($category){
+            return "<span class='badge bg-dark text-light'>Tổng: {$category->products_count}</span>";
         })
         ->addColumn('date_action', function($category){
             $created_at = $category->created_at ? date("d/m/Y H:i", strtotime($category->created_at)) : 'X';
@@ -56,7 +55,7 @@ class CategoryController extends Controller
                 ";
             }
         )
-        ->rawColumns(['action', 'name', 'date_action', 'total_product']);
+        ->rawColumns(['action', 'name', 'date_action', 'products_count']);
         return $datatables->toJson();
     }
 
@@ -67,9 +66,9 @@ class CategoryController extends Controller
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
 
-        Category::create($validated);
+        $data = Category::create($validated);
 
-        return $this->successResponse([], 'Thêm mới thành công');
+        return $this->successResponse($data, 'Thêm mới thành công');
     }
 
     public function detail($id, Request $request){
@@ -98,11 +97,16 @@ class CategoryController extends Controller
     }
 
     public function delete($id) {
-        $data = Category::find($id);
+        $data = Category::withCount('products')->find($id);
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu, vui lòng F5 thử lại', 404);
         }
+
+        if($data->products_count > 0) {
+            return $this->errorResponse('Danh mục này đang tồn tại nên sản phẩm không thể xoá', 404);
+        }
+
         $data->delete();
         return $this->successResponse($data, 'Đã xoá dữ liệu');
     }

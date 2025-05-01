@@ -50,6 +50,7 @@ Route::group([
         $route->get('/product/detail/{id}', [ProductController::class, 'detail'])->name('product.detail');
         $route->put('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
         $route->delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
+        $route->get('/product/getDataCategory', [ProductController::class, 'getDataCategory'])->name('product.get_data_category');
 
         // Quản lý nhân viến
         $route->get('/staff', [UserController::class, 'index'])->name('staff');

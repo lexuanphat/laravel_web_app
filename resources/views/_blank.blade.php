@@ -100,20 +100,18 @@
     <script src="{{asset('assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js')}}"></script>
     <script src="{{asset('assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js')}}"></script>
     <script src="{{asset('assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-fixedcolumns-bs5/js/fixedColumns.bootstrap5.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-buttons/js/dataTables.buttons.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-buttons-bs5/js/buttons.bootstrap5.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-buttons/js/buttons.html5.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-buttons/js/buttons.flash.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-buttons/js/buttons.print.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-keytable/js/dataTables.keyTable.min.js')}}"></script>
-    <script src="{{asset('assets/vendor/datatables.net-select/js/dataTables.select.min.js')}}"></script>
 
     <!-- App js -->
     <script src="{{asset('assets/js/app.min.js')}}"></script>
 
+    <script src="{{asset('assets/js/vi.js')}}"></script>
+
     <script>
+        const message_errors = {
+            text_not_exists: "Dữ liệu có thể đã bị xoá hoặc dữ liệu không tồn tại, vui lòng F5",
+            title_not_exists: "Không thể xoá",
+        };
+
         const notifications = document.querySelector(".notifications")
 
         const createToast = (id, message, timer = 5000) => {
@@ -142,6 +140,17 @@
             if(toast.timeoutId) clearTimeout(toast.timeoutId); // Clearing the timeout for the toast
             setTimeout(() => toast.remove(), 500); // Removing the toast after 500ms
         }
+
+        $( document ).on( "ajaxComplete", function( event, xhr, settings ) {
+           if(xhr.status === 401) {
+                window.location.href = @json(route('admin.login'));
+           }
+        });
+
+        $('#not_fount_modal').on('hidden.bs.modal', function (e) {
+            console.log(e.currentTarget);
+            
+        });
     </script>
 
     @stack('js')

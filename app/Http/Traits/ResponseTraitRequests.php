@@ -3,13 +3,16 @@
 namespace App\Http\Traits;
 use Illuminate\Http\JsonResponse;
 trait ResponseTraitRequests {
-    public function successResponse($data = [], $message = ''): JsonResponse
+    public function successResponse($data = [], $message = '', $add_data = []): JsonResponse
     {
-        return response()->json([
+        $response = [
             'success' => true,
             'data'    => $data,
-            'message' => $message
-        ]);
+            'message' => $message,
+            ...$add_data,
+        ];
+
+        return response()->json($response);
     }
 
     public function errorResponse($message = '', $status = 400): JsonResponse
