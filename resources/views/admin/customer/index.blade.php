@@ -13,7 +13,7 @@
 @section('content')
 <div class="bg-white p-2 my-2">
     <div class="button-actions">
-        <button type="button" class="btn btn-primary mb-2" data-toggle="modal" data-target="#{{$model_create_id}}"><i class="mdi mdi-plus-circle"></i> Thêm mới khách hàng</button>
+        <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#{{$model_create_id}}"><i class="mdi mdi-plus-circle"></i> Thêm mới khách hàng</button>
     </div>
     <table id="table_manage_customer" data-action="{{route('admin.customer.get_data')}}" class="table dt-responsive w-100">
         <thead>

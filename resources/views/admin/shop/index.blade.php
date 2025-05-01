@@ -2,9 +2,9 @@
 @section('content')
     <div class="bg-white p-2 my-2">
         <div class="button-actions">
-            <button type="button" class="btn btn-primary mb-2" data-toggle="modal" data-target="#modal-create-store"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
         </div>
-        <table id="table_manage_store" data-action="{{route('admin.shop.get_data')}}" class="table dt-responsive w-100">
+        <table id="table_manage" data-action="{{route('admin.shop.get_data')}}" class="table dt-responsive w-100">
             <thead>
                 <tr>
                     <th>
@@ -41,13 +41,13 @@
 @push('js')
     <script>
         const elements = {
-            btn_create_store: $("#btn_create_store"),
-            btn_update_store: $("#btn_update_store"),
-            form_create_store: $("#form_create_store"),
-            form_edit_store: $("#form_edit_store"),
-            modal_create_store: $("#modal-create-store"),
-            modal_edit_store: $("#modal-edit-store"),
-            table_manage_store: $("#table_manage_store"),
+            btn_create: $("#btn_create"),
+            btn_update: $("#btn_update"),
+            form_create: $("#form_create"),
+            form_edit: $("#form_edit"),
+            modal_create: $("#modal_create"),
+            modal_edit: $("#modal_edit"),
+            table_manage: $("#table_manage"),
             action_update: @json(route('admin.shop.update', ['id' => ':id'])),
         }
 
@@ -64,11 +64,11 @@
                     if(res.success) {
                         $.each(res.data, function(key, value){
                             console.log(key, value)
-                            elements.modal_edit_store.find('#'+key).val(value);
+                            elements.modal_edit.find('#'+key).val(value);
                         })
-                        let form_action = elements.form_edit_store.attr('action');
-                        elements.form_edit_store.attr('action', elements.action_update.replace(':id', id));
-                        elements.modal_edit_store.modal('show');
+                        let form_action = elements.form_edit.attr('action');
+                        elements.form_edit.attr('action', elements.action_update.replace(':id', id));
+                        elements.modal_edit.modal('show');
                     }
                 },
                 error: function(err){
@@ -101,8 +101,8 @@
                 success: function(res){
                     if(res.success) {
                         createToast('success', res.message);
-                        elements.table_manage_store.DataTable().destroy();
-                        elements.table_manage_store.find('tbody').empty();
+                        elements.table_manage.DataTable().destroy();
+                        elements.table_manage.find('tbody').empty();
                         renderTableStore();
                     }
                 },
@@ -136,10 +136,10 @@
                 },
                 success: function(response){
                     if(response.success) {
-                        elements.modal_create_store.modal('hide')
+                        elements.modal_create.modal('hide')
                         createToast('success', response.message);
-                        elements.table_manage_store.DataTable().destroy();
-                        elements.table_manage_store.find('tbody').empty();
+                        elements.table_manage.DataTable().destroy();
+                        elements.table_manage.find('tbody').empty();
                         renderTableStore();
                     }
                     
@@ -148,8 +148,8 @@
                     let response_err = err.responseJSON;
                     if(response_err) {
                         $.each(response_err.errors, function(key, item){
-                            elements.modal_create_store.find("#"+key).addClass('is-invalid');
-                            elements.modal_create_store.find("#"+key).next().text(item[0]);
+                            elements.modal_create.find("#"+key).addClass('is-invalid');
+                            elements.modal_create.find("#"+key).next().text(item[0]);
                         })
                     }
                     
@@ -177,10 +177,10 @@
                 },
                 success: function(response){
                     if(response.success) {
-                        elements.modal_edit_store.modal('hide')
+                        elements.modal_edit.modal('hide')
                         createToast('success', response.message);
-                        elements.table_manage_store.DataTable().destroy();
-                        elements.table_manage_store.find('tbody').empty();
+                        elements.table_manage.DataTable().destroy();
+                        elements.table_manage.find('tbody').empty();
                         renderTableStore();
                         
                     }
@@ -190,12 +190,12 @@
                     let response_err = err.responseJSON;
                     if(response_err) {
                         $.each(response_err.errors, function(key, item){
-                            elements.modal_edit_store.find("#"+key).addClass('is-invalid');
-                            elements.modal_edit_store.find("#"+key).next().text(item[0]);
+                            elements.modal_edit.find("#"+key).addClass('is-invalid');
+                            elements.modal_edit.find("#"+key).next().text(item[0]);
                         })
 
                         if(response_err.data?.length === 0){
-                            elements.modal_edit_store.modal('hide')
+                            elements.modal_edit.modal('hide')
                             $("#not_fount_modal").find('#modal_title_not_found').text(response_err.message);
                             $("#not_fount_modal").modal('show');
                         }
@@ -211,7 +211,7 @@
         }
 
         function renderTableStore(){
-            elements.table_manage_store.DataTable({
+            elements.table_manage.DataTable({
                 language: {
                     // paginate: {
                     //     previous: "<i class='mdi mdi-chevron-left'>",
@@ -220,7 +220,7 @@
                     processing: '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>',
                 },
                 ajax: {
-                    url: elements.table_manage_store.data('action'),
+                    url: elements.table_manage.data('action'),
                     type: "GET",
                 },
                 searching: false,
@@ -246,23 +246,23 @@
 
             renderTableStore();
 
-            elements.btn_create_store.click(function(e){
+            elements.btn_create.click(function(e){
                 e.preventDefault();
                 let $this = $(this);
-                let form = elements.form_create_store;
+                let form = elements.form_create;
                 createStore(form.attr('action'), form, $this);
             });
 
-            elements.modal_create_store.on('hidden.bs.modal', function (e) {
-                elements.form_create_store.find('.form-control').removeClass('is-invalid')
-                elements.form_create_store.find('.invalid-feedback').empty();
-                elements.form_create_store[0].reset();
+            elements.modal_create.on('hidden.bs.modal', function (e) {
+                elements.form_create.find('.form-control').removeClass('is-invalid')
+                elements.form_create.find('.invalid-feedback').empty();
+                elements.form_create[0].reset();
             });
 
-            elements.btn_update_store.click(function(e){
+            elements.btn_update.click(function(e){
                 e.preventDefault();
                 let $this = $(this);
-                let form = elements.form_edit_store;
+                let form = elements.form_edit;
                 let action = form.attr('action');
                 updateStore(action, form, $this);
             })

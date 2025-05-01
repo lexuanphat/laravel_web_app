@@ -198,3 +198,9 @@
             transform: translate(24px, 0);
         }
         }
+
+        select.is-invalid ~ span.select2 {
+          border: 1px solid #f44336;
+          border-radius: .25rem;
+      }
+      

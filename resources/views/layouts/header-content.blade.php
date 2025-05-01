@@ -1,119 +1,111 @@
 <div class="navbar-custom">
-    {{-- <div class="float-left">
-        <div class="menu-bar">
-            <button class="btn btn-light" id="menu_bar"><i class="dripicons-menu"></i></button>
-        </div>
-    </div> --}}
-    <ul class="list-unstyled topbar-right-menu float-right mb-0">
-        <li class="dropdown notification-list d-lg-none">
-            <a class="nav-link dropdown-toggle arrow-none" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                <i class="dripicons-search noti-icon"></i>
-            </a>
-            <div class="dropdown-menu dropdown-menu-animated dropdown-lg p-0">
-                <form class="p-3">
-                    <input type="text" class="form-control" placeholder="Search ..." aria-label="Recipient's username">
-                </form>
+    <div class="topbar container-fluid">
+        <div class="d-flex align-items-center gap-lg-2 gap-1">
+
+            <!-- Topbar Brand Logo -->
+            <div class="logo-topbar">
+                <!-- Logo light -->
+                <a href="{{route('admin.dashboard')}}" class="logo logo-light">
+                    <span class="logo-lg">
+                        <img src="{{asset('assets/images/logo.png')}}" alt="logo">
+                    </span>
+                    <span class="logo-sm">
+                        <img src="{{asset('assets/images/logo-sm.png')}}" alt="small logo">
+                    </span>
+                </a>
+
+                <!-- Logo Dark -->
+                <a href="{{route('admin.dashboard')}}" class="logo logo-dark">
+                    <span class="logo-lg">
+                        <img src="{{asset('assets/images/logo-dark.png')}}" alt="dark logo">
+                    </span>
+                    <span class="logo-sm">
+                        <img src="{{asset('assets/images/logo-dark-sm.png')}}" alt="small logo">
+                    </span>
+                </a>
             </div>
-        </li>
 
-        <li class="notification-list">
-            <a class="nav-link right-bar-toggle" href="javascript: void(0);">
-                <i class="dripicons-gear noti-icon"></i>
-            </a>
-        </li>
+            <!-- Sidebar Menu Toggle Button -->
+            <button class="button-toggle-menu">
+                <i class="mdi mdi-menu"></i>
+            </button>
 
-        <li class="dropdown notification-list">
-            <a class="nav-link dropdown-toggle nav-user arrow-none mr-0" data-toggle="dropdown" href="#" role="button" aria-haspopup="false"
-                aria-expanded="false">
-                <span class="account-user-avatar"> 
-                    <img src="{{asset('assets/images/users/avatar-1')}}.jpg" alt="user-image" class="rounded-circle">
-                </span>
-                <span>
-                    <span class="account-user-name">{{auth()->user()->full_name}}</span>
-                    <span class="account-position">{{auth()->user()->role_name}} <i class="uil-check-circle text-primary"></i></span>
-                </span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-right dropdown-menu-animated topbar-dropdown-menu profile-dropdown">
-                <div class=" dropdown-header noti-title">
-                    <h6 class="text-overflow m-0">Welcome !</h6>
+            <!-- Horizontal Menu Toggle Button -->
+            <button class="navbar-toggle" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
+                <div class="lines">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
-                <!-- item-->
-                <a href="javascript:void(0);" class="dropdown-item notify-item">
-                    <i class="mdi mdi-account-circle mr-1"></i>
-                    <span>Tài khoản của tôi</span>
-                </a>
+            </button>
 
-                <!-- item-->
-                <a class="dropdown-item notify-item" href="javascript:;"
-                    onclick="event.preventDefault();
-                                    document.getElementById('logout-form').submit();">
-                    <span>Thoát</span>
-                </a>
-
-                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
-                    @csrf
-                </form>
-
-            </div>
-        </li>
-    </ul>
-    <button class="button-menu-mobile open-left disable-btn">
-        <i class="mdi mdi-menu"></i>
-    </button>
-    <div class="app-search dropdown d-none d-lg-block">
-
-        <div class="dropdown-menu dropdown-menu-animated dropdown-lg" id="search-dropdown">
-            <!-- item-->
-            <div class="dropdown-header noti-title">
-                <h5 class="text-overflow mb-2">Found <span class="text-danger">17</span> results</h5>
-            </div>
-
-            <!-- item-->
-            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                <i class="uil-notes font-16 mr-1"></i>
-                <span>Analytics Report</span>
-            </a>
-
-            <!-- item-->
-            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                <i class="uil-life-ring font-16 mr-1"></i>
-                <span>How can I help you?</span>
-            </a>
-
-            <!-- item-->
-            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                <i class="uil-cog font-16 mr-1"></i>
-                <span>User profile settings</span>
-            </a>
-
-            <!-- item-->
-            <div class="dropdown-header noti-title">
-                <h6 class="text-overflow mb-2 text-uppercase">Users</h6>
-            </div>
-
-            <div class="notification-list">
-                <!-- item-->
-                <a href="javascript:void(0);" class="dropdown-item notify-item">
-                    <div class="media">
-                        <img class="d-flex mr-2 rounded-circle" src="{{asset('assets/images/users/avatar-2')}}.jpg" alt="Generic placeholder image" height="32">
-                        <div class="media-body">
-                            <h5 class="m-0 font-14">Erwin Brown</h5>
-                            <span class="font-12 mb-0">UI Designer</span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- item-->
-                <a href="javascript:void(0);" class="dropdown-item notify-item">
-                    <div class="media">
-                        <img class="d-flex mr-2 rounded-circle" src="{{asset('assets/images/users/avatar-5')}}.jpg" alt="Generic placeholder image" height="32">
-                        <div class="media-body">
-                            <h5 class="m-0 font-14">Jacob Deo</h5>
-                            <span class="font-12 mb-0">Developer</span>
-                        </div>
-                    </div>
-                </a>
+            <!-- Topbar Search Form -->
+            <div class="app-search dropdown d-none d-lg-block">
             </div>
         </div>
+
+        <ul class="topbar-menu d-flex align-items-center gap-3">
+
+            <li class="d-none d-sm-inline-block">
+                <a class="nav-link" data-bs-toggle="offcanvas" href="#theme-settings-offcanvas">
+                    <i class="ri-settings-3-line font-22"></i>
+                </a>
+            </li>
+
+
+            <li class="d-none d-md-inline-block">
+                <a class="nav-link" href="#" data-bs-toggle="fullscreen">
+                    <i class="ri-fullscreen-line font-22"></i>
+                </a>
+            </li>
+
+            <li class="dropdown">
+                <a class="nav-link dropdown-toggle arrow-none nav-user px-2" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                    <span class="account-user-avatar">
+                        <img src="{{asset('assets/images/users/avatar-1.jpg')}}" alt="user-image" width="32" class="rounded-circle">
+                    </span>
+                    <span class="d-lg-flex flex-column gap-1 d-none">
+                        <h5 class="my-0">{{auth()->user()->full_name}}</h5>
+                        <h6 class="my-0 fw-normal">{{auth()->user()->role_name}}</h6>
+                    </span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown">
+                    <!-- item-->
+                    <div class=" dropdown-header noti-title">
+                        <h6 class="text-overflow m-0">Welcome !</h6>
+                    </div>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <i class="mdi mdi-account-circle me-1"></i>
+                        <span>My Account</span>
+                    </a>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <i class="mdi mdi-account-edit me-1"></i>
+                        <span>Settings</span>
+                    </a>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <i class="mdi mdi-lifebuoy me-1"></i>
+                        <span>Support</span>
+                    </a>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <i class="mdi mdi-lock-outline me-1"></i>
+                        <span>Lock Screen</span>
+                    </a>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <i class="mdi mdi-logout me-1"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </li>
+        </ul>
     </div>
 </div>

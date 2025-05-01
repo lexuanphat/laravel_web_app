@@ -2,7 +2,7 @@
 @section('content')
     <div class="bg-white p-2 my-2">
         <div class="button-actions">
-            <button type="button" class="btn btn-primary mb-2" data-toggle="modal" data-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới danh mục</button>
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới danh mục</button>
         </div>
         <table id="table_manage" data-action="{{route('admin.category.get_data')}}" class="table dt-responsive w-100">
             <thead>
@@ -15,7 +15,7 @@
                         <div class="text-uppercase align-middle">/ Mã danh mục</div>
                     </th>
                     <th>
-                        <div class="text-uppercase align-middle">Tổng sản phẩm danh mục</div>
+                        <div class="text-uppercase align-middle">Tổng sản phẩm</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Ngày tạo</div>
@@ -110,7 +110,8 @@
                 error: function(err){
                     let data_error = err.responseJSON;
                     if(data_error.success === false) {
-                        $("#not_fount_modal").find('#modal_title_not_found').text(data_error.message);
+                        $("#not_fount_modal").find('#modal_title_not_found').text(message_errors.title_not_exists);
+                        $("#not_fount_modal").find('#modal_text_not_found').text(data_error.message);
                         $("#not_fount_modal").modal('show');
                     }
                 },
@@ -230,8 +231,8 @@
                 serverSide: true,
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
-                    { data: 'name', width: '25%', name: "abc", class: 'align-middle'},
-                    { data: 'total_product', width: '30%', class: 'align-middle'},
+                    { data: 'name', width: '30%', name: "abc", class: 'align-middle'},
+                    { data: 'products_count', width: '20%', class: 'align-middle text-center'},
                     { data: 'date_action', class: 'align-middle'},
                     { data: 'action', name: "action", class: 'align-middle', width: '15%',},
                 ],
