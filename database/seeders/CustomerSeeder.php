@@ -41,6 +41,7 @@ class CustomerSeeder extends Seeder
                 'gender' => $gender[$get_gender],
                 'date_of_birth' =>$faker->date('Y-m-d'),
                 'user_id' => 1,
+                'address' => $faker->address(),
                 'created_at' => date("Y-m-d H:i:s"),
                 'updated_at' => null,
             ];

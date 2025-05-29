@@ -13,21 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('stores', function (Blueprint $table) {
+        Schema::create('transports', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('contact_phone')->unique();
-            $table->string('address');
+            $table->string('full_name')->unique();
+            $table->string('phone', 15)->unique();
+            $table->enum('role', ['SHIPPER', 'CHANH_XE']);
             $table->foreignId('user_id')->constrained('users');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
-
-        if(Schema::hasTable('users') && Schema::hasColumn('users', 'store_id')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->foreignId('store_id')->after('id')->nullable()->constrained('stores');
-            });
-        }
     }
 
     /**
@@ -37,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stores');
+        Schema::dropIfExists('transports');
     }
 };

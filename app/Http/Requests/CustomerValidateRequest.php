@@ -45,6 +45,10 @@ class CustomerValidateRequest extends FormRequest
                 'nullable',
                 'date'
             ],
+            'address' => [
+                'required',
+                'string',
+            ],
         ];
 
         if($this->get('method') === "PUT") {

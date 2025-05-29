@@ -4,8 +4,12 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductStockController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\TokenTransportController;
+use App\Http\Controllers\TransportController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +39,12 @@ Route::group([
         // Thống kê tổng quan
         $route->get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+        // Quản lý đơn hàng
+        $route->get('/order', [OrderController::class, 'index'])->name('order');
+        $route->get('/order/create', [OrderController::class, 'create'])->name('order.create');
+        $route->get('/order/getDataCustomer', [OrderController::class, 'getDataCustomer'])->name('order.get_data_customer');
+        $route->get('/order/getDataProduct', [OrderController::class, 'getDataProduct'])->name('order.get_data_product');
+
         // Quản lý danh mục sản phẩm
         $route->get('/category', [CategoryController::class, 'index'])->name('category');
         $route->get('/category/getData', [CategoryController::class, 'getData'])->name('category.get_data');
@@ -42,6 +52,14 @@ Route::group([
         $route->get('/category/detail/{id}', [CategoryController::class, 'detail'])->name('category.detail');
         $route->put('/category/update/{id}', [CategoryController::class, 'update'])->name('category.update');
         $route->delete('/category/delete/{id}', [CategoryController::class, 'delete'])->name('category.delete');
+
+        // Quản lý danh mục vận chuyển
+        $route->get('/transport', [TransportController::class, 'index'])->name('transport');
+        $route->get('/transport/getData', [TransportController::class, 'getData'])->name('transport.get_data');
+        $route->post('/transport/store', [TransportController::class, 'store'])->name('transport.store');
+        $route->get('/transport/detail/{id}', [TransportController::class, 'detail'])->name('transport.detail');
+        $route->put('/transport/update/{id}', [TransportController::class, 'update'])->name('transport.update');
+        $route->delete('/transport/delete/{id}', [TransportController::class, 'delete'])->name('transport.delete');
 
         // Quản lý sản phẩm
         $route->get('/product', [ProductController::class, 'index'])->name('product');
@@ -51,6 +69,13 @@ Route::group([
         $route->put('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
         $route->delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
         $route->get('/product/getDataCategory', [ProductController::class, 'getDataCategory'])->name('product.get_data_category');
+
+        // Quản lý kho
+        $route->get('/product-stock', [ProductStockController::class, 'index'])->name('product_stock');
+        $route->get('/product-stock/getData', [ProductStockController::class, 'getData'])->name('product_stock.get_data');
+        $route->get('/product-stock/getDataProduct', [ProductStockController::class, 'getDataProduct'])->name('product_stock.get_data_product');
+        $route->post('/product-stock/store', [ProductStockController::class, 'store'])->name('product_stock.store');
+        $route->delete('/product-stock/delete/{id}', [ProductStockController::class, 'delete'])->name('product_stock.delete');
 
         // Quản lý nhân viến
         $route->get('/staff', [UserController::class, 'index'])->name('staff');
@@ -71,6 +96,11 @@ Route::group([
         $route->get('/customer/detail/{id}', [CustomerController::class, 'detail'])->name('customer.detail');
         $route->put('/customer/update/{id}', [CustomerController::class, 'update'])->name('customer.update');
         $route->delete('/customer/delete/{id}', [CustomerController::class, 'delete'])->name('customer.delete');
+
+        // Quản lý token DVVC
+        $route->get('/token-transport', [TokenTransportController::class, 'index'])->name('token_transport');
+        $route->post('/token-transport/store', [TokenTransportController::class, 'store'])->name('token_transport.store');
+
     });
 });
 

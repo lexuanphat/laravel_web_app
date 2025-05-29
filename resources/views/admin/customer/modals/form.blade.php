@@ -21,6 +21,11 @@
         @include('admin.shop.modals.div-error')
     </div>
     <div class="mb-2">
+        <label for="address"  class="required">Địa chỉ nhận hàng <span class="text-danger">(*)</span></label>
+        <input type="text" id="address" name="address" class="form-control" placeholder="-- Nhập địa chỉ nhận hàng --">
+        @include('admin.shop.modals.div-error')
+    </div>
+    <div class="mb-2">
         <div>
             <div class="custom-control custom-radio custom-control-inline">
                 <input type="radio" id="male_{{$action_radio}}" value="0" class="custom-control-input" name="gender" checked>

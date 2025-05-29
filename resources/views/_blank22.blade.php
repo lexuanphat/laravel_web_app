@@ -1,118 +1,133 @@
-<!DOCTYPE html>
-    <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ config('app.name', 'Laravel') }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <head>
-        <meta charset="utf-8" />
-        <title>Webapp - Phú Hà</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
-        <meta content="Coderthemes" name="author" />
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <!-- App favicon -->
-        <link rel="shortcut icon" href="{{asset('assets/images/favicon.ico')}}">
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{{asset('assets/images/favicon.ico')}}">
 
-        <!-- App css -->
-        <link href="{{asset('assets/css/icons.min.css')}}" rel="stylesheet" type="text/css" />
-        <link href="{{asset('assets/css/app-creative.min.css')}}" rel="stylesheet" type="text/css" id="light-style" />
-        <link href="{{asset('assets/css/app-creative-dark.min.css')}}" rel="stylesheet" type="text/css" id="dark-style" />
-        <link href="{{asset('assets/css/app-custom.css')}}" rel="stylesheet" type="text/css" id="app-custom" />
+    {{-- Datatable CSS --}}
+    <link href="{{asset('assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css')}}" rel="stylesheet" type="text/css" />
+    <link href="{{asset('assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css')}}" rel="stylesheet" type="text/css" />
 
-        <!-- DataTables CSS -->
-        <link href="{{asset('assets/css/vendor/dataTables.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
-        <link href="{{asset('assets/css/vendor/responsive.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
-        <link href="{{asset('assets/css/vendor/buttons.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
-        <link href="{{asset('assets/css/vendor/select.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+    <!-- Theme Config Js -->
+    <script src="{{asset('assets/js/hyper-config.js')}}"></script>
 
-		@stack('style')
-    </head>
+    <!-- Vendor css -->
+    <link href="{{asset('assets/css/vendor.min.css')}}" rel="stylesheet" type="text/css" />
 
-    <body class="loading" 
-	data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true,}'>
-        <ul class="notifications"></ul>
-        <!-- Begin page -->
-        <div class="wrapper">
-            <!-- ========== Left Sidebar Start ========== -->
-			@include('layouts.left-sidebar')
-            <!-- Left Sidebar End -->
+    <!-- App css -->
+    <link href="{{asset('assets/css/app-saas.min.css')}}" rel="stylesheet" type="text/css" id="app-style" />
 
-            <!-- ============================================================== -->
-            <!-- Start Page Content here -->
-            <!-- ============================================================== -->
+    <!-- Icons css -->
+    <link href="{{asset('assets/css/icons.min.css')}}" rel="stylesheet" type="text/css" />
+    <link href="{{asset('assets/css/app-custom.css')}}" rel="stylesheet" type="text/css" id="app-custom" />
+    @stack('style')
+</head>
 
-            <div class="content-page">
-                <div class="content">
-                    <!-- Topbar Start -->
-					@include('layouts.header-content')
-                    <!-- end Topbar -->
-                    
-					@yield('content')
+<body>
+    <ul class="notifications"></ul>
+    <!-- Begin page -->
+    <div class="wrapper">
+        <!-- ========== Topbar Start ========== -->
+        @include('layouts.header-content')
+        <!-- ========== Topbar End ========== -->
 
-                </div>
-                <!-- content -->
+        <!-- ========== Left Sidebar Start ========== -->
+        @include('layouts.left-sidebar')
+        <!-- ========== Left Sidebar End ========== -->
 
-                <!-- Footer Start -->
-				@include('layouts.footer-content')
-                <!-- end Footer -->
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
 
-            </div>
+        <div class="content-page">
+            <div class="content">
 
-            <!-- ============================================================== -->
-            <!-- End Page content -->
-            <!-- ============================================================== -->
+                <!-- Start Content-->
+                <div class="container-fluid">
 
+                    <!-- start page title -->
 
+                    <!-- end page title -->
+
+                </div> <!-- container -->
+
+            </div> <!-- content -->
         </div>
-        <!-- END wrapper -->
 
-        <!-- Right Sidebar -->
-		@include('layouts.right-sidebar')
-        <!-- /Right-bar -->
+    </div>
+    <!-- END wrapper -->
 
-        <!-- bundle -->
-        <script src="{{asset('assets/js/vendor.min.js')}}"></script>
-        <script src="{{asset('assets/js/app.min.js')}}"></script>
-        
-        <!-- DataTable JS -->
-        <script src="{{ asset('assets/js/vendor/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ asset('assets/js/vendor/dataTables.bootstrap4.js') }}"></script>
-        <script src="{{ asset('assets/js/vendor/dataTables.responsive.min.js') }}"></script>
-        <script src="{{ asset('assets/js/vendor/responsive.bootstrap4.min.js') }}"></script>
-        <script src="{{asset('assets/js/vendor/dataTables.keyTable.min.js')}}"></script>
-        <script src="{{asset('assets/js/vendor/dataTables.select.min.js')}}"></script>
-        
-        <script>
-            const notifications = document.querySelector(".notifications")
+    <!-- Theme Settings -->
+    {{-- @include('layouts.theme_setting') --}}
 
-            const createToast = (id, message, timer = 5000) => {
-                let icon = "uil-info-circle";
-                if(id === 'success') {
-                    icon = "uil-check-circle";
-                } else if(id === 'error') {
-                    icon = "uil-times-circle";
-                } else if(id === 'warning') {
-                    icon = "uil-question-circle";
-                }
+    <!-- Vendor js -->
+    <script src="{{asset('assets/js/vendor.min.js')}}"></script>
 
-                const toast = document.createElement("li");
-                toast.className = `toast-custom ${id}`;
-                toast.innerHTML = `<div class="column">
-                                    <i class="${icon}"></i>
-                                    <span>${message}</span>
-                                </div>
-                                <i class="uil-multiply" onclick="removeToast(this.parentElement)"></i>`;
-                notifications.appendChild(toast);
-                toast.timeoutId = setTimeout(() => removeToast(toast), timer);
+    {{-- Datatable scripts --}}
+    <script src="{{asset('assets/vendor/datatables.net/js/jquery.dataTables.min.js')}}"></script>
+    <script src="{{asset('assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js')}}"></script>
+    <script src="{{asset('assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js')}}"></script>
+    <script src="{{asset('assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js')}}"></script>
+
+    <!-- App js -->
+    <script src="{{asset('assets/js/app.min.js')}}"></script>
+
+    <script src="{{asset('assets/js/vi.js')}}"></script>
+
+    <script>
+        const message_errors = {
+            text_not_exists: "Dữ liệu có thể đã bị xoá hoặc dữ liệu không tồn tại, vui lòng F5",
+            title_not_exists: "Không thể xoá",
+        };
+
+        const notifications = document.querySelector(".notifications")
+
+        const createToast = (id, message, timer = 5000) => {
+            let icon = "uil-info-circle";
+            if(id === 'success') {
+                icon = "uil-check-circle";
+            } else if(id === 'error') {
+                icon = "uil-times-circle";
+            } else if(id === 'warning') {
+                icon = "uil-question-circle";
             }
 
-            const removeToast = (toast) => {
-                toast.classList.add("hide");
-                if(toast.timeoutId) clearTimeout(toast.timeoutId); // Clearing the timeout for the toast
-                setTimeout(() => toast.remove(), 500); // Removing the toast after 500ms
-            }
-        </script>
-        <!-- demo app -->
-        {{-- <script src="{{asset('assets/js/pages/demo.dashboard.js')}}"></script> --}}
-        <!-- end demo js-->
-		@stack('js')
-    </body>
+            const toast = document.createElement("li");
+            toast.className = `toast-custom ${id}`;
+            toast.innerHTML = `<div class="column">
+                                <i class="${icon}"></i>
+                                <span>${message}</span>
+                            </div>
+                            <i class="uil-multiply" onclick="removeToast(this.parentElement)"></i>`;
+            notifications.appendChild(toast);
+            toast.timeoutId = setTimeout(() => removeToast(toast), timer);
+        }
+
+        const removeToast = (toast) => {
+            toast.classList.add("hide");
+            if(toast.timeoutId) clearTimeout(toast.timeoutId); // Clearing the timeout for the toast
+            setTimeout(() => toast.remove(), 500); // Removing the toast after 500ms
+        }
+
+        $( document ).on( "ajaxComplete", function( event, xhr, settings ) {
+           if(xhr.status === 401) {
+                window.location.href = @json(route('admin.login'));
+           }
+        });
+
+        $('#not_fount_modal').on('hidden.bs.modal', function (e) {
+            console.log(e.currentTarget);
+            
+        });
+    </script>
+
+    @stack('js')
+
+</body>
 </html>

@@ -6,6 +6,9 @@ use App\Http\Requests\ShopValidateRequest;
 use App\Models\Store;
 use Illuminate\Http\Request;
 use DataTables;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class ShopController extends Controller
 {
@@ -62,7 +65,7 @@ class ShopController extends Controller
         $validated['user_id'] = auth()->user()->id;
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
-
+        $this->createShopTransport($validated);
         Store::create($validated);
 
         return $this->successResponse([], 'Thêm mới thành công');
@@ -101,5 +104,128 @@ class ShopController extends Controller
         }
         $data->delete();
         return $this->successResponse($data, 'Đã xoá dữ liệu');
+    }
+
+    private function createShopTransport($data_request){
+        $validator = Validator::make([], []);
+        $explode = explode(",", $data_request['address']);
+        $count = count($explode);
+        if($count < 4) {
+            $validator->errors()->add('address', 'Địa chỉ không hợp lệ hoặc không thể tạo transport.');
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+        $address_province = array_slice($explode, -3);
+        $address_detail = array_slice($explode, 0, $count - 3);
+        $data_request['address_detail'] = implode(", ", $address_detail);
+        
+        $data_token_transport = DB::SELECT("
+            SELECT * FROM tokens
+        ");
+
+        if(!$data_token_transport) {
+            $validator->errors()->add('address', 'Vui lòng cấu hình Token API GHN');
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+
+        foreach($data_token_transport as $transport) {
+            switch ($transport->is_transport) {
+                case 'GHN':
+                    $provinces = $this->_apiAddress('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province', $transport->_token);
+                    $find_province = $this->_findDataAddress($provinces, $address_province[2]);
+                    $districts = $this->_apiAddress("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id={$find_province['ProvinceID']}", $transport->_token);
+                    $find_district = $this->_findDataAddress($districts, $address_province[1]);
+                    $wards = $this->_apiAddress("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id={$find_district['DistrictID']}", $transport->_token);
+                    $find_ward = $this->_findDataAddress($wards, $address_province[0]);
+
+                    if($find_province && $find_district && $find_ward) {
+
+                        $data_request['find_province'] = $find_province['ProvinceID'];
+                        $data_request['find_district'] = $find_district['DistrictID'];
+                        $data_request['find_ward'] = $find_ward['WardCode'];
+
+                        $this->_apiRegisterShop('https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register', $transport->_token, $data_request);
+                    }
+                    break;
+                
+                default:
+                    # code...
+                    break;
+            }
+        }
+    }
+
+    private function _findDataAddress($data, $province){
+        foreach($data as $index => $items) {
+            if(!isset($items['NameExtension'])) {
+                continue;
+            }
+            foreach($items['NameExtension'] as $item) {
+                if(mb_strtolower($item) === mb_trim(mb_strtolower($province))) {
+                    return $data[$index];
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function _apiAddress($api, $token){
+        $validator = Validator::make([], []);
+
+        $response = Http::withHeaders([
+            'token' => $token,
+        ])->get($api);
+
+        if($response->successful()) { 
+            $data = $response->json();
+            if (isset($data['code']) && $data['code'] == 200) {
+                return $data['data'];
+            } else {
+                $validator->errors()->add('address', 'GHN API trả về lỗi: ' . ($data['message'] ?? 'Không rõ lỗi'));
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+        }else {
+            $validator->errors()->add('address', 'Không thể kết nối tới GHN API');
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+    }
+
+    private function _apiRegisterShop($api, $token, $params){
+        $validator = Validator::make([], []);
+
+        $response = Http::withHeaders([
+            'token' => $token,
+        ])->post($api, [
+            "district_id" => $params['find_district'],
+            "ward_code" => $params['find_ward'],
+            "name" =>  $params['name'],
+            "phone" => $params['contact_phone'],
+            "address" => $params['address_detail'],
+        ]);
+
+        if($response->failed()) {
+            $errors =  $response->json();
+            $messages = 'GHN API trả về lỗi: ';
+            $key = "address";
+            if($errors['code_message'] === "PHONE_INVALID") {
+                $key = "contact_phone";
+                $messages .= $errors['code_message_value'];
+            }
+            $validator->errors()->add($key, $messages);
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+
+        if($response->successful()) { 
+            $data = $response->json();
+            if (isset($data['code']) && $data['code'] == 200) {
+                return $data['data'];
+            } else {
+                $validator->errors()->add('address', 'GHN API trả về lỗi: ' . ($data['message'] ?? 'Không rõ lỗi'));
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+        }else {
+            $validator->errors()->add('address', 'Không thể kết nối tới GHN API');
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
     }
 }

@@ -53,13 +53,20 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    // protected $appends = ['store_name'];
+
+    // public function getStoreNameAttribute()
+    // {
+    //     return $this->store->name ?? null;
+    // }
+
     public function getRoleNameAttribute()
     {
         return self::ROLE_TEXT[$this->role];
     }
 
-    public function store(): HasOne
+    public function store()
     {
-        return $this->hasOne(Store::class);
+        return $this->belongsTo(Store::class);
     }
 }

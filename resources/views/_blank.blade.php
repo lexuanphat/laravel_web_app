@@ -1,4 +1,7 @@
+
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8" />
     <title>{{ config('app.name', 'Laravel') }}</title>
@@ -6,9 +9,8 @@
     <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
     <meta content="Coderthemes" name="author" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{asset('assets/images/favicon.ico')}}">
+    <link rel="shortcut icon" href="{{asset('assets/images/logo-new.png')}}">
 
     {{-- Datatable CSS --}}
     <link href="{{asset('assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css')}}" rel="stylesheet" type="text/css" />
@@ -33,8 +35,6 @@
     <ul class="notifications"></ul>
     <!-- Begin page -->
     <div class="wrapper">
-
-        
         <!-- ========== Topbar Start ========== -->
         @include('layouts.header-content')
         <!-- ========== Topbar End ========== -->
@@ -53,9 +53,7 @@
                 <!-- Start Content-->
                 <div class="container-fluid">
 
-                    <!-- start page title -->
                     @yield('content')
-                    <!-- end page title -->
 
                 </div> <!-- container -->
 
@@ -153,7 +151,35 @@
         });
     </script>
 
+    <script>
+        const ASSETS = {
+            url_storage:  @json(asset("storage/:image_url")),
+            url_no_image: @json(asset("assets/images/no-image.jpg")),
+        };
+    </script>
+
     @stack('js')
+
+    <script>
+        $(document).ready(function(){
+            $(".input_money").on('keyup', function(e){
+                let $this = $(this);
+                let value = Number($this.val().replace(/\D/g,''));
+                $this.val(value.toLocaleString('vi'))
+            }).on('focus', function(e){
+                if(Number($(this).val()) === 0) {
+                    $(this).val("")
+                }
+            }).on('blur', function(e){
+                if($(this).val() === "") {
+                    $(this).val(0)
+                }
+            });
+            
+            @stack('js_ready')
+        })
+    </script>
+
 
 </body>
 

@@ -13,21 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('stores', function (Blueprint $table) {
+        Schema::create('tokens', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('contact_phone')->unique();
-            $table->string('address');
+            $table->string('is_transport');
+            $table->string('_token');
             $table->foreignId('user_id')->constrained('users');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
-
-        if(Schema::hasTable('users') && Schema::hasColumn('users', 'store_id')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->foreignId('store_id')->after('id')->nullable()->constrained('stores');
-            });
-        }
     }
 
     /**
@@ -37,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stores');
+        Schema::dropIfExists('tokens');
     }
 };

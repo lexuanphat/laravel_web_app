@@ -13,21 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('stores', function (Blueprint $table) {
+        Schema::create('product_stocks', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('contact_phone')->unique();
-            $table->string('address');
+            $table->foreignId('product_id')->constrained('products');
+            $table->decimal('stock_price', 10, 2);
+            $table->bigInteger('stock_quantity')->comment('SL tồn');
+            $table->bigInteger('available_quantity')->comment('SL có thể bán');
+            $table->foreignId('store_id')->constrained('stores');
             $table->foreignId('user_id')->constrained('users');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
-
-        if(Schema::hasTable('users') && Schema::hasColumn('users', 'store_id')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->foreignId('store_id')->after('id')->nullable()->constrained('stores');
-            });
-        }
     }
 
     /**
@@ -37,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stores');
+        Schema::dropIfExists('product_stocks');
     }
 };

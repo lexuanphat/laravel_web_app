@@ -67,6 +67,7 @@
                     <span class="d-lg-flex flex-column gap-1 d-none">
                         <h5 class="my-0">{{auth()->user()->full_name}}</h5>
                         <h6 class="my-0 fw-normal">{{auth()->user()->role_name}}</h6>
+                        <h6 class="my-0 fw-normal">{{auth()->user()->store?->name}}</h6>
                     </span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown">
@@ -100,10 +101,14 @@
                     </a>
 
                     <!-- item-->
-                    <a href="javascript:void(0);" class="dropdown-item">
+                    <a href="{{ route('admin.logout') }}" class="dropdown-item" onclick="event.preventDefault();
+                                                     document.getElementById('logout-form').submit();">
                         <i class="mdi mdi-logout me-1"></i>
                         <span>Logout</span>
                     </a>
+                    <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
                 </div>
             </li>
         </ul>
