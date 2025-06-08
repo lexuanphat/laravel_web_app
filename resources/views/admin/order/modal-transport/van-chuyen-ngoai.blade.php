@@ -26,7 +26,7 @@
         <div class="row align-items-center g-2">
             <div class="col-md-6 mb-3">
                 <label for="">Phí trả đối tác vận chuyển</label>
-                <input type="text" name="delivery_method_fee" class="form-control text-end input_money" value="0">
+                <input type="text" name="delivery_method_fee"  id="delivery_method_fee" class="form-control text-end input_money" value="0">
             </div>
             <div class="col-md-3 mb-3">
                 <div class="form-check">

@@ -58,6 +58,27 @@ CARD_INFO_CUSTOMER.on('click', '#clear_customer', function (e) {
     $("#list_button_action").hide();
 })
 
+CARD_INFO_CUSTOMER.on('click', '#change_info_customer', function (e) {
+    e.preventDefault();
+    console.log("Change");
+})
+
+CARD_INFO_CUSTOMER.on('keyup', '#customer_address, #customer_phone', $.debounce(500, function () {
+    let $this = $(this);
+
+    if ($this.attr('id') === "customer_address") {
+        $("#list_info_customer").find('li:last-child span').text($this.val());
+
+        if ($("input[name='options']:checked").val() == 1) {
+            $("input[name='options'][value='1']").trigger('change');
+        }
+    } else {
+        $("#list_info_customer").find('li:first-child a').attr("href", `tel:${$this.val()}`)
+        $("#list_info_customer").find('li:first-child a').text($this.val())
+    }
+    
+}));
+
 function formatCustomer(repo) {
     if (repo.loading) {
         return repo.text;
@@ -95,11 +116,14 @@ function renderCustomer(data) {
             <div class="address">
                 <div class="title d-flex flex-wrap gap-1 align-items-center">
                     <h5>Địa chỉ giao hàng</h5>
-                    <a href="javascript:;" class="d-none">Thay đổi</a>
+                    <a href="javascript:;" class="d-none" id="change_info_customer">Thay đổi</a>
                 </div>
                 <div class="info mt-1">
-                    <p class="mb-1"><strong class='text-primary'>${data.full_name}</strong> - <strong>${data.phone}</strong></p>
-                    <p>${data.address}</p>
+                    <div class="d-flex flex-column gap-2">
+                        <input type="text" name="customer_full_name" class="form-control" id="customer_full_name" value="${data.full_name}" />
+                        <input type="text" name="customer_phone" class="form-control" id="customer_phone" value="${data.phone}" />
+                        <input type="text" name="customer_address" class="form-control" id="customer_address" value="${data.address}" />
+                    </div>
                 </div>
             </div>
         </div>

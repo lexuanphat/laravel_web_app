@@ -1,3 +1,15 @@
+$("#store_id").change(function () {
+    CARD_PRODUCT.find('tbody').empty();
+    ELEMENTS_PRODUCT.empty_prod.show();
+    ELEMENTS_PRODUCT.table_product.addClass('d-none');
+    ELEMENTS_PRODUCT.select_find_prod.select2('open');
+    ELEMENTS_RESULT_PRODUCT.input_total_balance.val(0);
+    ELEMENTS_RESULT_PRODUCT.customer_paid_total.val(0);
+    ELEMENTS_RESULT_PRODUCT.customer_has_paid_total.val(0);
+    ELEMENTS_RESULT_PRODUCT.discount_total.val(0);
+    ELEMENTS_RESULT_PRODUCT.total_end.val(0);
+    ELEMENTS_RESULT_PRODUCT.label_total_quantity_order.text(0);
+});
 const CARD_PRODUCT = $("#card_info_product");
 const RESULT_PRODUCT = $("#result_info_product");
 
@@ -28,7 +40,8 @@ ELEMENTS_PRODUCT.select_find_prod.select2({
         data: function(params){
             var query = {
                 search: params.term,
-                page: params.page || 1
+                page: params.page || 1,
+                store_id: $("#store_id").val(),
             }
 
             return query;
@@ -80,8 +93,28 @@ CARD_PRODUCT.on('click', '.delete_item', function () {
         ELEMENTS_PRODUCT.table_product.addClass('d-none');
         ELEMENTS_PRODUCT.select_find_prod.select2('open');
         ELEMENTS_RESULT_PRODUCT.customer_paid_total.val(0);
+
+        if ($("input[name='options']:checked").val() == 1) {
+            $("#cod").val(0);
+            $("#gam").val(0);
+            $("#length").val(0);
+            $("#width").val(0);
+            $("#height").val(0);
+            $("input[name='options']").prop("checked", false);
+            $("#option-transport").empty();
+            $("#left").hide();
+        }
     }
     else {
+        
+        if ($("input[name='options']:checked").val() == 1) {
+            $("#cod").val(0);
+            $("#gam").val(0);
+            $("#length").val(0);
+            $("#width").val(0);
+            $("#height").val(0);
+            $("input[name='options'][value='1']").trigger('change');
+        }
         changeHtml();
     }
 
@@ -176,7 +209,39 @@ CARD_PRODUCT.on('change', '.product_quantity', function (e) {
 
     data_prod[index].quantity = quantity;
     data_prod[index].total = Number(price * quantity);
-    calculateTotalProduct()
+    calculateTotalProduct();
+
+    if ($("input[name='options']:checked").val() == 1) {
+        $("#cod").val(0);
+        $("#gam").val(0);
+        $("#length").val(0);
+        $("#width").val(0);
+        $("#height").val(0);
+        $("input[name='options'][value='1']").trigger('change');
+    } else if ($("input[name='options']:checked").val() == 2) {
+        let items = ELEMENTS_PRODUCT.table_product.find('tbody tr.product_item');
+        let weight = 0;
+        $.each(items, function () { 
+            let $this = $(this);
+            let units = $this.attr('data-units');
+            weight += Number(JSON.parse(units).weight) * $this.find('.product_quantity').val();
+        });
+
+
+        let unit_suggest = suggestCubeDimensions(weight);
+        if (!$("#length").val() || $("#length").val() === '0') {
+            $("#length").val(unit_suggest.length.toLocaleString('vi'));
+        }
+        if (!$("#height").val() || $("#height").val() === '0') {
+            $("#height").val(unit_suggest.height.toLocaleString('vi'));
+        }
+        if (!$("#width").val() || $("#width").val() === '0') {
+            $("#width").val(unit_suggest.width.toLocaleString('vi'));
+        }
+        if (!$("#gam").val() || $("#gam").val() === '0') {
+            $("#gam").val(weight.toLocaleString('vi'));
+        }
+    }
 })
 
 /**
@@ -245,6 +310,10 @@ ELEMENTS_RESULT_PRODUCT.customer_has_paid_total.keyup(function(e){
 
     let total_end = customer_paid_total - value;
     ELEMENTS_RESULT_PRODUCT.total_end.val(total_end.toLocaleString('vi'));
+
+    if (total_end > 0) {
+        $("#cod").val(total_end.toLocaleString('vi'));
+    }
 })
 
 function changeHtml(){
@@ -283,7 +352,12 @@ function renderItem(data, index){
         image = ASSETS.url_no_image;
     }   
     return `
-        <tr class="product_item" data-product="${data.id}">
+        <tr class="product_item" data-product="${data.id}" data-units='${JSON.stringify({
+            length: data.length,
+            width: data.width,
+            height: data.height,
+            weight: data.weight,
+        })}'>
             <td>
                 <div class="text-center">${index+1}</div>
             </td>

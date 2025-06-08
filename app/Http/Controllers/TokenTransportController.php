@@ -19,7 +19,8 @@ class TokenTransportController extends Controller
         ->updateOrInsert(
             ['is_transport' => $request->is_transport],
             [
-                '_token' => $request->token_api,
+                '_token' => $request->token_transport,
+                'api' => $request->api_transport,
                 'user_id' => auth()->user()->id,
                 'created_at' => date("Y-m-d H:i:s"),
                 'updated_at' => null

@@ -3,6 +3,7 @@
     <div class="bg-white p-2 my-2">
         <div class="button-actions">
             <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
+            <button type="button" class="btn btn-success mb-2" id="sync_store_transport"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHN</button>
         </div>
         <table id="table_manage" data-action="{{route('admin.shop.get_data')}}" class="table dt-responsive w-100">
             <thead>
@@ -41,6 +42,7 @@
 @push('js')
     <script>
         const elements = {
+            sync_store_transport: $("#sync_store_transport"),
             btn_create: $("#btn_create"),
             btn_update: $("#btn_update"),
             form_create: $("#form_create"),
@@ -242,6 +244,31 @@
             });
         }
 
+        function asyncStore(button){
+            $.ajax({
+                url: @json(route('admin.shop.async_store_transport')),
+                type: "POST",
+                data: {
+                    _token: $("[name='csrf-token']").attr('content'),
+                },
+                beforeSend: function(){
+                    button.prop('disabled', true);
+                },
+                success: function(res){
+                    if(res.success) {
+                        createToast('success', res.message);
+                        window.location.reload();
+                    }
+                },
+                error: function(err){
+                    console.log(err)
+                },
+                complete: function(){
+                    button.prop('disabled', false);
+                }
+            });
+        }
+
         $(document).ready(function() {
 
             renderTableStore();
@@ -265,6 +292,11 @@
                 let form = elements.form_edit;
                 let action = form.attr('action');
                 updateStore(action, form, $this);
+            })
+
+            elements.sync_store_transport.click(function(e){
+                e.preventDefault();
+                asyncStore($(this));
             })
         });
 

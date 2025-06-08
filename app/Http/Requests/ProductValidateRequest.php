@@ -39,6 +39,7 @@ class ProductValidateRequest extends FormRequest
             'price' => [
                 'required',
                 'regex:/^\d+$/',
+                'gt:0',
             ],
             'desc' => [
                 'nullable',
@@ -48,6 +49,26 @@ class ProductValidateRequest extends FormRequest
                 'image',
                 'mimes:jpeg,png,jpg,gif',
                 'max:2048',
+            ],
+            'length' => [
+                'required',
+                'regex:/^\d+$/',
+                'gt:0',
+            ],
+            'width' => [
+                'required',
+                'regex:/^\d+$/',
+                'gt:0',
+            ],
+            'height' => [
+                'required',
+                'regex:/^\d+$/',
+                'gt:0',
+            ],
+            'weight' => [
+                'required',
+                'regex:/^\d+$/',
+                'gt:0',
             ],
         ];
 
@@ -77,7 +98,8 @@ class ProductValidateRequest extends FormRequest
             'unique' => 'dữ liệu đã tồn tại',
             'image' => 'chỉ chấp nhận hình ảnh',
             'mimes' => 'chỉ chấp nhận file có đuôi: :values',
-            'max' => 'kích thước không lớn hơn :max'
+            'max' => 'kích thước không lớn hơn :max',
+            'gt' => 'lớn hơn :value',
         ];
     }
 }

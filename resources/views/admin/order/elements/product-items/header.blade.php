@@ -1,5 +1,5 @@
     <div class="card-body">
-        <h5>Thông tin sản phẩm</h5>
+        <h5>Thông tin sản phẩm <span class="text-danger">(*)</span></h5>
         <select class="form-control select2" data-toggle="select2" data-placeholder="Tìm theo tên, mã SKU sản phẩm...(F3)" id="info_product">
         </select>
         <div class="result-product">

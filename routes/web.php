@@ -41,9 +41,13 @@ Route::group([
 
         // Quản lý đơn hàng
         $route->get('/order', [OrderController::class, 'index'])->name('order');
+        $route->get('/order/getData', [OrderController::class, 'getData'])->name('order.get_data');
+        $route->get('/order/detail', [OrderController::class, 'detail'])->name('order.detail');
         $route->get('/order/create', [OrderController::class, 'create'])->name('order.create');
         $route->get('/order/getDataCustomer', [OrderController::class, 'getDataCustomer'])->name('order.get_data_customer');
         $route->get('/order/getDataProduct', [OrderController::class, 'getDataProduct'])->name('order.get_data_product');
+        $route->post('/order/apiGetFee', [OrderController::class, 'apiGetFee'])->name('order.api_get_fee');
+        $route->post('/order/createOrder', [OrderController::class, 'createOrder'])->name('order.create_order');
 
         // Quản lý danh mục sản phẩm
         $route->get('/category', [CategoryController::class, 'index'])->name('category');
@@ -84,6 +88,7 @@ Route::group([
         // Quản lý cửa hàng
         $route->get('/shop', [ShopController::class, 'index'])->name('shop');
         $route->get('/shop/getData', [ShopController::class, 'getData'])->name('shop.get_data');
+        $route->post('/shop/async_store_transport', [ShopController::class, 'AsyncStoreTransport'])->name('shop.async_store_transport');
         $route->post('/shop/store', [ShopController::class, 'store'])->name('shop.store');
         $route->get('/shop/detail/{id}', [ShopController::class, 'detail'])->name('shop.detail');
         $route->put('/shop/update/{id}', [ShopController::class, 'update'])->name('shop.update');

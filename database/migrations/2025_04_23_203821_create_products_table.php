@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('sku')->unique();
             $table->decimal('price', 10, 2);
+            $table->bigInteger('length');
+            $table->bigInteger('width');
+            $table->bigInteger('height');
+            $table->bigInteger('weight');
             $table->text('desc')->nullable();
             $table->string('image_url')->nullable();
             $table->foreignId('category_id')->constrained('categories');

@@ -15,9 +15,14 @@ return new class extends Migration
     {
         Schema::create('stores', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('contact_phone')->unique();
+            $table->string('name');
+            $table->string('contact_phone');
             $table->string('address');
+            $table->bigInteger('transport_id')->nullable();
+            $table->bigInteger('transport_district_id')->nullable();
+            $table->bigInteger('transport_ward_code')->nullable();
+            $table->string('is_transport')->nullable();
+            $table->json('response_transport')->nullable();
             $table->foreignId('user_id')->constrained('users');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();

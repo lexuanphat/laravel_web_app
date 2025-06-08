@@ -32,6 +32,7 @@ class Customer extends Model
         'user_id',
         'created_at',
         'updated_at',
+        'address',
     ];
 
     public static function generateCodeCustomer($length = 10) {

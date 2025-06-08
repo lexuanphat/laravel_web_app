@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('gender');
             $table->date('date_of_birth')->nullable();
             $table->foreignId('user_id')->constrained('users');
+            $table->text('address');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });

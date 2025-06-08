@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('is_transport');
             $table->string('_token');
+            $table->string('api');
             $table->foreignId('user_id')->constrained('users');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();

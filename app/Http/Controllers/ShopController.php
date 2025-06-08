@@ -60,6 +60,68 @@ class ShopController extends Controller
         return $datatables->toJson();
     }
 
+    public function AsyncStoreTransport(Request $request){
+        $data_tokens = DB::table("tokens")->where("is_transport", "GHN")->first();
+        // $stores_database = DB::table("stores")->get()->keyBy('transport_id');
+        $user_id = auth()->user()->id;
+        if($data_tokens) {
+            $stores = $this->_apiAddress("{$data_tokens->api}/shiip/public-api/v2/shop/all", $data_tokens->_token);
+            $store_created = 0;
+            if($stores['shops']) {
+                $districts = null;
+                $provinces = null;
+                foreach($stores['shops'] as $store) {
+                    if(is_null($districts)){
+                        $districts = $this->_apiAddress("{$data_tokens->api}/shiip/public-api/master-data/district", $data_tokens->_token);
+                    }
+                    $find_district = null;
+                    foreach($districts as $district) {
+                        if($district['DistrictID'] === $store['district_id']) {
+                            $find_district = $district;
+                            break;
+                        }
+                    }
+                    $wards = $this->_apiAddress("{$data_tokens->api}/shiip/public-api/master-data/ward?district_id={$store['district_id']}", $data_tokens->_token);
+                    $find_ward = null;
+                    foreach($wards as $ward) {
+                        if($ward['WardCode'] === $store['ward_code']) {
+                            $find_ward = $ward;
+                            break;
+                        }
+                    }
+                    if(is_null($provinces)){
+                        $provinces = $this->_apiAddress("{$data_tokens->api}/shiip/public-api/master-data/province", $data_tokens->_token);
+                    }
+                    $find_province = null;
+                    foreach($provinces as $province) {
+                        if($province['ProvinceID'] === $find_district['ProvinceID']) {
+                            $find_province = $province;
+                            break;
+                        }
+                    }
+
+                    DB::table("stores")->updateOrInsert(
+                        ['transport_id' => $store['_id'], 'is_transport' => 'GHN'],
+                        [
+                            'name' => $store['name'],
+                            'contact_phone' => $store['phone'],
+                            'address' => "{$store['address']}, {$find_ward['WardName']}, {$find_district['DistrictName']}, {$find_province['ProvinceName']}",
+                            'transport_district_id' => $store['district_id'],
+                            'transport_ward_code' => $store['ward_code'],
+                            'response_transport' =>json_encode($store),
+                            'user_id' => $user_id,
+                            'created_at' => date("Y-m-d H:i:s"),
+                            'updated_at' => date("Y-m-d H:i:s"),
+                        ]
+                    );
+                    $store_created++;
+                }
+
+                return $this->successResponse([], "Cập nhật thành công {$store_created} cửa hàng");
+            }
+        }
+    }
+
     public function store(ShopValidateRequest $request) {
         $validated = $request->validated();
         $validated['user_id'] = auth()->user()->id;
@@ -130,12 +192,12 @@ class ShopController extends Controller
         foreach($data_token_transport as $transport) {
             switch ($transport->is_transport) {
                 case 'GHN':
-                    $provinces = $this->_apiAddress('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province', $transport->_token);
-                    $find_province = $this->_findDataAddress($provinces, $address_province[2]);
-                    $districts = $this->_apiAddress("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id={$find_province['ProvinceID']}", $transport->_token);
-                    $find_district = $this->_findDataAddress($districts, $address_province[1]);
-                    $wards = $this->_apiAddress("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id={$find_district['DistrictID']}", $transport->_token);
-                    $find_ward = $this->_findDataAddress($wards, $address_province[0]);
+                    $provinces = $this->_apiAddress("$transport->api/shiip/public-api/master-data/province", $transport->_token);
+                    $find_province = $this->_findDataAddress($provinces, $address_province[2], 'ProvinceName');
+                    $districts = $this->_apiAddress("{$transport->api}/shiip/public-api/master-data/district?province_id={$find_province['ProvinceID']}", $transport->_token);
+                    $find_district = $this->_findDataAddress($districts, $address_province[1], 'DistrictName');
+                    $wards = $this->_apiAddress("{$transport->api}/shiip/public-api/master-data/ward?district_id={$find_district['DistrictID']}", $transport->_token);
+                    $find_ward = $this->_findDataAddress($wards, $address_province[0], 'WardName');
 
                     if($find_province && $find_district && $find_ward) {
 
@@ -143,7 +205,7 @@ class ShopController extends Controller
                         $data_request['find_district'] = $find_district['DistrictID'];
                         $data_request['find_ward'] = $find_ward['WardCode'];
 
-                        $this->_apiRegisterShop('https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register', $transport->_token, $data_request);
+                        $this->_apiRegisterShop("{$transport->api}/shiip/public-api/v2/shop/register", $transport->_token, $data_request);
                     }
                     break;
                 
@@ -154,11 +216,14 @@ class ShopController extends Controller
         }
     }
 
-    private function _findDataAddress($data, $province){
+    private function _findDataAddress($data, $province, $extension = ''){
         foreach($data as $index => $items) {
             if(!isset($items['NameExtension'])) {
                 continue;
             }
+
+            isset($items[$extension]) ?  $items['NameExtension'][] = $items[$extension] : $items['NameExtension'];
+
             foreach($items['NameExtension'] as $item) {
                 if(mb_strtolower($item) === mb_trim(mb_strtolower($province))) {
                     return $data[$index];
@@ -172,7 +237,7 @@ class ShopController extends Controller
     private function _apiAddress($api, $token){
         $validator = Validator::make([], []);
 
-        $response = Http::withHeaders([
+        $response = Http::timeout(10)->withHeaders([
             'token' => $token,
         ])->get($api);
 

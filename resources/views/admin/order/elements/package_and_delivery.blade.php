@@ -3,7 +3,7 @@
         <h5>Đóng gói và giao hàng</h5>
         <div class="options d-flex flex-wrap gap-2">
             <div class="option">
-                <input type="radio" class="btn-check" value="1" name="options" id="option1" autocomplete="off" checked>
+                <input type="radio" class="btn-check" value="1" name="options" id="option1" autocomplete="off">
                 <label class="btn btn-outline-primary" for="option1"><i class="ri-truck-line"></i> Đẩy qua hãng vận chuyển</label>
             </div>
     
@@ -26,7 +26,7 @@
     <hr class="my-0">
     <div class="card-body">
         <div class="row">
-            <div class="left col-md-4" id="left">
+            <div class="left col-md-4 d-none" id="left">
                 <div class="border border-primary rounded-3 p-2 bg-primary-subtle">
                     <h4>Địa chỉ giao hàng</h4>
                     <ul id="list_info_customer">
@@ -40,34 +40,41 @@
                     <h4>Thông tin giao hàng</h4>
                     <div class="mb-3">
                         <label class="form-label">Thu tiền hộ (COD)</label>
-                        <input type="text" id="cod" name="cod" class="form-control text-end" value="0" placeholder="Nhập tiền thu hộ">
+                        <input type="text" id="cod" name="cod" class="form-control text-end input_money" value="0" placeholder="Nhập tiền thu hộ">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Khối lượng (g)</label>
-                        <input type="text" id="gam" name="gam" class="form-control text-end" value="0" placeholder="Nhập khối lượng">
+                        <input type="text" id="gam" name="gam" class="form-control text-end input_money" value="0" placeholder="Nhập khối lượng">
                     </div>
                     <div class="mb-3">
                         <div class="row g-3">
                             <div class="col-4">
                                 <label class="form-label">Dài (cm)</label>
-                                <input type="text" id="length" name="length" class="form-control text-end" value="0" placeholder="Nhập chiều dài">
+                                <input type="text" id="length" name="length" class="form-control text-end input_money" value="0" placeholder="Nhập chiều dài">
                             </div>
                             <div class="col-4">
                                 <label class="form-label">Cao (cm)</label>
-                                <input type="text" id="height" name="height" class="form-control text-end" value="0" placeholder="Nhập chiều cao">
+                                <input type="text" id="height" name="height" class="form-control text-end input_money" value="0" placeholder="Nhập chiều cao">
                             </div>
                             <div class="col-4">
                                 <label class="form-label">Rộng (cm)</label>
-                                <input type="text" id="width" name="width" class="form-control text-end" value="0" placeholder="Nhập chiều rộng">
+                                <input type="text" id="width" name="width" class="form-control text-end input_money" value="0" placeholder="Nhập chiều rộng">
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Yêu cầu giao hàng</label>
                         <select class="form-control select2" id="require_transport_option" name="require_transport_option" data-toggle="select2">
-                            <option>-- Chọn --</option>
-                            <option value="AK">Cho xem hàng, không cho thử</option>
-                            <option value="AK1">Cho xem hàng, cho thử</option>
+                            <option value="KHONGCHOXEMHANG">Không cho xem hàng</option>
+                            <option value="CHOXEMHANGKHONGTHU">Cho xem hàng không cho thử</option>
+                            <option value="CHOTHUHANG">Cho thử hàng</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bên trả phí</label>
+                        <select class="form-control select2" id="payment_type_id" name="payment_type_id" data-toggle="select2">
+                            <option value="1">Shop trả</option>
+                            <option value="2">Người nhận trả</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -78,7 +85,7 @@
             </div>
             <div class="right col-md-8" id="right">
                 <div class="tab-content">
-                    <div class="tab-pane active" id="tab-option1">
+                    <div class="tab-pane" id="tab-option1">
                         @include('admin.order.modal-transport.hang-don-vi-van-chuyen')
                     </div>
                     <div class="tab-pane" id="tab-option2">
@@ -99,6 +106,9 @@
         </div>
     </div>
 </form>
+@push('js')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js"></script>
+@endpush
 @push('js_ready')
 @php echo file_get_contents(asset('assets/js/order/package_and_delivery.js')) @endphp
 @endpush

@@ -62,6 +62,8 @@
             customer_has_paid_total: elements_card.result_info_product.find("#customer_has_paid_total"),
             total_end: elements_card.result_info_product.find("#total_end"),
         };
+
+        let response_transport_fee = false;
     </script>
     <script>
         // const assets_storage = @json(asset("storage/:image_url"));

@@ -7,6 +7,25 @@
     --info: #3498DB;
   }
 
+  .colorHeader:nth-child(5n+1) {
+    color: var(--ct-black);
+  }
+
+  .colorHeader:nth-child(5n+2) {
+    color: var(--ct-blue);
+  }
+
+  .colorHeader:nth-child(5n+3) {
+    color: var(--ct-danger);
+  }
+
+  .colorHeader:nth-child(5n+4) {
+    color: var(--ct-orange);
+  }
+  .colorHeader:nth-child(5n+5) {
+    color: var(--ct-teal);
+  }
+
   .notifications {
     position: fixed;
     top: 30px;

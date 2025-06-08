@@ -5,7 +5,7 @@
                 <tr>
                     <th style="width: 1%" class="text-center">STT</th>
                     <th class="text-start">Tên sản phẩm</th>
-                    <th style="width: 15%" class="text-center">Số lượng</th>
+                    <th style="width: 15%" class="text-center">Số lượng <span class="text-danger">(*)</span></th>
                     <th style="width: 10%" class="text-center">Đơn giá</th>
                     <th style="width: 28%" class="text-center">Chiết khấu</th>
                     <th style="width: 10%" class="text-center">Thành tiền</th>
