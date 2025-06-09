@@ -113,6 +113,6 @@ Route::fallback(function () {
     if(auth()->check()) {
         return view('admin.page-error.404');
     }
-
+    // comment
     return redirect()->route('admin.login');
 });
