@@ -35,7 +35,7 @@ Route::group([
 
     $route->post('login', [LoginController::class, 'login'])->name('login.post');
 
-    $route->middleware(['auth'])->group(function($route){
+    $route->middleware(['auth', 'check_transport_init'])->group(function($route){
         // Thống kê tổng quan
         $route->get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -103,8 +103,8 @@ Route::group([
         $route->delete('/customer/delete/{id}', [CustomerController::class, 'delete'])->name('customer.delete');
 
         // Quản lý token DVVC
-        $route->get('/token-transport', [TokenTransportController::class, 'index'])->name('token_transport');
-        $route->post('/token-transport/store', [TokenTransportController::class, 'store'])->name('token_transport.store');
+        $route->get('/token-transport', [TokenTransportController::class, 'index'])->withoutMiddleware('check_transport_init')->name('token_transport');
+        $route->post('/token-transport/store', [TokenTransportController::class, 'store'])->withoutMiddleware('check_transport_init')->name('token_transport.store');
 
     });
 });

@@ -119,7 +119,7 @@
     ];
 @endphp
 <div class="leftside-menu">
-    <a href="index.html" class="logo logo-light">
+    <a href="javascript:;" class="logo logo-light">
         <span class="logo-lg">
             <img style="height: 50px" src="{{asset('assets/images/logo-new.png')}}" alt="logo">
         </span>
