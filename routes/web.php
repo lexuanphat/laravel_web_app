@@ -110,5 +110,9 @@ Route::group([
 });
 
 Route::fallback(function () {
-   return view('admin.page-error.404');
+    if(auth()->check()) {
+        return view('admin.page-error.404');
+    }
+
+    return redirect()->route('admin.login');
 });
