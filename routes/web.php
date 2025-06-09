@@ -42,7 +42,7 @@ Route::group([
         // Quản lý đơn hàng
         $route->get('/order', [OrderController::class, 'index'])->name('order');
         $route->get('/order/getData', [OrderController::class, 'getData'])->name('order.get_data');
-        $route->get('/order/detail', [OrderController::class, 'detail'])->name('order.detail');
+        $route->get('/order/detail/{id}', [OrderController::class, 'detail'])->name('order.detail');
         $route->get('/order/create', [OrderController::class, 'create'])->name('order.create');
         $route->get('/order/getDataCustomer', [OrderController::class, 'getDataCustomer'])->name('order.get_data_customer');
         $route->get('/order/getDataProduct', [OrderController::class, 'getDataProduct'])->name('order.get_data_product');

@@ -57,10 +57,20 @@ class OrderController extends Controller
         'DVVC' => 'Hãng vận chuyển',
     ];
     public function index(){
-        return view("admin.order.index");
+        $staffs = DB::table("users")
+        ->selectRaw("id, full_name")
+        ->get();
+
+        return view("admin.order.index", [
+            'staffs' => $staffs,
+        ]);
     }
 
     public function getData(Request $request){
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $start = $request->get('start', 0);
         $query = DB::table("orders")
         ->leftJoin('customers', 'orders.customer_id', '=', 'customers.id')
@@ -72,113 +82,142 @@ class OrderController extends Controller
         ->selectRaw("orders.*, customers.full_name as customer_full_name, users.full_name as full_name_action, transports.full_name as partner_transport_full_name")
         ->orderBy("create_date", "DESC");
 
+        if(isset($parsed['date']) && !empty($parsed['date'])) {
+            $current_date = date("Y-m-d");
+
+            switch ($parsed['date']) {
+                case '7days':
+                    $filter_date = date("Y-m-d", strtotime("-7 days"));
+                    break;
+                case '30days':
+                    $filter_date = date("Y-m-d", strtotime("-30 days"));
+                    break;
+                
+                default:
+                    $filter_date = date("Y-m-d");
+                    break;
+            }
+            $query->where("create_date", ">=", "$filter_date 00:00:00")->where("create_date", "<=", "$current_date 23:59:59");
+        }
+
+        if(isset($parsed['staff']) && !empty($parsed['staff'])) {
+            $query->where("user_create_order", $parsed['staff']);
+        }
+
+        if(isset($parsed['search'])) {
+            $query->where(function($q)use($parsed){
+                $q->whereExists(function($q)use($parsed){
+                    $q->select(DB::raw(1))
+                    ->from("order_details")
+                    ->whereColumn('orders.id', 'order_details.order_id')
+                    ->where("product_name", "like" , "%".trim($parsed['search'])."%");
+                })
+                ->orWhere("orders.full_name", trim($parsed['search']))
+                ->orWhere("orders.code_order", trim($parsed['search']))
+                ->orWhere("orders.code_transport", trim($parsed['search']));
+            });
+        }
+
         $datatables = DataTables::query($query)
-        ->addColumn('no', function($data)use(&$start){
-            $stt = ++$start;
-            return "<div class='colorHeader'>{$stt}</div>";
-        })
-        ->addColumn('col_1', function($data){
-            $delivery_date = date("d/m/Y", strtotime($data->delivery_date));
+        ->editColumn('create_date', function($data){
             $create_date = date("d/m/Y H:i:s", strtotime($data->create_date));
-            $customer_full_name = $data->customer_full_name;
-            $full_name = $data->full_name;
 
             return "
-                <div class='colorHeader text-center'>{$delivery_date}</div>
-                <div class='colorHeader text-center'>{$create_date}</div>
-                <div class='colorHeader text-center'>{$customer_full_name}</div>
-                <div class='colorHeader text-center'>{$full_name}</div>
+                <div class='text-center'>{$create_date}</div>
             ";
         })
-        ->addColumn('col_2', function($data){
-            $code_transport = $data->code_transport ? $data->code_transport : "X";
-            $delivery_method = self::DELIVERY_METHOD[$data->delivery_method];
-
+        ->editColumn('code_order', function($data){
+            $link = route("admin.order.detail", ['id' => $data->id]);
             return "
-                <div class='colorHeader fw-bold'>{$data->code_order}</div>
-                <div class='colorHeader fw-bold'>{$code_transport}</div>
-                <div class='colorHeader fw-bold text-decoration-underline'>{$delivery_method}</div>
-                <div class='colorHeader '>{$data->address}</div>
+                <div class='colorHeader fw-bold'>
+                    <a href='$link' class='link-primary'>{$data->code_order}</a>
+                </div>
             ";
         })
-        ->addColumn('col_3', function($data){
-            $total_product = number_format($data->total_product, 0, ',', '.');
-            $total_price = number_format($data->total_price, 0, ',', '.');
-            $total_discount = number_format($data->total_discount, 0, ',', '.');
+        ->editColumn('full_name', function($data){
             return "
-                <div class='colorHeader text-end'>{$total_product}</div>
-                <div class='colorHeader text-end'>{$total_price}</div>
-                <div class='colorHeader text-end'>{$total_discount}%</div>
+                <div class='text-center'>{$data->full_name}</div>
             ";
         })
-        ->addColumn('col_4', function($data){
+        ->editColumn('customer_paid_total', function($data){
             $customer_paid_total = number_format($data->customer_paid_total, 0, ',', '.');
-            $customer_has_paid_total = number_format($data->customer_has_paid_total, 0, ',', '.');
-
-            $total = number_format((int) $data->customer_paid_total - (int) $data->customer_has_paid_total, 0, ',', '.');
+    
             return "
-                <div class='colorHeader text-end'>{$customer_paid_total}</div>
-                <div class='colorHeader text-end'>{$customer_has_paid_total}</div>
-                <div class='colorHeader text-end'>{$total}</div>
+                <div class='text-end'>{$customer_paid_total}</div>
             ";
         })
-        ->addColumn('col_5', function($data){
-            $partner_transport_type = $data->partner_transport_type ? self::TRANSPORT_TYPE[$data->partner_transport_type] : "X";
-
-            if($data->partner_transport_type === "DVVC"){
-                $partner_transport_id = self::GUESS_TRANSPORT[$data->partner_transport_id];
-            } else if($data->partner_transport_type !== "DVVC" && !is_null($data->partner_transport_type)){
-                $partner_transport_id = $data->partner_transport_full_name ? $data->partner_transport_full_name : "X";
+        ->addColumn('status_payment', function($data){
+            $status = "X";
+            if((int) $data->customer_has_paid_total >= (int) $data->customer_paid_total) {
+                if($data->delivery_method === 3 && $data->status_order === "success") {
+                    $status = "Trả hết";
+                } else if($data->delivery_method === 2 && $data->status_order === "success"){
+                    $status = "Trả hết";
+                }
+            } else if((int) $data->customer_has_paid_total === 0) {
+                if($data->delivery_method === 3 && $data->status_order === "success") {
+                   $status = "Chưa trả";
+                } else if($data->delivery_method === 2 && $data->status_order === "success"){
+                   $status = "Chưa trả";
+                }
             } else {
-                $partner_transport_id = "X";
+
+                if($data->delivery_method === 3 && $data->status_order === "success") {
+                    $status = "Trả 1 phần";
+                } else if($data->delivery_method === 2 && $data->status_order === "success"){
+                    $status = "Trả 1 phần";
+                }
             }
 
-            $delivery_method_fee = number_format((int) $data->delivery_method_fee, 0, ',', '.');
-            $payer_fee = $data->payer_fee ? self::PAYER_FEE[$data->payer_fee] : "X";
-            $cod = number_format((int) $data->cod, 0, ',', '.');
-
             return "
-                <div class='colorHeader text-center'>{$partner_transport_type}</div>
-                <div class='colorHeader text-center'>{$partner_transport_id}</div>
-                <div class='colorHeader text-end'>{$delivery_method_fee}</div>
-                <div class='colorHeader text-center'>{$payer_fee}</div>
-                <div class='colorHeader text-end'>{$cod}</div>
+                <div class='text-center'>{$status}</div>
             ";
         })
-        ->addColumn('col_6', function($data){
-            $units = "Cao: {$data->height}(cm) - Rộng: {$data->width}(cm) - Dài: {$data->length}(cm) - Trọng lượng: {$data->gam}(g)";
-            $note_order = $data->note_order ? $data->note_order : "X";
-            $note_transport = $data->note_transport ? $data->note_transport : "X";
-
-            return "
-                <div class='colorHeader text-center'<h5><span class='shadow-sm p-2 mb-2 rounded badge badge-warning-lighten'>Chờ GHN</span></h5></div>
-                <div class='colorHeader text-center'>{$units}</div>
-                <div class='colorHeader text-start'>{$note_order }</div>
-                <div class='colorHeader text-start'>{$note_transport}</div>
-            ";
-        })
-        ->addColumn('col_7', function($data){
-            $created_at = date("d/m/Y", strtotime($data->created_at));
-            $updated_at = $data->updated_at ? date("d/m/Y", strtotime($data->updated_at)) : "X";
-
-            return "
-                <div class='colorHeader text-center'>{$created_at}</div>
-                <div class='colorHeader text-center'>{$updated_at}</div>
-                <div class='colorHeader text-center'>{$data->full_name_action}</div>
-            ";
-        })
-        ->addColumn('col_8', function($data){
-            return "
-                <a href='javascript:void(0);' class='action-icon'> <i class='mdi mdi-eye'></i></a>
-                <a href='javascript:void(0);' class='action-icon'> <i class='mdi mdi-delete'></i></a>
-            ";
-        })
-        ->rawColumns(['no', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6', 'col_7', 'col_8']);
+        ->rawColumns(['create_date', 'code_order', 'customer_paid_total', 'status_payment', 'full_name']);
         return $datatables->toJson();
     }
 
-    public function detail(){
-        return view("admin.order.detail");
+    public function detail($id, Request $request){
+        $order = DB::table('orders as o')
+            ->join('order_details as d', 'd.order_id', '=', 'o.id')
+            ->join("users as u", "o.user_create_order", "=", "u.id")
+            ->join("stores", "o.store_id", "=", "stores.id")
+            ->leftJoin("transports", function($leftJoin){
+                $leftJoin->on("o.partner_transport_id", "=", "transports.id")->whereIn("partner_transport_type", [Transport::ROLE['SHIPPER'], Transport::ROLE['CHANH_XE']]);
+            })
+            ->where("o.id", $id)
+            ->selectRaw("
+                o.*, JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'product_name', d.product_name,
+                        'quantity', d.quantity,
+                        'price', d.price,
+                        'is_discount', d.is_discount,
+                        'discount', d.discount,
+                        'total_price', d.total_price
+                    )
+                ) as details,
+                u.full_name as user_order_full_name, stores.name as store_name, 
+                transports.full_name as transport_full_name
+            ")
+            ->groupBy('o.id')
+        ->first();
+
+        if(!$order) {
+            return redirect()->back();
+        }
+
+        $order->details = json_decode($order->details, true);
+        $order->delivery_method_name = self::DELIVERY_METHOD[$order->delivery_method];
+        $order->partner_transport_type_name = self::TRANSPORT_TYPE[$order->partner_transport_type];
+
+        if($order->delivery_method === 1) {
+            $order->transport_full_name = self::GUESS_TRANSPORT[$order->partner_transport_id];
+        }
+
+        return view("admin.order.detail", [
+            'data' => $order,
+        ]);
     }
     public function create(){
         $get_transport = Transport::selectRaw("
@@ -540,7 +579,7 @@ class OrderController extends Controller
 
         if($package_and_delivery->type == 1){
             $data_create_order['partner_transport_type'] = "DVVC";
-            $data_create_order['partner_transport_id'] = self::GUESS_TRANSPORT[$package_and_delivery->is_ship];
+            $data_create_order['partner_transport_id'] = $package_and_delivery->is_ship === "GHN" ? -1 : 0;
         } else if($package_and_delivery->type == 2){
             $data_create_order['partner_transport_type'] = $package_and_delivery->is_ship;
             $data_create_order['partner_transport_id'] = $package_and_delivery->ship_id;

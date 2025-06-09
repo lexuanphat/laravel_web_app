@@ -51,6 +51,7 @@ return new class extends Migration
 
             $table->enum('require_transport_option', ['KHONGCHOXEMHANG','CHOXEMHANG','CHOXEMHANGKHONGTHU'])->nullable()->comment('Yêu cầu vận chuyển');
             $table->string("status_transport")->nullable()->comment('Trạng thái đơn hàng của DVVC');
+            $table->string("status_order")->nullable()->comment('Trạng thái đơn hàng');
             $table->text('note_transport')->nullable()->comment('Ghi chú đơn hàng DVVC');
 
             $table->text('note_order')->nullable()->comment('Ghi chú đơn hàng');
