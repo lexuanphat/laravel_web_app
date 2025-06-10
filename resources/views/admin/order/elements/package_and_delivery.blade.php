@@ -19,7 +19,7 @@
     
             <div class="option">
                 <input type="radio" class="btn-check" value="4" name="options" id="option4" autocomplete="off">
-                <label class="btn btn-outline-primary" for="option4"> <i class="uil-dropbox"></i>Giao hàng sau</label>
+                <label class="btn btn-outline-primary d-none" for="option4"> <i class="uil-dropbox"></i>Giao hàng sau</label>
             </div>
         </div>
     </div>
