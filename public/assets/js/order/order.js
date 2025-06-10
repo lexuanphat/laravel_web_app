@@ -114,13 +114,42 @@ $("#btn_order").click(function(e){
             if (res.success) {
                 createToast('success', res.message);
                 setTimeout(() => {
-                    window.location.reload();
+                    window.location.href = res.data.link_redirect;
                 }, 2000);
            }
             
         },
         error: function (err) {
-            console.log(err);
+            if (err.responseJSON.errors) {
+                let html_error = '<ul class="list-group list-group-flush">';
+                $.each(err.responseJSON.errors, function (key, message) {
+                    html_error += `<li class="list-group-item"><span class='text-danger'>${message[0]}</span></li>`
+                })
+                html_error += `</ul>`;
+
+                $("body").append(`
+                    <div id="order_modal_error" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content modal-filled bg-danger">
+                                <div class="modal-body p-4">
+                                    <div class="text-center">
+                                        <i class="ri-close-circle-line h1"></i>
+                                        <h4 class="mt-2">Có lỗi, vui lòng kiểm tra lại</h4>
+                                        ${html_error}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                $("body").find("#order_modal_error").modal('show');
+
+                setTimeout(function () {
+                    $("body").find("#order_modal_error").modal('hide');
+                    $("body").find("#order_modal_error").remove();
+                }, 5000);
+            }
             
         },
         complete: function () {

@@ -311,9 +311,7 @@ ELEMENTS_RESULT_PRODUCT.customer_has_paid_total.keyup(function(e){
     let total_end = customer_paid_total - value;
     ELEMENTS_RESULT_PRODUCT.total_end.val(total_end.toLocaleString('vi'));
 
-    if (total_end > 0) {
-        $("#cod").val(total_end.toLocaleString('vi'));
-    }
+    $("#cod").val(total_end.toLocaleString('vi'));
 })
 
 function changeHtml(){

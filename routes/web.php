@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CallBackController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
@@ -32,6 +33,8 @@ Route::group([
 ], function($route){
 
     Auth::routes();
+
+    $route->post('/callback/v1/ghn', [CallBackController::class, 'callback'])->withoutMiddleware('check_transport_init')->name('callback.ghn');
 
     $route->post('login', [LoginController::class, 'login'])->name('login.post');
 

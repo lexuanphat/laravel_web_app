@@ -1,0 +1,6 @@
+<pre>Array
+(
+    [âcsc] => âcsc
+    [zxczxc] => zxczxczxc
+)
+</pre>

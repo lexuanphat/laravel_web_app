@@ -45,7 +45,7 @@
                         <!-- Logo -->
                         <div class="card-header py-4 text-center bg-primary">
                             <a href="index.html">
-                                <span><img style="height: 50px" src="{{asset('assets/images/logo-new.png')}}" alt="logo"></span>
+                                <span><img style="height: 50px" src="{{asset('assets/images/logo-full.png')}}" alt="logo"></span>
                             </a>
                         </div>
 

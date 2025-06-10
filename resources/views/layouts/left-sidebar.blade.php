@@ -91,21 +91,21 @@
                 ],
             ],
         ],
-        [
-            'name' => 'Quản lý nhân viên',
-            'link' => '',
-            'icon' => '<i class="uil-user-square"></i>',
-            'sub_menu' => [
-                [
-                    'name' => 'Thêm mới nhân viên',
-                    'link' => route('admin.staff.create'),
-                ],
-                [
-                    'name' => 'Danh sách nhân viên',
-                    'link' => route('admin.staff'),
-                ],
-            ],
-        ],
+        // [
+        //     'name' => 'Quản lý nhân viên',
+        //     'link' => '',
+        //     'icon' => '<i class="uil-user-square"></i>',
+        //     'sub_menu' => [
+        //         [
+        //             'name' => 'Thêm mới nhân viên',
+        //             'link' => route('admin.staff.create'),
+        //         ],
+        //         [
+        //             'name' => 'Danh sách nhân viên',
+        //             'link' => route('admin.staff'),
+        //         ],
+        //     ],
+        // ],
         [
             'name' => 'Token API Vận chuyển',
             'link' => route('admin.token_transport'),
@@ -124,7 +124,7 @@
             <img style="height: 50px" src="{{asset('assets/images/logo-new.png')}}" alt="logo">
         </span>
         <span class="logo-sm">
-            <img src="{{asset('assets/images/logo-sm.png')}}" alt="small logo">
+            <img src="{{asset('assets/images/logo-new.png')}}" alt="small logo">
         </span>
     </a>
 

@@ -209,7 +209,7 @@ class OrderController extends Controller
 
         $order->details = json_decode($order->details, true);
         $order->delivery_method_name = self::DELIVERY_METHOD[$order->delivery_method];
-        $order->partner_transport_type_name = self::TRANSPORT_TYPE[$order->partner_transport_type];
+        $order->partner_transport_type_name = isset(self::TRANSPORT_TYPE[$order->partner_transport_type]) ? self::TRANSPORT_TYPE[$order->partner_transport_type] : "X";
 
         if($order->delivery_method === 1) {
             $order->transport_full_name = self::GUESS_TRANSPORT[$order->partner_transport_id];
@@ -373,7 +373,7 @@ class OrderController extends Controller
             'response_transport.boolean' => 'Trạng thái phản hồi vận chuyển phải là kiểu boolean.',
         ];
 
-        if($package_and_delivery->type === "1") {
+        if(isset($package_and_delivery->type) === "1") {
             $rules = array_merge($rules, [
                 'package_and_delivery.cod' => 'required|numeric|min:0',
                 'package_and_delivery.gam' => 'required|numeric|min:0',
@@ -384,7 +384,7 @@ class OrderController extends Controller
                 'package_and_delivery.payment_type_id' => 'required|in:1,2', // 1: shop trả, 2: khách trả
                 'package_and_delivery.note_transport' => 'nullable|string',
             ]);
-        } else if($package_and_delivery->type === "2"){
+        } else if(isset($package_and_delivery->type) === "2"){
             $rules = array_merge($rules, [
                 'package_and_delivery.cod' => 'required|numeric|min:0',
                 'package_and_delivery.gam' => 'required|numeric|min:0',
@@ -616,7 +616,7 @@ class OrderController extends Controller
 
             DB::commit();
 
-            return $this->successResponse([], 'Tạo đơn thành công');
+            return $this->successResponse(['link_redirect' => route('admin.order.detail', ['id' => $order_id])], 'Tạo đơn thành công');
         } catch (\Throwable $th) {
             DB::rollback();
             throw $th;
