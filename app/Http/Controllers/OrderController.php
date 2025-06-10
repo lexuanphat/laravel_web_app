@@ -206,7 +206,7 @@ class OrderController extends Controller
                 $join->on('o.partner_transport_id', '=', 'transports.id')
                     ->whereIn('o.partner_transport_type', [Transport::ROLE['SHIPPER'], Transport::ROLE['CHANH_XE']]);
             })
-            ->where('o.id', 1) // Thay 1 bằng biến $id nếu cần
+            ->where('o.id', $id)
             ->selectRaw("
                 o.id,
                 o.code_transport,
