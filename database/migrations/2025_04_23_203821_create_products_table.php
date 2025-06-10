@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('code')->unique();
-            $table->string('sku')->unique();
+            $table->string('sku')->nullable()->unique();
             $table->decimal('price', 10, 2);
             $table->bigInteger('length');
             $table->bigInteger('width');
