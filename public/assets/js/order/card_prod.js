@@ -426,7 +426,7 @@ function formatRepoProduct(repo){
                     </div>
                     <div class="ms-2">
                         <div class="fw-bold">${repo.name}</div>
-                        <div class="">${repo.sku}</div>
+                        <div class="">${repo.sku ? repo.sku : ""}</div>
                     </div>
                 </div>
             </div>
