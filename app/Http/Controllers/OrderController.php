@@ -178,34 +178,74 @@ class OrderController extends Controller
     }
 
     public function detail($id, Request $request){
-        $order = DB::table('orders as o')
-            ->join('order_details as d', 'd.order_id', '=', 'o.id')
-            ->join("users as u", "o.user_create_order", "=", "u.id")
-            ->join("stores", "o.store_id", "=", "stores.id")
-            ->leftJoin("transports", function($leftJoin){
-                $leftJoin->on("o.partner_transport_id", "=", "transports.id")->whereIn("partner_transport_type", [Transport::ROLE['SHIPPER'], Transport::ROLE['CHANH_XE']]);
-            })
-            ->where("o.id", $id)
+
+        $detailsSub = DB::table('order_details')
             ->selectRaw("
-                o.id, o.code_transport, o.code_order, o.store_id, o.customer_id, o.full_name,
-                o.phone, o.address, o.total_product, o.total_price, o.total_discount, o.customer_paid_total, o.customer_has_paid_total,
-                o. user_create_order, o.source, o.delivery_date, o.create_date, o.delivery_method, o.partner_transport_type, o.partner_transport_id,
-                o. delivery_method_fee, o.payer_fee, o.cod, o.gam, o.length, o.height, o.width, o.require_transport_option, o.status_transport, 
-                o.status_order, o.note_transport, o.note_order, o.user_id,
+                order_id,
                 JSON_ARRAYAGG(
                     JSON_OBJECT(
-                        'product_name', d.product_name,
-                        'quantity', d.quantity,
-                        'price', d.price,
-                        'is_discount', d.is_discount,
-                        'discount', d.discount,
-                        'total_price', d.total_price
+                        'product_name', product_name,
+                        'quantity', quantity,
+                        'price', price,
+                        'is_discount', is_discount,
+                        'discount', discount,
+                        'total_price', total_price
                     )
-                ) as details,
-                u.full_name as user_order_full_name, stores.name as store_name, 
-                transports.full_name as transport_full_name
+                ) AS details
             ")
-            ->groupBy('o.id')
+        ->groupBy('order_id');
+
+
+        $order = DB::table('orders as o')
+            ->joinSub($detailsSub, 'od', function($join) {
+                $join->on('od.order_id', '=', 'o.id');
+            })
+            ->join('users as u', 'o.user_create_order', '=', 'u.id')
+            ->join('stores', 'o.store_id', '=', 'stores.id')
+            ->leftJoin('transports', function($join) {
+                $join->on('o.partner_transport_id', '=', 'transports.id')
+                    ->whereIn('o.partner_transport_type', [Transport::ROLE['SHIPPER'], Transport::ROLE['CHANH_XE']]);
+            })
+            ->where('o.id', 1) // Thay 1 bằng biến $id nếu cần
+            ->selectRaw("
+                o.id,
+                o.code_transport,
+                o.code_order,
+                o.store_id,
+                o.customer_id,
+                o.full_name,
+                o.phone,
+                o.address,
+                o.total_product,
+                o.total_price,
+                o.total_discount,
+                o.customer_paid_total,
+                o.customer_has_paid_total,
+                o.user_create_order,
+                o.source,
+                o.delivery_date,
+                o.create_date,
+                o.delivery_method,
+                o.partner_transport_type,
+                o.partner_transport_id,
+                o.delivery_method_fee,
+                o.payer_fee,
+                o.cod,
+                o.gam,
+                o.length,
+                o.height,
+                o.width,
+                o.require_transport_option,
+                o.status_transport,
+                o.status_order,
+                o.note_transport,
+                o.note_order,
+                o.user_id,
+                u.full_name as user_order_full_name,
+                stores.name as store_name,
+                transports.full_name as transport_full_name,
+                od.details
+            ")
         ->first();
 
         if(!$order) {
