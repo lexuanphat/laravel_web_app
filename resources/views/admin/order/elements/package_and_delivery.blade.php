@@ -17,9 +17,9 @@
                 <label class="btn btn-outline-primary" for="option3"><i class="ri-home-8-line"></i> Nhận tại cửa hàng</label>
             </div>
     
-            <div class="option">
+            <div class="option d-none">
                 <input type="radio" class="btn-check" value="4" name="options" id="option4" autocomplete="off">
-                <label class="btn btn-outline-primary d-none" for="option4"> <i class="uil-dropbox"></i>Giao hàng sau</label>
+                <label class="btn btn-outline-primary" for="option4"> <i class="uil-dropbox"></i>Giao hàng sau</label>
             </div>
         </div>
     </div>
