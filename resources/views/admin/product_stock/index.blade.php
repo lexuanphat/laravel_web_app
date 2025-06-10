@@ -120,7 +120,7 @@
             <div class='select2-result-repository__meta col'>
                 <div class='select2-result-repository__title'>${repo.name} - ${Number(repo.price).toLocaleString("vi")}</div>
                 <div class='select2-result-repository__code text-warning'>${repo.code}</div>
-                <div class='select2-result-repository__sku text-danger'>${repo.sku}</div>
+                <div class='select2-result-repository__sku text-danger'>${repo.sku ? repo.sku : ''}</div>
                 </div>
             </div>
             </div>
