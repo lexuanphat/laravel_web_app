@@ -187,7 +187,12 @@ class OrderController extends Controller
             })
             ->where("o.id", $id)
             ->selectRaw("
-                o.*, JSON_ARRAYAGG(
+                o.id, o.code_transport, o.code_order, o.store_id, o.customer_id, o.full_name,
+                o.phone, o.address, o.total_product, o.total_price, o.total_discount, o.customer_paid_total, o.customer_has_paid_total,
+                o. user_create_order, o.source, o.delivery_date, o.create_date, o.delivery_method, o.partner_transport_type, o.partner_transport_id,
+                o. delivery_method_fee, o.payer_fee, o.cod, o.gam, o.length, o.height, o.width, o.require_transport_option, o.status_transport, 
+                o.status_order, o.note_transport, o.note_order, o.user_id,
+                JSON_ARRAYAGG(
                     JSON_OBJECT(
                         'product_name', d.product_name,
                         'quantity', d.quantity,
