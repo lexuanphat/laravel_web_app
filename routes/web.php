@@ -85,8 +85,13 @@ Route::group([
         $route->delete('/product-stock/delete/{id}', [ProductStockController::class, 'delete'])->name('product_stock.delete');
 
         // Quản lý nhân viến
-        $route->get('/staff', [UserController::class, 'index'])->name('staff');
-        $route->get('/staff/create', [UserController::class, 'create'])->name('staff.create');
+        $route->get('/staff', [UserController::class, 'index'])->name('staff')->middleware('check_user_manage_and_admin');
+        $route->get('/staff/getData', [UserController::class, 'getData'])->name('staff.get_data')->middleware('check_user_manage_and_admin');
+        $route->get('/staff/create', [UserController::class, 'create'])->name('staff.create')->middleware('check_user_manage_and_admin');
+        $route->post('/staff/store', [UserController::class, 'store'])->name('staff.store')->middleware('check_user_manage_and_admin');
+        $route->get('/staff/detail/{id}', [UserController::class, 'detail'])->name('staff.detail')->middleware('check_user_manage_and_admin');
+        $route->put('/staff/update/{id}', [UserController::class, 'update'])->name('staff.update')->middleware('check_user_manage_and_admin');
+        $route->delete('/staff/delete/{id}', [UserController::class, 'delete'])->name('staff.delete')->middleware('check_user_manage_and_admin');
 
         // Quản lý cửa hàng
         $route->get('/shop', [ShopController::class, 'index'])->name('shop');

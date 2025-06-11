@@ -13,10 +13,26 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    private const ROLE_TEXT = [
+    public const ROLE_TEXT = [
         'admin' => 'Quản trị viên',
-        'manage' => 'Quản lý',
-        'staff' => 'Nhân viên',
+        'manage_sale' => 'Quản lý bán hàng',
+        'manage_producttion' => 'Quản lý sản xuất',
+        'staff_sale' => 'Nhân viên bán hàng',
+        'staff_producttion' => 'Nhân viên sản xuất',
+    ];
+
+    public const ROLE_ACCESS_PAGE = [
+        'admin' => 'admin',
+        'manage_sale' => 'manage_sale',
+        'manage_producttion' => 'manage_producttion',
+    ];
+
+    public const ROLE_VALUE = [
+        'admin' => 'admin',
+        'manage_sale' => 'manage_sale',
+        'manage_producttion' => 'manage_producttion',
+        'staff_sale' => 'staff_sale',
+        'staff_producttion' => 'staff_producttion',
     ];
 
     /**
@@ -30,6 +46,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'role',
+        'create_user_id',
         'created_at',
         'updated_at',
     ];
