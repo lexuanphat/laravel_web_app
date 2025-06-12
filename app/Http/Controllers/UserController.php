@@ -176,7 +176,7 @@ class UserController extends Controller
             Storage::disk('public')->put("/$link", $img->encode());
             $validated['profile_default'] = $link;
 
-            if (Storage::disk('public')->exists($data->first()->profile_default)) {
+            if (!is_null($data->first()->profile_default) && Storage::disk('public')->exists($data->first()->profile_default)) {
                 Storage::disk('public')->delete($data->first()->profile_default);
             }
         }
