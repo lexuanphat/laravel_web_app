@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ShopValidateRequest;
 use App\Models\Store;
+use App\Models\User;
 use Illuminate\Http\Request;
 use DataTables;
 use Illuminate\Support\Facades\DB;
@@ -17,9 +18,14 @@ class ShopController extends Controller
     }
 
     public function getData(Request $request) {
-        $model = Store::with('user:id,full_name')->orderBy('id', 'desc');
+        $model = Store::with('user:id,full_name');
+
+        if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']) {
+            $model = $model->where("id", auth()->user()->store_id);
+        }
+
+        $model = $model->orderBy('id', 'desc');
         $datatables = DataTables::eloquent($model)
-        ->with('user:full_name')
         ->order(function($query){
             if(request()->has('order')) {
                 $query->orderBy('name', request()->order[0]['dir']);
@@ -31,6 +37,11 @@ class ShopController extends Controller
                 $view_loading = view("admin._partials.loading");
                 $action_edit = route('admin.shop.detail', ['id' => $store->id]);
                 $action_delete = route('admin.shop.delete', ['id' => $store->id]);
+
+                if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']) {
+                    return "X";
+                }
+
                 return "
                     <div class='button-list'>
                         <button class='btn btn-warning edit-record' data-action='{$action_edit}' data-record='{$store->id}'><i class='ri-edit-box-fill'></i>{$view_loading}</button>

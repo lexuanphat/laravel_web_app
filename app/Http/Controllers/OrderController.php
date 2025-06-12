@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Store;
+use App\Models\User;
 use App\Models\Transport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -78,8 +79,11 @@ class OrderController extends Controller
         ->leftJoin('transports', function($leftJoin){
             $leftJoin->on("orders.partner_transport_id", "=", "transports.id");
             $leftJoin->whereIn('orders.partner_transport_type', ['SHIPPER', 'CHANH_XE']);
-        })
-        ->selectRaw("orders.*, customers.full_name as customer_full_name, users.full_name as full_name_action, transports.full_name as partner_transport_full_name")
+        });
+        if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']) {
+            $query = $query->where("orders.store_id", auth()->user()->store_id);
+        }
+        $query = $query->selectRaw("orders.*, customers.full_name as customer_full_name, users.full_name as full_name_action, transports.full_name as partner_transport_full_name")
         ->orderBy("create_date", "DESC");
 
         if(isset($parsed['date']) && !empty($parsed['date'])) {
@@ -180,20 +184,26 @@ class OrderController extends Controller
     public function detail($id, Request $request){
 
         $detailsSub = DB::table('order_details')
-            ->selectRaw("
-                order_id,
-                JSON_ARRAYAGG(
-                    JSON_OBJECT(
-                        'product_name', product_name,
-                        'quantity', quantity,
-                        'price', price,
-                        'is_discount', is_discount,
-                        'discount', discount,
-                        'total_price', total_price
-                    )
-                ) AS details
-            ")
-        ->groupBy('order_id');
+        ->join('orders', 'order_details.order_id', '=', 'orders.id');
+
+        if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']){
+            $detailsSub = $detailsSub->where('orders.store_id', auth()->user()->store_id);
+        }
+
+        $detailsSub = $detailsSub->selectRaw("
+            order_details.order_id,
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'product_name', order_details.product_name,
+                    'quantity', order_details.quantity,
+                    'price', order_details.price,
+                    'is_discount', order_details.is_discount,
+                    'discount', order_details.discount,
+                    'total_price', order_details.total_price
+                )
+            ) AS details
+        ")
+        ->groupBy('order_details.order_id');
 
 
         $order = DB::table('orders as o')

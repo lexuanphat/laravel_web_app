@@ -21,6 +21,18 @@
         @include('admin._partials.div-error')
     </div>
     <div class="mb-2">
+        <label for="store_id" class="required">Cửa hàng <span class="text-danger">(*)</span></label>
+        <select class="form-control role" id="store_id" name="store_id">
+            @if(auth()->user()->role === 'admin')
+            <option value="">Tất cả</option>
+            @endif
+            @foreach($render_store as  $store)
+            <option value="{{$store->id}}">{{$store->name}}</option>
+            @endforeach
+        </select>
+        @include('admin._partials.div-error')
+    </div>
+    <div class="mb-2">
         <label for="role" class="required">Vai trò <span class="text-danger">(*)</span></label>
         <select class="form-control role" id="role" name="role">
             @foreach($list_role as $value => $text)

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use A6digital\Image\Facades\DefaultProfileImage;
 use App\Http\Requests\UserValidateRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -14,18 +17,25 @@ class UserController extends Controller
         $list_role = User::ROLE_TEXT;
         $current_user = auth()->user();
 
+        $render_store = DB::table("stores");
+
         if($current_user->role === User::ROLE_ACCESS_PAGE['manage_producttion']) {
             $list_role = [];
             $list_role[User::ROLE_VALUE['manage_producttion']] = User::ROLE_TEXT[User::ROLE_VALUE['manage_producttion']];
             $list_role[User::ROLE_VALUE['staff_producttion']] = User::ROLE_TEXT[User::ROLE_VALUE['staff_producttion']];
+            $render_store = $render_store->where("id", $current_user->store_id);
         } else if($current_user->role === User::ROLE_ACCESS_PAGE['manage_sale']){
             $list_role = [];
             $list_role[User::ROLE_VALUE['manage_sale']] = User::ROLE_TEXT[User::ROLE_VALUE['manage_sale']];
             $list_role[User::ROLE_VALUE['staff_sale']] = User::ROLE_TEXT[User::ROLE_VALUE['staff_sale']];
+            $render_store = $render_store->where("id", $current_user->store_id);
         }
+
+        $render_store = $render_store->selectRaw("id, name")->get();
 
         return view('admin.staff.index', [
             'list_role' => $list_role,
+            'render_store' => $render_store,
         ]);
     }
     public function create(Request $request) {
@@ -37,7 +47,8 @@ class UserController extends Controller
 
         $model = DB::table("users as u")
         ->leftJoin('users as u2', 'u.create_user_id', '=', 'u2.id')
-        ->selectRaw("u.full_name, u.email, u.phone, u.created_at, u.updated_at, u.id, u.role, u2.full_name as create_user_full_name");
+        ->leftJoin('stores as s', 'u.store_id', '=', 's.id')
+        ->selectRaw("u.full_name, u.email, u.phone, u.created_at, u.updated_at, u.id, u.role, u2.full_name as create_user_full_name, s.name as store_name");
 
         switch ($current_user->role) {
             case User::ROLE_ACCESS_PAGE['manage_producttion']:
@@ -99,7 +110,11 @@ class UserController extends Controller
         ->editColumn('role', function($user){
             return " <div> ".User::ROLE_TEXT[$user->role]." </div>";
         })
-        ->rawColumns(['action', 'full_name', 'date_action', 'phone', 'email', 'role']);
+        ->addColumn('store_name', function($user){
+            $store_name = $user->role === User::ROLE_ACCESS_PAGE['admin'] ? 'Tất cả' : $user->store_name;
+            return "<div>{$store_name}</div>";
+        })
+        ->rawColumns(['action', 'full_name', 'date_action', 'phone', 'email', 'role', 'store_name']);
 
         return $datatables->toJson();
     }
@@ -110,6 +125,15 @@ class UserController extends Controller
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
         $validated['create_user_id'] = auth()->user()->id;
+
+        if($validated['role'] === User::ROLE_ACCESS_PAGE['admin']) {
+            $validated['store_id'] = null;
+        }
+
+        $link = "profiles/".Str::slug($validated['full_name'])."_".strtotime(date("Ymd")).".png";
+        $img = DefaultProfileImage::create($validated['full_name']);
+        Storage::disk('public')->put("/$link", $img->encode());
+        $validated['profile_default'] = $link;
 
         User::create($validated);
         
@@ -145,6 +169,18 @@ class UserController extends Controller
         if($data->first()->phone === $validated['phone']) {
             unset($validated['phone']);
         }
+
+        if($data->first()->full_name !== $validated['full_name']) {
+            $link = "profiles/".Str::slug($validated['full_name'])."_".strtotime(date("Ymd")).".png";
+            $img = DefaultProfileImage::create($validated['full_name']);
+            Storage::disk('public')->put("/$link", $img->encode());
+            $validated['profile_default'] = $link;
+
+            if (Storage::disk('public')->exists($data->first()->profile_default)) {
+                Storage::disk('public')->delete($data->first()->profile_default);
+            }
+        }
+
         $validated['updated_at'] = date("Y-m-d H:i:s");
 
         $data->update($validated);
@@ -155,7 +191,7 @@ class UserController extends Controller
     public function detail($id, Request $request){
         $current_user = auth()->user();
         $data = User::where("id", $id)
-        ->selectRaw("id, full_name, email, phone, role");
+        ->selectRaw("id, full_name, email, phone, role, store_id");
 
         switch ($current_user->role) {
             case User::ROLE_ACCESS_PAGE['manage_producttion']:

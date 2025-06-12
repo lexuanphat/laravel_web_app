@@ -46,6 +46,8 @@ class User extends Authenticatable
         'password',
         'phone',
         'role',
+        'store_id',
+        'profile_default',
         'create_user_id',
         'created_at',
         'updated_at',

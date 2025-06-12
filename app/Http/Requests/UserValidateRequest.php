@@ -59,12 +59,20 @@ class UserValidateRequest extends FormRequest
                 'required',
                 'in:'.$list_role
             ],
+            'store_id' => [
+                'required',
+                'exists:stores,id'
+            ],
         ];
 
         if($this->get('method') === "PUT") {
             $rules['email'][1] = "unique:users,email,{$this->id}";
             $rules['phone'][1] = "unique:users,phone,{$this->id}";
             $rules['password'][0] = 'nullable';
+        }
+
+        if($this->role === User::ROLE_ACCESS_PAGE['admin']) {
+            $rules['store_id'][0] = 'nullable';
         }
 
         return $rules;
@@ -80,6 +88,7 @@ class UserValidateRequest extends FormRequest
             'numeric' => 'không hợp lệ',
             'password.min' => 'Nhập phải lớn hơn hoặc bằng 8 kí tự',
             'in' => 'không hợp lệ',
+            'exists' => 'không tồn tại',
         ];
     }
 }

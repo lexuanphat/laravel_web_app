@@ -23,6 +23,9 @@
                         <div class="text-uppercase align-middle">Phân loại</div>
                     </th>
                     <th>
+                        <div class="text-uppercase align-middle">Cửa hàng</div>
+                    </th>
+                    <th>
                         <div class="text-uppercase align-middle">Ngày tạo</div>
                         <div class="text-uppercase align-middle">/ Ngày cập nhật</div>
                         <div class="text-uppercase align-middle">/ Người thao tác</div>
@@ -71,7 +74,7 @@
                     if(res.success) {
                         $.each(res.data, function(key, value){
                             elements.modal_edit.find('#'+key).val(value);
-                            if(key === 'role') {
+                            if(key === 'role' || key === 'store_id') {
                                 console.log(elements.modal_edit.find('#'+key), value);
                                 
                                 elements.modal_edit.find('#'+key).val(value).trigger('change');
@@ -233,11 +236,7 @@
         function renderTableStore(){
             elements.table_manage.DataTable({
                 language: {
-                    // paginate: {
-                    //     previous: "<i class='mdi mdi-chevron-left'>",
-                    //     next: "<i class='mdi mdi-chevron-right'>"
-                    // },
-                    processing: '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>',
+                    url: @json(asset('/assets/js/vi.json')),
                 },
                 ajax: {
                     url: elements.table_manage.data('action'),
@@ -247,20 +246,17 @@
                 stateSave: true,
                 processing: true,
                 serverSide: true,
+                ordering: false,
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
                     { data: 'full_name', name: "full_name", class: 'align-middle'},
                     { data: 'phone', name: "phone", class: 'align-middle'},
                     { data: 'email', name: "email", class: 'align-middle'},
                     { data: 'role', class: 'align-middle text-center'},
+                    { data: 'store_name', class: 'align-middle text-center'},
                     { data: 'date_action', class: 'align-middle'},
                     { data: 'action', name: "action", class: 'align-middle',},
                 ],
-                columnDefs: [
-                    { "orderable": false, "targets": [0,2,3,4] },
-                    { "orderable": true, "targets": [1] }
-                ],
-                order: [[1, 'asc']]
             });
         }
 

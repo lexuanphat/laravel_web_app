@@ -178,6 +178,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         Barryvdh\Debugbar\ServiceProvider::class,
         Yajra\DataTables\DataTablesServiceProvider::class,
+        A6digital\Image\DefaultProfileImageServiceProvider::class,
     ],
 
     /*

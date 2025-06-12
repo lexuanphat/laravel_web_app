@@ -11,7 +11,13 @@
                         {{-- <input type="text" class="form-control" value="{{auth()->user()->store->name}}" disabled> --}}
                         <select name="store_id" id="store_id" data-toggle="select2">
                             @foreach($get_store as $store)
+                            @if(auth()->user()->role === 'admin')
                             <option value="{{$store->id}}">{{$store->name}}</option>
+                            @else
+                                @if(auth()->user()->store_id === $store->id)
+                                <option value="{{$store->id}}" selected>{{$store->name}}</option>
+                                @endif
+                            @endif
                             @endforeach
                         </select>
                     </div>

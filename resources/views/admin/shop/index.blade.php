@@ -2,8 +2,10 @@
 @section('content')
     <div class="bg-white p-2 my-2">
         <div class="button-actions">
-            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
-            <button type="button" class="btn btn-success mb-2" id="sync_store_transport"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHN</button>
+            @if(auth()->user()->role === app\Models\User::ROLE_ACCESS_PAGE['admin'])
+                <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
+                <button type="button" class="btn btn-success mb-2" id="sync_store_transport"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHN</button>
+            @endif
         </div>
         <table id="table_manage" data-action="{{route('admin.shop.get_data')}}" class="table dt-responsive w-100">
             <thead>
@@ -215,11 +217,7 @@
         function renderTableStore(){
             elements.table_manage.DataTable({
                 language: {
-                    // paginate: {
-                    //     previous: "<i class='mdi mdi-chevron-left'>",
-                    //     next: "<i class='mdi mdi-chevron-right'>"
-                    // },
-                    processing: '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>',
+                    url: @json(asset('/assets/js/vi.json')),
                 },
                 ajax: {
                     url: elements.table_manage.data('action'),

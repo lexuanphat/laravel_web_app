@@ -77,12 +77,8 @@
 
     function renderTable(){
         elements.table_manage.DataTable({
-                language: {
-                    // paginate: {
-                    //     previous: "<i class='mdi mdi-chevron-left'>",
-                    //     next: "<i class='mdi mdi-chevron-right'>"
-                    // },
-                    processing: '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>',
+            language: {
+                    url: @json(asset('/assets/js/vi.json')),
                 },
                 ajax: {
                     url: elements.table_manage.data('action'),
