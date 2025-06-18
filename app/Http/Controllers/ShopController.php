@@ -60,13 +60,6 @@ class ShopController extends Controller
                  <div>{$user_action}</div>
             ";
         })
-        ->editColumn('name', function($store){
-                return "
-                    <div>{$store->name}</div>
-                    <div><a href='tel:{$store->contact_phone}'>{$store->contact_phone}</a></div>
-                ";
-            }
-        )
         ->rawColumns(['action', 'name', 'date_action']);
         return $datatables->toJson();
     }
