@@ -52,6 +52,7 @@ class OrderController extends Controller
     ];
     private const GUESS_TRANSPORT = [
         '-1' => "Giao hàng nhanh",
+        '-2' => "Giao hàng tiết kiệm",
     ];
     private const TRANSPORT_TYPE = [
         ...Transport::ROLE_RENDER_BLADE,
@@ -280,6 +281,7 @@ class OrderController extends Controller
             CONCAT(full_name, ' - ', phone) as text,
             role
         ")->get();
+        
         $get_store = Store::get();
 
         return view('admin.order.create', [
@@ -462,7 +464,7 @@ class OrderController extends Controller
         if(!isset($data_request->customer) || !isset($data_request->products) || !isset($data_request->package_and_delivery) || !isset($data_request->store_id)) {
             return $this->errorResponse('Có lỗi vui lòng thử lại');
         }
-        
+
         $customer = $data_request->customer;
         $products = $data_request->products;
         $store_id = $data_request->store_id;
@@ -470,6 +472,7 @@ class OrderController extends Controller
         // $response_transport = $data->response_transport->{$package_and_delivery->is_ship};
         $data = [];
         $data_send_api_transport = [];
+        $transport = [];
         if($package_and_delivery->type === "1") {
             $transport = DB::table("tokens")->where("is_transport", $package_and_delivery->is_ship)->first();
             if(!$transport) {
@@ -480,53 +483,105 @@ class OrderController extends Controller
             if(!$store) {
                 return $this->errorResponse('Địa điểm lấy hàng không tồn tại');
             }
-    
-            $from_shop = explode(",", $store->address);
-            $from_shop_address = array_slice($from_shop, -3);
-            $from_shop_address_detail = array_slice($from_shop, 0, count($from_shop) - 3);
-    
-            $to_customer = explode(",", $customer->address);
-            $data_send_api_transport = [
-                'token' => $transport->_token,
-                'shop_id' => (int) $store->transport_id,
-                'from_phone' => $store->contact_phone,
-                'from_address' => $from_shop_address_detail[0],
-                'from_ward_name' => $from_shop_address[0],
-                'from_district_name' => $from_shop_address[1],
-                'from_province_name' => $from_shop_address[2],
-                'to_name' => $customer->full_name,
-                'to_phone' => $customer->phone,
-            ];
-    
-            $to_customer = explode(",", $customer->address);
-            $to_customer_address = array_slice($to_customer, -3);
-            $to_customer_address_detail = array_slice($to_customer, 0, count($to_customer) - 3);
-            $data_send_api_transport['to_address'] = $to_customer_address_detail[0];
-            $data_send_api_transport['to_ward_name'] = $to_customer_address[0];
-            $data_send_api_transport['to_district_name'] = $to_customer_address[1];
-            $data_send_api_transport['to_province_name'] = $to_customer_address[2];
-    
-            $data_send_api_transport['return_phone'] = $store->contact_phone;
-            $data_send_api_transport['return_address'] = $from_shop_address_detail[0];
-            $data_send_api_transport['return_ward_name'] = $from_shop_address[0];
-            $data_send_api_transport['return_district_name'] = $from_shop_address[1];
-            $data_send_api_transport['return_province_name'] = $from_shop_address[2];
-    
-            $data_send_api_transport['cod_amount'] = (int) $package_and_delivery->cod;
-            $data_send_api_transport['content'] = $package_and_delivery->note_transport;
-            $data_send_api_transport['weight'] = (int) $package_and_delivery->gam;
-            $data_send_api_transport['length'] = (int) $package_and_delivery->length;
-            $data_send_api_transport['width'] = (int) $package_and_delivery->width;
-            $data_send_api_transport['height'] = (int) $package_and_delivery->height;
-            $data_send_api_transport['pick_station_id'] = null;
-            $data_send_api_transport['insurance_value'] = 0;
-            $data_send_api_transport['service_type_id'] = (int) $data_request->response_transport->data_send_get_fee->service_type_id;
-            $data_send_api_transport['payment_type_id'] = (int) $package_and_delivery->payment_type_id;
-            $data_send_api_transport['note'] = $package_and_delivery->note_transport;
-            $data_send_api_transport['required_note'] = $package_and_delivery->require_transport_option;
-            $data_send_api_transport['pick_shift'] = [];
-            $data_send_api_transport['pickup_time'] = isset($customer->schedule_delivery_date) ? strtotime($customer->schedule_delivery_date) : strtotime(date("Y-m-d"));
-            $data_send_api_transport['items'] = [];
+            $data_send_api_transport = [];
+            if($data_request->is_transport === "GHN") {
+                $store = DB::table("stores")
+                ->join("store_details", "stores.id", "=", "store_details.store_id")
+                ->where("id", $store_id)
+                ->where("is_transport", "GHN")
+                ->first();
+
+                $from_shop = explode(",", $store->address);
+                $from_shop_address = array_slice($from_shop, -3);
+                $from_shop_address_detail = array_slice($from_shop, 0, count($from_shop) - 3);
+        
+                $to_customer = explode(",", $customer->address);
+                $data_send_api_transport = [
+                    'token' => $transport->_token,
+                    'shop_id' => (int) $store->transport_id,
+                    'from_phone' => $store->contact_phone,
+                    'from_address' => $from_shop_address_detail[0],
+                    'from_ward_name' => $from_shop_address[0],
+                    'from_district_name' => $from_shop_address[1],
+                    'from_province_name' => $from_shop_address[2],
+                    'to_name' => $customer->full_name,
+                    'to_phone' => $customer->phone,
+                ];
+        
+                $to_customer = explode(",", $customer->address);
+                $to_customer_address = array_slice($to_customer, -3);
+                $to_customer_address_detail = array_slice($to_customer, 0, count($to_customer) - 3);
+                $data_send_api_transport['to_address'] = $to_customer_address_detail[0];
+                $data_send_api_transport['to_ward_name'] = $to_customer_address[0];
+                $data_send_api_transport['to_district_name'] = $to_customer_address[1];
+                $data_send_api_transport['to_province_name'] = $to_customer_address[2];
+        
+                $data_send_api_transport['return_phone'] = $store->contact_phone;
+                $data_send_api_transport['return_address'] = $from_shop_address_detail[0];
+                $data_send_api_transport['return_ward_name'] = $from_shop_address[0];
+                $data_send_api_transport['return_district_name'] = $from_shop_address[1];
+                $data_send_api_transport['return_province_name'] = $from_shop_address[2];
+        
+                $data_send_api_transport['cod_amount'] = (int) $package_and_delivery->cod;
+                $data_send_api_transport['content'] = $package_and_delivery->note_transport;
+                $data_send_api_transport['weight'] = (int) $package_and_delivery->gam;
+                $data_send_api_transport['length'] = (int) $package_and_delivery->length;
+                $data_send_api_transport['width'] = (int) $package_and_delivery->width;
+                $data_send_api_transport['height'] = (int) $package_and_delivery->height;
+                $data_send_api_transport['pick_station_id'] = null;
+                $data_send_api_transport['insurance_value'] = 0;
+                $data_send_api_transport['service_type_id'] = (int) $data_request->response_transport->data_send_get_fee->service_type_id;
+                $data_send_api_transport['payment_type_id'] = (int) $package_and_delivery->payment_type_id;
+                $data_send_api_transport['note'] = $package_and_delivery->note_transport;
+                $data_send_api_transport['required_note'] = $package_and_delivery->require_transport_option;
+                $data_send_api_transport['pick_shift'] = [];
+                $data_send_api_transport['pickup_time'] = isset($customer->schedule_delivery_date) ? strtotime($customer->schedule_delivery_date) : strtotime(date("Y-m-d"));
+                $data_send_api_transport['items'] = [];
+            } else if($data_request->is_transport === "GHTK"){
+                $store = DB::table("stores")
+                ->join("store_details", "stores.id", "=", "store_details.store_id")
+                ->where("id", $store_id)
+                ->where("is_transport", "GHTK")
+                ->first();
+
+                $handle_address = $this->handleAddress($store->address);
+                $handle_address_customer = $this->handleAddress($customer->address);
+
+                $data_send_api_transport['order'] = [
+                    'pick_name' => json_decode($store->response_transport)->pick_name,
+                    'pick_money' => (int)$package_and_delivery->cod,
+                    'pick_address_id' => json_decode($store->response_transport)->pick_address_id,
+                    'pick_address' => $store->address,
+                    'pick_province' => $handle_address[2],
+                    'pick_district' => $handle_address[1],
+                    'pick_ward' => $handle_address[0],
+                    'pick_tel' => json_decode($store->response_transport)->pick_tel,
+
+                    'name' => $customer->full_name,
+                    'address' => $customer->address,
+                    'province' =>  $handle_address_customer[2],
+                    'district' =>  $handle_address_customer[1],
+                    'ward' =>  $handle_address_customer[0],
+                    'street' =>  $customer->address,
+                    'hamlet' =>  'Khác',
+                    'tel' => $customer->phone,
+                    'note' => $package_and_delivery->note_transport,
+                    'email' => DB::table("customers")->where("id", $customer->customer_id)->value('email'),
+
+                    'return_name' => json_decode($store->response_transport)->pick_name,
+                    'return_address' => $store->address,
+                    'return_province' => $handle_address[2],
+                    'return_district' =>  $handle_address[1],
+                    'return_tel' => json_decode($store->response_transport)->pick_tel,
+                    'return_email' => 'phatle1913@gmail.com',
+
+                    'transport' => 'road',
+                    'is_freeship' => 1,
+                    'weight_option' => 'gram',
+                    'total_weight' => (double)$package_and_delivery->gam,
+                    'value' => 10000,
+                ];
+            }
         }
 
         $data_products = DB::table("products")
@@ -539,19 +594,30 @@ class OrderController extends Controller
         $data_detail = [];
         foreach($products as $product) {
             $data_product = $data_products[$product->product_id];
-            $data_send_api_transport['items'][] = (object)[
-                'name' => $data_product->name,
-                'code' => $data_product->code,
-                'quantity' => (int) $product->quantity,
-                'price' => (int) $data_product->price,
-                'length' => (int) $data_product->length,
-                'width' => (int) $data_product->width,
-                'weight' => (int) $data_product->weight,
-                'height' => (int) $data_product->height,
-                'category' => (object) [
-                    'level1' => $data_product->category_name,
-                ],
-            ];
+            
+            if($data_request->is_transport === "GHN"){
+                $data_send_api_transport['items'][] = (object)[
+                    'name' => $data_product->name,
+                    'code' => $data_product->code,
+                    'quantity' => (int) $product->quantity,
+                    'price' => (int) $data_product->price,
+                    'length' => (int) $data_product->length,
+                    'width' => (int) $data_product->width,
+                    'weight' => (int) $data_product->weight,
+                    'height' => (int) $data_product->height,
+                    'category' => (object) [
+                        'level1' => $data_product->category_name,
+                    ],
+                ];
+            } else if($data_request->is_transport === "GHTK"){
+                $data_send_api_transport['products'][] = [
+                    'name' => $data_product->name,
+                    'product_code' => $data_product->code,
+                    'quantity' => (int) $product->quantity,
+                    'price' => (int) $data_product->price,
+                    'weight' => (double) $data_product->weight,
+                ];
+            }
             
             $total_product += $product->quantity;
             $calculate_price_quantity = ($data_product->price * $product->quantity);
@@ -578,21 +644,12 @@ class OrderController extends Controller
             
         }
 
-        if($package_and_delivery->type === "1") {
-            $response = Http::withHeaders([
-                'token' => $data_send_api_transport['token'],
-                'ShopId' => $data_send_api_transport['shop_id'],
-            ])->post("{$transport->api}/shiip/public-api/v2/shipping-order/create", $data_send_api_transport); 
-    
-            if(!$response->successful()) {
-                throw \Illuminate\Validation\ValidationException::withMessages([$response->json()['code_message_value']]);
-            }
-    
-            $data = $response->json();
-        }
+
         // Đẩy qua vận chuyển xong -> tiến hành lưu dữ liệu vào Database
+        $code_transport = null;
+        $order_id = null;
         $data_create_order = [
-            'code_transport' => $data ? $data['data']['order_code'] : null,
+            'code_transport' => $code_transport,
             'code_order' => self::generateCode(),
             'store_id' => $store_id,
             'customer_id' => $customer->customer_id,
@@ -625,7 +682,7 @@ class OrderController extends Controller
         
 
         if($package_and_delivery->type === "1") {
-            $data_create_order['delivery_method_fee'] = $data['data']['total_fee'];
+            $data_create_order['delivery_method_fee'] = 0;
         } else if($package_and_delivery->type === "2"){
             $data_create_order['delivery_method_fee'] = (int) str_replace(".", "", $package_and_delivery->delivery_method_fee);
         } else {
@@ -634,7 +691,6 @@ class OrderController extends Controller
 
         if($package_and_delivery->type == 1){
             $data_create_order['partner_transport_type'] = "DVVC";
-            $data_create_order['partner_transport_id'] = $package_and_delivery->is_ship === "GHN" ? -1 : 0;
         } else if($package_and_delivery->type == 2){
             $data_create_order['partner_transport_type'] = $package_and_delivery->is_ship;
             $data_create_order['partner_transport_id'] = $package_and_delivery->ship_id;
@@ -644,6 +700,48 @@ class OrderController extends Controller
         
         $data_create_order['note_order'] = $customer_payment->note;
         $data_create_order['created_at'] = date("Y-m-d H:i:s");
+
+        if($package_and_delivery->type === "1") {
+            if($data_request->is_transport === "GHN"){
+                $response = Http::withHeaders([
+                    'token' => $data_send_api_transport['token'],
+                    'ShopId' => $data_send_api_transport['shop_id'],
+                ])->post("{$transport->api}/shiip/public-api/v2/shipping-order/create", $data_send_api_transport); 
+        
+                if(!$response->successful()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([$response->json()['code_message_value']]);
+                }
+        
+                $data = $response->json();
+                $code_transport = $data['data']['order_code'];
+                $data_create_order['delivery_method_fee'] = $data['data']['total_fee'];
+                $data_create_order['partner_transport_id'] = -1;
+                $data_create_order['code_transport'] = $code_transport;
+                $data_create_order['response_transport'] = json_encode($data['data']);
+                
+            } else if($data_request->is_transport === "GHTK"){
+                $data_send_api_transport['order']['id'] = $data_create_order['code_order'];
+                $response = Http::withHeaders([
+                    'Token' => $transport->_token,
+                ])->post("{$transport->api}/services/shipment/order", (object) $data_send_api_transport); 
+
+                if(!$response->successful()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([$response->json()['message']]);
+                }
+        
+                $data = $response->json();
+
+                if($data['success']) {
+                    $code_transport = $data['order']['label'];
+                    $data_create_order['delivery_method_fee'] = $data['order']['fee'];
+                    $data_create_order['partner_transport_id'] = -2;
+                    $data_create_order['code_transport'] = $code_transport;
+                    $data_create_order['response_transport'] = json_encode($data['order']);
+                } else {
+                    throw \Illuminate\Validation\ValidationException::withMessages(["GHTK báo lỗi ".$data['message']]);
+                }
+            }
+        }
         
         DB::beginTransaction();
         try {
@@ -713,59 +811,106 @@ class OrderController extends Controller
 
         $data = json_decode($request->data);
 
-        $store = DB::SELECT("SELECT * FROM stores WHERE id = {$request->store_id} LIMIT 1");
-        $store = $store[0];
-        // $customer = DB::SELECT("SELECT * FROM customers WHERE id = {$request->customer_id} LIMIT 1");
-        // $customer = $customer[0];
-        $customer_address_detail = $this->_getAddressCustomer($request->address, $store);
+        $stores = DB::SELECT("SELECT * FROM store_details WHERE store_id = {$request->store_id}");
+        $data_response = [];
 
-        $calculate_weight = 0;
-        $service_type_id = 2;
+        foreach($stores as $store){
 
-        $data_send_get_fee = [
-            "service_type_id" => 0,
-            "from_district_id" => json_decode($store->response_transport)->district_id,
-            "from_ward_code" =>  json_decode($store->response_transport)->ward_code,
-            "to_district_id" => $customer_address_detail['district_id'],
-            "to_ward_code" => $customer_address_detail['ward_code'],
-            "length" => isset($request->length) && !empty($request->length) ?  (int) $request->length : 30,
-            "width" => isset($request->width) && !empty($request->width) ? (int) $request->width : 40,
-            "height" => isset($request->height) && !empty($request->height) ? (int) $request->height : 20,
-            "insurance_value" => 0,
-            "coupon" =>  null,
-            "items" => [],
-        ];
+            if($store->is_transport === "GHN") {
+                // $customer = DB::SELECT("SELECT * FROM customers WHERE id = {$request->customer_id} LIMIT 1");
+                // $customer = $customer[0];
+                $customer_address_detail = $this->_getAddressCustomer($request->address);
 
-        foreach($data as $item) {
-            $product = DB::SELECT("SELECT length, width, height, weight, name FROM products WHERE id = {$item->product_id} LIMIT 1");
-            $product = $product[0];
-            $calculate_weight += $product->weight * (int) $item->quantity;
+                $calculate_weight = 0;
+                $service_type_id = 2;
 
-            if($calculate_weight >= 20000) {
-                $service_type_id = 5;
+                $data_send_get_fee = [
+                    "service_type_id" => 0,
+                    "from_district_id" => json_decode($store->response_transport)->district_id,
+                    "from_ward_code" =>  json_decode($store->response_transport)->ward_code,
+                    "to_district_id" => $customer_address_detail['district_id'],
+                    "to_ward_code" => $customer_address_detail['ward_code'],
+                    "length" => isset($request->length) && !empty($request->length) ?  (int) $request->length : 30,
+                    "width" => isset($request->width) && !empty($request->width) ? (int) $request->width : 40,
+                    "height" => isset($request->height) && !empty($request->height) ? (int) $request->height : 20,
+                    "insurance_value" => 0,
+                    "coupon" =>  null,
+                    "items" => [],
+                ];
+
+                foreach($data as $item) {
+                    $product = DB::SELECT("SELECT length, width, height, weight, name FROM products WHERE id = {$item->product_id} LIMIT 1");
+                    $product = $product[0];
+                    $calculate_weight += $product->weight * (int) $item->quantity;
+
+                    if($calculate_weight >= 20000) {
+                        $service_type_id = 5;
+                    }
+                    $product->quantity = (int)$item->quantity;
+                    $data_send_get_fee['items'][] = $product;
+                }
+
+                $data_send_get_fee["weight"] = isset($request->weight) && !empty($request->weight) ? (int) $request->weight : $calculate_weight;
+
+                $available_services = $this->_getAvailableServices(json_decode($store->response_transport)->district_id, $customer_address_detail['district_id'], json_decode($store->response_transport)->_id);
+
+                $service_id = collect($available_services)->keyBy('service_type_id')[$service_type_id]['service_id'];
+                $data_send_get_fee['service_type_id'] = $service_type_id;
+                $get_fee = $this->_getFee($data_send_get_fee, json_decode($store->response_transport)->_id);
+                $get_leadtime = $this->_getLeadtime(json_decode($store->response_transport)->district_id, json_decode($store->response_transport)->ward_code, $customer_address_detail['district_id'], $customer_address_detail['ward_code'], $service_id, json_decode($store->response_transport)->_id);
+
+                // $data = [
+                //     'GHN' => [
+                //         'fee' => $get_fee,
+                //         'get_leadtime' => $get_leadtime,
+                //     ],
+                //     'data_send_get_fee' => $data_send_get_fee,
+                // ];
+
+                $data_response['GHN'] = [
+                    'fee' => $get_fee,
+                    'get_leadtime' => $get_leadtime,
+                    'data_send_get_fee' => $data_send_get_fee,
+                ];
+
             }
-            $product->quantity = (int)$item->quantity;
-            $data_send_get_fee['items'][] = $product;
+
+            if($store->is_transport === "GHTK"){
+                $response_transport = json_decode($store->response_transport);
+                $handle_address = $this->handleAddress($response_transport->address);
+                $handle_address_customer = $this->handleAddress($request->address);
+
+                $data_send_get_fee = [
+                    'pick_address_id' => $response_transport->pick_address_id,
+                    'pick_province' => $handle_address[2],
+                    'pick_district' => $handle_address[1],
+                    'pick_ward' => $handle_address[0],
+                    'province' => $handle_address_customer[2],
+                    'district' => $handle_address_customer[1],
+                    'deliver_option' => 'none',
+                    'transport' => 'road',
+                ];
+
+                $calculate_weight = 0;
+
+                foreach(json_decode($request->data) as $item) {
+                    $product = DB::SELECT("SELECT length, width, height, weight, name FROM products WHERE id = {$item->product_id} LIMIT 1");
+                    $product = $product[0];
+                    $calculate_weight += $product->weight * (int) $item->quantity;
+                    $product->quantity = (int)$item->quantity;
+                }
+
+                $data_send_get_fee["weight"] = isset($request->weight) && !empty($request->weight) ? (int) $request->weight : $calculate_weight;
+
+                $get_fee = $this->_getFeeGHTK($data_send_get_fee);
+
+                $data_response['GHTK'] = [
+                    'get_fee' => $get_fee,
+                ];
+            }
         }
 
-        $data_send_get_fee["weight"] = isset($request->weight) && !empty($request->weight) ? (int) $request->weight : $calculate_weight;
-
-        $available_services = $this->_getAvailableServices(json_decode($store->response_transport)->district_id, $customer_address_detail['district_id'], json_decode($store->response_transport)->_id);
-
-        $service_id = collect($available_services)->keyBy('service_type_id')[$service_type_id]['service_id'];
-        $data_send_get_fee['service_type_id'] = $service_type_id;
-        $get_fee = $this->_getFee($data_send_get_fee, json_decode($store->response_transport)->_id);
-        $get_leadtime = $this->_getLeadtime(json_decode($store->response_transport)->district_id, json_decode($store->response_transport)->ward_code, $customer_address_detail['district_id'], $customer_address_detail['ward_code'], $service_id, json_decode($store->response_transport)->_id);
-
-        $data = [
-            'GHN' => [
-                'fee' => $get_fee,
-                'get_leadtime' => $get_leadtime,
-            ],
-            'data_send_get_fee' => $data_send_get_fee,
-        ];
-
-        return $this->successResponse($data, 'Lấy dữ liệu thành công');
+        return $this->successResponse($data_response, 'Lấy dữ liệu thành công');
     }
 
     private function _getLeadtime($from_district_id, $from_ward_code, $to_district_id, $to_ward_code, $service_id, $shop_id){
@@ -835,6 +980,36 @@ class OrderController extends Controller
         }
 
         return $data['data'];
+    }
+
+    private function _getFeeGHTK($data){
+        $data_token = DB::table("tokens")->where("is_transport", "GHTK")->first();
+        $response = Http::withHeaders([
+            'token' => $data_token->_token,
+        ])->post("{$data_token->api}/services/shipment/fee", $data); 
+
+        if(!$response->successful()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([$response->json()['code_message_value']]);
+        }
+
+        $data = $response->json();
+
+        if(!isset($data['fee'])){
+            throw \Illuminate\Validation\ValidationException::withMessages(["Có lỗi vui lòng kiểm tra lại"]);
+        }
+
+        return $data['fee'];
+    }
+
+    private function handleAddress($address){
+        $explode = explode(",", $address);
+        $count = count($explode);
+        if($count < 4) {
+            throw \Illuminate\Validation\ValidationException::withMessages(["Địa chỉ không hợp lệ"]);
+        }
+
+        $address_province = array_slice($explode, -3);
+        return $address_province;
     }
 
     private function _getAddressCustomer($address){

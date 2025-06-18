@@ -4,7 +4,8 @@
         <div class="button-actions">
             @if(auth()->user()->role === app\Models\User::ROLE_ACCESS_PAGE['admin'])
                 <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
-                <button type="button" class="btn btn-success mb-2" id="sync_store_transport"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHN</button>
+                <button type="button" class="btn text-white mb-2 sync_store_transport" style="background-color: #f26522" data-type_transport="GHN"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHN</button>
+                <button type="button" class="btn text-white mb-2 sync_store_transport" style="background-color: #069255" data-type_transport="GHTK"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHTK</button>
             @endif
         </div>
         <table id="table_manage" data-action="{{route('admin.shop.get_data')}}" class="table dt-responsive w-100">
@@ -19,6 +20,9 @@
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Địa chỉ</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Hãng vận chuyển</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Ngày tạo</div>
@@ -44,7 +48,7 @@
 @push('js')
     <script>
         const elements = {
-            sync_store_transport: $("#sync_store_transport"),
+            sync_store_transport: $(".sync_store_transport"),
             btn_create: $("#btn_create"),
             btn_update: $("#btn_update"),
             form_create: $("#form_create"),
@@ -231,6 +235,7 @@
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
                     { data: 'name', width: '25%', name: "abc", class: 'align-middle'},
                     { data: 'address', width: '30%', class: 'align-middle'},
+                    { data: 'is_transport', class: 'align-middle'},
                     { data: 'date_action', class: 'align-middle'},
                     { data: 'action', name: "action", class: 'align-middle', width: '15%',},
                 ],
@@ -242,12 +247,13 @@
             });
         }
 
-        function asyncStore(button){
+        function asyncStore(button, type_transport){
             $.ajax({
                 url: @json(route('admin.shop.async_store_transport')),
                 type: "POST",
                 data: {
                     _token: $("[name='csrf-token']").attr('content'),
+                    type_transport: type_transport,
                 },
                 beforeSend: function(){
                     button.prop('disabled', true);
@@ -294,7 +300,7 @@
 
             elements.sync_store_transport.click(function(e){
                 e.preventDefault();
-                asyncStore($(this));
+                asyncStore($(this), $(this).attr('data-type_transport'));
             })
         });
 

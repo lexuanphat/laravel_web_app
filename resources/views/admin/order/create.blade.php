@@ -63,7 +63,7 @@
             total_end: elements_card.result_info_product.find("#total_end"),
         };
 
-        let response_transport_fee = false;
+        let data_fee = false;
     </script>
     <script>
         // const assets_storage = @json(asset("storage/:image_url"));

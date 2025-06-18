@@ -29,6 +29,25 @@
                         </div>
                     </div>
                     <hr/>
+                    <div class="items d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="box-left col-4">
+                            <img src="/assets/images/transport/logo-ghtk.png" class="w-75">
+                            <p class="mb-0">Giao hàng tiết kiệm</p>
+                        </div>
+                        <div class="box-center col-5">
+                            @if(isset($data['GHTK']))
+                            <input type="password" name="token_ghtk" id="token_ghtk" class="form-control form-control-sm" disabled value="*******************">
+                            @else
+                            <input type="text" name="token_ghtk" id="token_ghtk" class="form-control form-control-sm" disabled value="Chưa kết nối">
+                            @endif
+                        </div>
+                        <div class="box-right col-3 text-end">
+                            <button type="button" class="btn btn-primary api_connect" data-key="GHTK" data-bs-target="#transport_token">
+                               Kết nối <i class="ri-login-circle-line fs-6"></i>
+                            </button>
+                            
+                        </div>
+                    </div>
                 </div>
         
         

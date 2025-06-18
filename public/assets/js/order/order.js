@@ -61,7 +61,7 @@ $("#btn_order").click(function(e){
     };
 
     if (Number(package_and_delivery.type) === 1) {
-        package_and_delivery.is_ship = $("#option-transport").find('input[type="radio"]:checked').val();
+        package_and_delivery.is_ship = $("#option-transport").find('input[type="radio"][name="hang_van_chuyen"]:checked').val();
     } else if (Number(package_and_delivery.type) === 2) {
         package_and_delivery.is_ship = $("[name='loai_giao_hang']:checked").val();
         package_and_delivery.ship_id = $("select#partner_transport").val();
@@ -94,7 +94,8 @@ $("#btn_order").click(function(e){
         'results': results,
         'package_and_delivery': package_and_delivery,
         'store_id': $("#store_id").val(),
-        'response_transport': response_transport_fee,
+        'is_transport': $("[name='hang_van_chuyen']:checked").val(),
+        'response_transport': data_fee.data[$("[name='hang_van_chuyen']:checked").val()] ?? null,
     };
     console.log(full_data);
     

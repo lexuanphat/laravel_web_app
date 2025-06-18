@@ -35,42 +35,66 @@ $("input[name='options']").on('change', async function () {
             if (!$("#gam").val() || $("#gam").val() === '0') {
                 $("#gam").val(weight.toLocaleString('vi'));
             }
-            let data_fee = await apiGetFee("/admin/order/apiGetFee", data);
+            data_fee = await apiGetFee("/admin/order/apiGetFee", data);
             if (data_fee.success) {
                 html = "";
                 let data = data_fee.data;
-                response_transport_fee = {...data};
-                delete data['data_send_get_fee'];
+
                 $.each(data, function (key, item) {
                     image = "";
+                    
                     if (key === "GHN") {
                         image = "/assets/images/transport/logo-ghn-new.png";
-                    }
+                        let from_date = handleDateLeadTime(item.get_leadtime.leadtime_order.from_estimate_date);
+                        let to_date = handleDateLeadTime(item.get_leadtime.leadtime_order.to_estimate_date);
+                        
+                        html += `
+                            <div class="form-check mb-2 item d-flex align-items-center gap-2">
+                                <input type="radio" id="${key}" name="hang_van_chuyen" value="${key}" class="form-check-input">
+                                <label class="form-check-label" for="${key}">
+                                    <img height="35px" src="${image}" alt="image" class="">
+                                    <span><b>Giao hàng nhanh</b></span>
+                                    <div class="leadtime">
+                                        Ngày giao dự kiến: <b>${from_date} - ${to_date}</b>
+                                    </div>
+                                    <div class="fee">
+                                        Cước phí: <b>${(item.fee.total).toLocaleString("vi")}</b>
+                                    </div>
+                                </label>
+                            </div>
+                        `;
+                    } else if (key === "GHTK") {
+                        image = "/assets/images/transport/logo-ghtk.png";
 
-                    let from_date = handleDateLeadTime(item.get_leadtime.leadtime_order.from_estimate_date);
-                    let to_date = handleDateLeadTime(item.get_leadtime.leadtime_order.to_estimate_date);
-                    
-                    html += `
-                        <div class="form-check mb-2 item d-flex align-items-center gap-2">
-                            <input type="radio" id="${key}" name="${key}" value="${key}" class="form-check-input" checked>
-                            <label class="form-check-label" for="${key}">
-                                <img src="${image}" alt="image" class="img-fluid">
-                                <span><b>Giao hàng nhanh</b></span>
-                                <div class="leadtime">
-                                    Ngày giao dự kiến: <b>${from_date} - ${to_date}</b>
-                                </div>
-                                <div class="fee">
-                                    Cước phí: <b>${(item.fee.total).toLocaleString("vi")}</b>
-                                </div>
-                            </label>
-                        </div>
-                    `;
+                        let disabled = "disabled"
+                        let text = "GTHK chưa hỗ trợ giao đến khu vực này";
+                        if (item.get_fee.delivery) {
+                            disabled = "";
+                            text = "";
+                        }
+
+                        html += `
+                            <div class="form-check mb-2 item d-flex align-items-center gap-2">
+                                <input type="radio" id="${key}" name="hang_van_chuyen" value="${key}" class="form-check-input" ${disabled}>
+                                <label class="form-check-label" for="${key}">
+                                    <img height="35px" src="${image}" alt="image" class="">
+                                    <span><b>Giao hàng tiết kiệm</b></span>
+                                    <div class="fee">
+                                        Cước phí: <b>${(item.get_fee.fee.toLocaleString('vi'))}</b>
+                                    </div>
+                                    ${text}
+                                </label>
+                            </div>
+                        `;
+                    }
                     
                 })
                 $("#option-transport").html(html);
             }
             
         } catch (error) {
+            console.log(error);
+            
             $("body").find("#popup_show_err").remove();
             $("body").append(`
                 <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" id="popup_show_err">
