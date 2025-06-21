@@ -32,8 +32,12 @@
                 </th>
                 <th>
                     <div class="text-uppercase align-middle">Ngày tạo</div>
-                    <div class="text-uppercase align-middle">/ Ngày cập nhật</div>
-                    <div class="text-uppercase align-middle">/ Người thao tác</div>
+                </th>
+                <th>
+                    <div class="text-uppercase align-middle">Ngày cập nhật</div>
+                </th>
+                <th>
+                    <div class="text-uppercase align-middle">Người thao tác</div>
                 </th>
                 <th>
                     <div class="text-uppercase align-middle">Chức năng</div>
@@ -88,18 +92,16 @@
             stateSave: true,
             processing: true,
             serverSide: true,
+            ordering: false,
             columns: [
                 { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
                 { data: 'full_name', width: '25%', class: 'align-middle'},
                 { data: 'info', width: '30%', class: 'align-middle'},
-                { data: 'date_action', class: 'align-middle'},
+                { data: 'created_at', class: 'align-middle'},
+                { data: 'updated_at', class: 'align-middle'},
+                { data: 'user.full_name', class: 'align-middle'},
                 { data: 'action', name: "action", class: 'align-middle', width: '15%',},
-            ],
-            columnDefs: [
-                { "orderable": false, "targets": [0,2,3,4] },
-                { "orderable": true, "targets": [1] }
-            ],
-            order: [[1, 'asc']]
+            ]
         });
     }
 

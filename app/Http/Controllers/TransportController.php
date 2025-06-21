@@ -40,6 +40,12 @@ class TransportController extends Controller
                  <div>{$user_action}</div>
             ";
         })
+        ->addColumn('user_full_name', function($transport){
+            $user_action = $transport->user->full_name;
+            return "
+                 <div>{$user_action}</div>
+            ";
+        })
         ->editColumn('full_name', function($transport){
                 return "
                     <div>{$transport->full_name}</div>
@@ -52,7 +58,7 @@ class TransportController extends Controller
                 <div>".Transport::ROLE_RENDER_BLADE[$transport->role]."</div>
             ";
         })
-        ->rawColumns(['action', 'full_name', 'role', 'date_action']);
+        ->rawColumns(['action', 'full_name', 'role', 'date_action', 'user_full_name']);
         return $datatables->toJson();
     }
 

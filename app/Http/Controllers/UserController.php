@@ -85,13 +85,27 @@ class UserController extends Controller
                 ";
             }
         )
-        ->addColumn('date_action', function($user){
-            $created_at = $user->created_at ? date("d/m/Y H:i", strtotime($user->created_at)) : 'X';
-            $updated_at = $user->updated_at ? date("d/m/Y H:i", strtotime($user->updated_at)) : 'X';
-            $user_action = is_null($user->create_user_full_name) ? 'Hệ thống tạo' : $user->create_user_full_name;
+        ->editColumn('created_at', function($user){
+            $created_at = $user->created_at ? date("d/m/Y", strtotime($user->created_at)) : '';
+            
             return "
                 <div>{$created_at}</div>
+            ";
+        })
+        ->editColumn('updated_at', function($user){
+            $updated_at = $user->updated_at ? date("d/m/Y", strtotime($user->updated_at)) : '';
+            
+            return "
+               
                  <div>{$updated_at}</div>
+
+            ";
+        })
+        ->addColumn('user_full_name', function($user){
+           
+            $user_action = is_null($user->create_user_full_name) ? 'Hệ thống tạo' : $user->create_user_full_name;
+            return "
+            
                  <div>{$user_action}</div>
             ";
         })
@@ -114,7 +128,7 @@ class UserController extends Controller
             $store_name = $user->role === User::ROLE_ACCESS_PAGE['admin'] ? 'Tất cả' : $user->store_name;
             return "<div>{$store_name}</div>";
         })
-        ->rawColumns(['action', 'full_name', 'date_action', 'phone', 'email', 'role', 'store_name']);
+        ->rawColumns(['action', 'full_name', 'date_action', 'phone', 'email', 'role', 'store_name', 'created_at', 'updated_at', 'user_full_name']);
 
         return $datatables->toJson();
     }

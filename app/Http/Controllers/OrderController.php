@@ -290,7 +290,8 @@ class OrderController extends Controller
         ]);
     }
     public function getDataCustomer(Request $request){
-        $results = Customer::where(function ($q) use ($request) {
+        $results = Customer::selectRaw("*, CONCAT(address, ', ', ward_text, ', ', district_text, ', ', province_text) as full_address")
+        ->where(function ($q) use ($request) {
             $q->where("full_name", "like", "%{$request->search}%")
               ->orWhere("phone", "like", "%{$request->search}%")
               ->orWhere("code", "like", "%{$request->search}%");

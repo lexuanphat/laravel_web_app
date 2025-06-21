@@ -20,6 +20,11 @@ class Category extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime:d/m/Y',
+        'updated_at' => 'datetime:d/m/Y',
+    ];
+
     public static function generateCode($length = 10) {
         do {
             $code = self::PREFIX_KEY_CODE . Str::upper(Str::random($length));

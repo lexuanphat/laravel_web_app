@@ -18,10 +18,10 @@ class Store extends Model
         'updated_at',
     ];
 
-    // protected $casts = [
-    //     'created_at' => 'datetime:d/m/Y H:i',
-    //     'updated_at' => 'datetime:d/m/Y H:i',
-    // ];
+    protected $casts = [
+        'created_at' => 'datetime:d/m/Y',
+        'updated_at' => 'datetime:d/m/Y',
+    ];
 
     public function user()
     {

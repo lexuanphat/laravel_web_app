@@ -33,6 +33,14 @@ class Customer extends Model
         'created_at',
         'updated_at',
         'address',
+        'ward_text',
+        'district_text',
+        'province_text',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime:d/m/Y',
+        'updated_at' => 'datetime:d/m/Y',
     ];
 
     public static function generateCodeCustomer($length = 10) {

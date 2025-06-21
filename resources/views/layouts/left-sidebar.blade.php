@@ -117,7 +117,7 @@
 <div class="leftside-menu">
     <a href="javascript:;" class="logo logo-light">
         <span class="logo-lg">
-            <img style="height: 50px" src="{{asset('assets/images/logo-new.png')}}" alt="logo">
+            <img style="height: 50px" src="{{asset('assets/images/logo-full.png')}}" alt="logo">
         </span>
         <span class="logo-sm">
             <img src="{{asset('assets/images/logo-new.png')}}" alt="small logo">
@@ -128,10 +128,10 @@
     <!-- Brand Logo Light -->
     <a href="index.html" class="logo logo-dark">
         <span class="logo-lg">
-            <img src="{{asset('assets/images/logo-dark.png')}}" alt="dark logo">
+            <img src="{{asset('assets/images/logo-new.png')}}" alt="dark logo">
         </span>
         <span class="logo-sm">
-            <img src="{{asset('assets/images/logo-dark-sm.png')}}" alt="small logo">
+            <img src="{{asset('assets/images/logo-new.png')}}" alt="small logo">
         </span>
     </a>
 

@@ -29,8 +29,8 @@
             @include('admin.shop.modals.div-error')
         </div>
         <div class="mb-2 col-md-4">
-            <label for="stock_price" class="required">Giá bán <span class="text-danger">(*)</span></label>
-            <input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="stock_price" value="0" name="stock_price" placeholder="-- Nhập giá bán --" class="form-control mask_money" required>
+            <label for="stock_price" class="required">Giá nhập kho <span class="text-danger">(*)</span></label>
+            <input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="stock_price" value="0" name="stock_price" placeholder="-- Nhập giá nhập kho --" class="form-control mask_money" required>
             @include('admin.shop.modals.div-error')
         </div>
     </div>

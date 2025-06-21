@@ -42,7 +42,7 @@ ELEMENTS_INFO_CUSTOMER.select_find_customer.select2({
     ELEMENTS_INFO_CUSTOMER.empty_customer.after(template);
     $("#list_info_customer").find('li:first-child > a').attr('href', `tel:${data.phone}`);
     $("#list_info_customer").find('li:first-child > a').text(data.phone);
-    $("#list_info_customer").find('li:last-child > span').text(data.address);
+    $("#list_info_customer").find('li:last-child > span').text(`${data.address}, ${data.ward_text}, ${data.district_text}, ${data.province_text}`);
     $("#package_and_delivery").show();
     $("#list_button_action").show();
 });
@@ -63,7 +63,7 @@ CARD_INFO_CUSTOMER.on('click', '#change_info_customer', function (e) {
     console.log("Change");
 })
 
-CARD_INFO_CUSTOMER.on('keyup', '#customer_address, #customer_phone', $.debounce(500, function () {
+CARD_INFO_CUSTOMER.on('keyup', '#customer_address, #customer_phone', $.debounce(1000, function () {
     let $this = $(this);
 
     if ($this.attr('id') === "customer_address") {
@@ -78,6 +78,19 @@ CARD_INFO_CUSTOMER.on('keyup', '#customer_address, #customer_phone', $.debounce(
     }
     
 }));
+
+CARD_INFO_CUSTOMER.on('change', '.change_address', function (e) {
+    let address = CARD_INFO_CUSTOMER.find('input#address').val();
+    let ward_text = CARD_INFO_CUSTOMER.find('input#ward_text').val();
+    let district_text = CARD_INFO_CUSTOMER.find('input#district_text').val();
+    let province_text = CARD_INFO_CUSTOMER.find('input#province_text').val();
+
+    CARD_INFO_CUSTOMER.find('input#customer_address').val(`${address}, ${ward_text}, ${district_text}, ${province_text}`);
+    $("#list_info_customer").find('li:last-child span').text(`${address}, ${ward_text}, ${district_text}, ${province_text}`);
+    $("input[name='options']").prop('checked', false);
+    $("#package_and_delivery").find('#left').addClass('d-none');
+    $("#package_and_delivery").find('.tab-pane').removeClass('active');
+})
 
 function formatCustomer(repo) {
     if (repo.loading) {
@@ -122,7 +135,25 @@ function renderCustomer(data) {
                     <div class="d-flex flex-column gap-2">
                         <input type="text" name="customer_full_name" class="form-control" id="customer_full_name" value="${data.full_name}" />
                         <input type="text" name="customer_phone" class="form-control" id="customer_phone" value="${data.phone}" />
-                        <input type="text" name="customer_address" class="form-control" id="customer_address" value="${data.address}" />
+                        <div class="row g-1 bg-light p-1">
+                            <input type="hidden" name="customer_address" id="customer_address" value="${data.full_address}" placeholder="-- Nhập địa chỉ --" />
+                            <div class="col-3">
+                                <label for="address" class="form-label">Địa chỉ</label>
+                                <input type="text" name="address" class="form-control change_address" id="address" value="${data.address}" placeholder="-- Nhập địa chỉ --" />
+                            </div>
+                            <div class="col-3">
+                                <label for="ward_text" class="form-label">Phường/xã</label>
+                                <input type="text" name="ward_text" class="form-control change_address" id="ward_text" value="${data.ward_text}" placeholder="-- Nhập phường/xã --"/>
+                            </div>
+                            <div class="col-3">
+                                <label for="district_text" class="form-label">Quận/huyện</label>
+                                <input type="text" name="district_text" class="form-control change_address" id="district_text" value="${data.district_text}" placeholder="-- Nhập quận/huyện --"/>
+                            </div>
+                            <div class="col-3">
+                                <label for="province_text" class="form-label">Tỉnh/thành phố</label>
+                                <input type="text" name="province_text" class="form-control change_address" id="province_text" value="${data.province_text}" placeholder="-- Nhập tỉnh/thành phố --"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -26,8 +26,12 @@
                     </th>
                     <th>
                         <div class=align-middle">Ngày tạo</div>
-                        <div class=align-middle">/ Ngày cập nhật</div>
-                        <div class=align-middle">/ Người thao tác</div>
+                    </th>
+                    <th>
+                        <div class=align-middle">Ngày cập nhật</div>
+                    </th>
+                    <th>
+                        <div class=align-middle">Người thao tác</div>
                     </th>
                     <th>
                         <div class=align-middle">Chức năng</div>
@@ -108,7 +112,9 @@
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle', width: "5%"},
                     { data: 'name', name: "name", class: 'align-middle all'},
                     { data: 'data_col_3', width: '25%', class: 'align-middle'},
-                    { data: 'date_action', class: 'align-middle'},
+                    { data: 'created_at', class: 'align-middle'},
+                    { data: 'updated_at', class: 'align-middle'},
+                    { data: 'user.full_name', class: 'align-middle'},
                     { data: 'action', name: "action", class: 'align-middle', width: '10%',},
                 ],
                 columnDefs: [

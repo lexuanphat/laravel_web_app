@@ -49,6 +49,18 @@ class CustomerValidateRequest extends FormRequest
                 'required',
                 'string',
             ],
+            'ward_text' => [
+                'required',
+                'string',
+            ],
+            'district_text' => [
+                'required',
+                'string',
+            ],
+            'province_text' => [
+                'required',
+                'string',
+            ],
         ];
 
         if($this->get('method') === "PUT") {

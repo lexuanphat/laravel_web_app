@@ -27,8 +27,12 @@
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Ngày tạo</div>
-                        <div class="text-uppercase align-middle">/ Ngày cập nhật</div>
-                        <div class="text-uppercase align-middle">/ Người thao tác</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Ngày cập nhật</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Người thao tác</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Chức năng</div>
@@ -254,7 +258,9 @@
                     { data: 'email', name: "email", class: 'align-middle'},
                     { data: 'role', class: 'align-middle text-center'},
                     { data: 'store_name', class: 'align-middle text-center'},
-                    { data: 'date_action', class: 'align-middle'},
+                    { data: 'created_at', class: 'align-middle'},
+                    { data: 'updated_at', class: 'align-middle'},
+                    { data: 'user_full_name', class: 'align-middle'},
                     { data: 'action', name: "action", class: 'align-middle',},
                 ],
             });

@@ -21,9 +21,25 @@
         @include('admin.shop.modals.div-error')
     </div>
     <div class="mb-2">
-        <label for="address"  class="required">Địa chỉ nhận hàng <span class="text-danger">(*)</span></label>
-        <input type="text" id="address" name="address" class="form-control" placeholder="-- Nhập địa chỉ nhận hàng --">
-        @include('admin.shop.modals.div-error')
+        <label for=""  class="required">Địa chỉ nhận hàng <span class="text-danger">(*)</span></label>
+        <div class="row g-2">
+            <div class="col-6">
+                <input type="text" id="address" name="address" class="form-control" placeholder="-- Nhập địa chỉ --">
+                @include('admin.shop.modals.div-error')
+            </div>
+            <div class="col-6">
+                <input type="text" id="ward_text" name="ward_text" class="form-control" placeholder="-- Nhập phường/xã --">
+                @include('admin.shop.modals.div-error')
+            </div>
+            <div class="col-6">
+                <input type="text" id="district_text" name="district_text" class="form-control" placeholder="-- Nhập quận/huyện --">
+                @include('admin.shop.modals.div-error')
+            </div>
+            <div class="col-6">
+                <input type="text" id="province_text" name="province_text" class="form-control" placeholder="-- Nhập tỉnh/thành phố --">
+                @include('admin.shop.modals.div-error')
+            </div>
+        </div>
     </div>
     <div class="mb-2">
         <div>

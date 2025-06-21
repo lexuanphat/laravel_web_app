@@ -80,7 +80,7 @@ class CustomerController extends Controller
     }
 
     public function detail($id, Request $request){
-        $data = Customer::find($id, ['full_name', 'phone', 'email', 'gender', 'date_of_birth', 'address']);
+        $data = Customer::find($id);
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu', 404);
