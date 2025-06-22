@@ -2,9 +2,6 @@ $("input[name='options']").on('change', async function () {
     $("input[name='options']").prop("disabled", true);
     let $this = $(this);
     let id = $this.attr('id');
-    $(".tab-content").find('.tab-pane.active').removeClass('active');
-
-    $(".tab-content").find(`#tab-${id}`).addClass('active');
 
     if ($this.val() == 1) {
         let weight = 0;
@@ -149,6 +146,10 @@ $("input[name='options']").on('change', async function () {
         $("#left").removeClass('d-none');
         $("#right").removeClass('d-none');
     }
+
+    $(".tab-content").find('.tab-pane.active').removeClass('active');
+
+    $(".tab-content").find(`#tab-${id}`).addClass('active');
 
     $("input[name='options']").prop("disabled", false);
 });

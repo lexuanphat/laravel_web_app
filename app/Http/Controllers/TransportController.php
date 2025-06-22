@@ -14,7 +14,38 @@ class TransportController extends Controller
     }
 
     public function getData(Request $request) {
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $model = Transport::query()->orderBy('id', 'DESC');
+
+        if(isset($parsed['date']) && !empty($parsed['date'])) {
+            $current_date = date("Y-m-d");
+
+            switch ($parsed['date']) {
+                case '7days':
+                    $filter_date = date("Y-m-d", strtotime("-7 days"));
+                    break;
+                case '30days':
+                    $filter_date = date("Y-m-d", strtotime("-30 days"));
+                    break;
+                
+                default:
+                    $filter_date = date("Y-m-d");
+                    break;
+            }
+            $model->where("created_at", ">=", "$filter_date 00:00:00")->where("created_at", "<=", "$current_date 23:59:59");
+        }
+
+        if(isset($parsed['search'])) {
+            $model->where("full_name", "LIKE" , "%".trim($parsed['search'])."%");
+        }
+
+        if(isset($parsed['status'])) {
+            $model->where("role", trim($parsed['status']));
+        }
+
         $datatables = DataTables::eloquent($model)
         ->addIndexColumn()
         ->addColumn(

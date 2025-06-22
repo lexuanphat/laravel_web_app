@@ -11,58 +11,89 @@
 @endphp
 @extends('_blank')
 @section('content')
-<div class="bg-white p-2 my-2">
-    <div class="button-actions">
-        <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#{{$model_create_id}}"><i class="mdi mdi-plus-circle"></i> Thêm mới khách hàng</button>
-    </div>
-    <table id="table_manage_customer" data-action="{{route('admin.customer.get_data')}}" class="table dt-responsive w-100">
-        <thead>
-            <tr>
-                <th>
-                    <div class="text-uppercase align-middle">STT</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Tên</div>
-                    <div class="text-uppercase align-middle">/ Mã khách hàng</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Số điện thoại</div>
-                    <div class="text-uppercase align-middle">/ Email</div>
-                    <div class="text-uppercase align-middle">/ Sinh nhật</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Ngày tạo</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Ngày cập nhật</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Người thao tác</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Chức năng</div>
-                </th>
-            </tr>
-        </thead>
+<div class="card mt-2">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+    
+        <!-- Thanh tìm kiếm chính -->
+        <div class="col">
+            <div class="input-group">
+            <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên khách hàng">
+            </div>
+        </div>
 
+        <div class="col">
+            <div class="input-group">
+            <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+            <input type="text" id="phoneInput" class="form-control" placeholder="Tìm kiếm số điện thoại">
+            </div>
+        </div>
 
-        <tbody></tbody>
-    </table>
-    <div class="list-modal">
-        @include('admin.customer.modals.create', [
-            'model_id' => $model_create_id,
-            'form_id' => $form_create_id,
-            'btn_submit_id' => $btn_submit_create_id,
-            'action_radio' => $action_radio_create,
-        ])
-        @include('admin.customer.modals.edit', [
-            'model_id' => $model_edit_id,
-            'form_id' => $form_edit_id,
-            'btn_submit_id' => $btn_submit_edit_id,
-            'action_radio' => $action_radio_update,
-        ])
-        @include('admin._partials.modal-noti.not-found')
+    
+        <!-- Nút lưu -->
+        <div class="col-md-2">
+            <button class="btn btn-outline-danger" id="clear-filter">Xoá lọc</button>
+            <button class="btn btn-outline-primary" id="btn-filter">Lọc</button>
+        </div>
+    
+        </div>
     </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <div class="button-actions">
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#{{$model_create_id}}"><i class="mdi mdi-plus-circle"></i> Thêm mới khách hàng</button>
+        </div>
+        <table id="table_manage_customer" data-action="{{route('admin.customer.get_data')}}" class="table dt-responsive w-100">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="text-uppercase align-middle">STT</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Tên</div>
+                        <div class="text-uppercase align-middle">/ Mã khách hàng</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Số điện thoại</div>
+                        <div class="text-uppercase align-middle">/ Email</div>
+                        <div class="text-uppercase align-middle">/ Sinh nhật</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Ngày tạo</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Ngày cập nhật</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Người thao tác</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Chức năng</div>
+                    </th>
+                </tr>
+            </thead>
+    
+    
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+<div class="list-modal">
+    @include('admin.customer.modals.create', [
+        'model_id' => $model_create_id,
+        'form_id' => $form_create_id,
+        'btn_submit_id' => $btn_submit_create_id,
+        'action_radio' => $action_radio_create,
+    ])
+    @include('admin.customer.modals.edit', [
+        'model_id' => $model_edit_id,
+        'form_id' => $form_edit_id,
+        'btn_submit_id' => $btn_submit_edit_id,
+        'action_radio' => $action_radio_update,
+    ])
+    @include('admin._partials.modal-noti.not-found')
 </div>
 @endsection
 @push('js')
@@ -79,7 +110,7 @@
         action_delete: @json(route("admin.customer.delete", ['id' => ':id'])),
     }
 
-    function renderTableCustomer(){
+    function renderTable(search){
         elements.table_manage_customer.DataTable({
             language: {
                     url: @json(asset('/assets/js/vi.json')),
@@ -87,6 +118,9 @@
             ajax: {
                 url: elements.table_manage_customer.data('action'),
                 type: "GET",
+                data: {
+                    search: search
+                },
             },
             searching: false,
             stateSave: true,
@@ -124,7 +158,7 @@
                     createToast('success', res.message);
                     elements.table_manage_customer.DataTable().destroy();
                     elements.table_manage_customer.find('tbody').empty();
-                    renderTableCustomer();
+                    renderTable(window.location.search);
                }
                 
             },
@@ -204,7 +238,7 @@
                     createToast('success', res.message);
                     elements.table_manage_customer.DataTable().destroy();
                     elements.table_manage_customer.find('tbody').empty();
-                    renderTableCustomer();
+                    renderTable(window.location.search);
                 }
             },
             error: function(err){
@@ -241,7 +275,7 @@
                     createToast('success', response.message);
                     elements.table_manage_customer.DataTable().destroy();
                     elements.table_manage_customer.find('tbody').empty();
-                    renderTableCustomer();
+                    renderTable(window.location.search);
                 }
                 
             },
@@ -272,7 +306,11 @@
 
     $(document).ready(function() {
 
-        renderTableCustomer();
+        let params = new URLSearchParams(window.location.search);
+        if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
+        if (params.get("phone")) $.trim($("#phoneInput").val(params.get("phone")));
+
+        renderTable(window.location.search);
 
         elements.btn_create_customer.click(function(e){
             e.preventDefault();
@@ -293,6 +331,35 @@
             let form = elements.form_edit_customer;
             let action = form.attr('action');
             updateCustomer(action, form, $this);
+        })
+
+        $("#btn-filter").click(function(e){
+            e.preventDefault();
+
+            let search = $.trim($("#searchInput").val());
+            let phone = $.trim($("#phoneInput").val());
+            
+
+            let params = new URLSearchParams();
+
+            if (search) params.set("search", search);
+            if (phone) params.set("phone", phone);
+            
+
+            const queryString = params.toString();
+            const fullUrl = window.location.pathname + '?' + queryString;
+
+            // Reload với query string
+            window.history.pushState({}, '', fullUrl);
+            // mai xử lý search ajax
+            elements.table_manage_customer.DataTable().clear().destroy();
+            renderTable(queryString)
+        });
+
+        $("#clear-filter").click(function(e){
+            const baseUrl = window.location.origin + window.location.pathname;
+            window.history.pushState({}, "", baseUrl);
+            window.location.href = baseUrl;
         })
     });
 

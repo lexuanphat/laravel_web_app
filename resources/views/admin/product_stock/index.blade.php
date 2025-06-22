@@ -1,50 +1,83 @@
 @extends('_blank')
 @section('content')
-<div class="bg-white p-2 my-2">
-    <div class="button-actions">
-        <button type="button" class="btn btn-primary mb-2" id="btn_show_modal_create" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Nhập kho</button>
+<div class="card mt-2">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+    
+        <!-- Thanh tìm kiếm chính -->
+        <div class="col">
+            <div class="input-group">
+            <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên sản phẩm">
+            </div>
+        </div>
+    
+        <!-- Dropdown Trạng thái -->
+        <div class="col">
+            <select id="storeSelect" class="form-control select2" data-toggle="select2">
+                <option value="">Cửa hàng</option>
+                @foreach($store as $item)
+                <option value="{{$item['id']}}">{{$item['name']}}</option>
+                @endforeach
+            </select>
+        </div>
+    
+        <!-- Nút lưu -->
+        <div class="col-md-2">
+            <button class="btn btn-outline-danger" id="clear-filter">Xoá lọc</button>
+            <button class="btn btn-outline-primary" id="btn-filter">Lọc</button>
+        </div>
+    
+        </div>
     </div>
-    <table id="table_manage" data-action="{{route('admin.product_stock.get_data')}}" class="table dt-responsive w-100">
-        <thead>
-            <tr>
-                <th>
-                    <div class="text-uppercase align-middle">STT</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Tên sản phẩm</div>
-                    <div class="text-uppercase align-middle">/ Mã sản phẩm</div>
-                    <div class="text-uppercase align-middle">/ Mã SKU</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Số lượng tồn</div>
-                    <div class="text-uppercase align-middle">/ Số lượng bán</div>
-                    <div class="text-uppercase align-middle">/ Giá sản phẩm</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Cửa hàng</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Ngày tạo</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Ngày cập nhật</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Người thao tác</div>
-                </th>
-                <th>
-                    <div class="text-uppercase align-middle">Chức năng</div>
-                </th>
-            </tr>
-        </thead>
-
-
-        <tbody></tbody>
-    </table>
-    <div class="list-modal">
-        @include('admin.product_stock.modals.create')
-        @include('admin._partials.modal-noti.not-found')
+</div>
+<div class="card">
+    <div class="card-body">
+        <div class="button-actions">
+            <button type="button" class="btn btn-primary mb-2" id="btn_show_modal_create" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Nhập kho</button>
+        </div>
+        <table id="table_manage" data-action="{{route('admin.product_stock.get_data')}}" class="table dt-responsive w-100">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="text-uppercase align-middle">STT</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Tên sản phẩm</div>
+                        <div class="text-uppercase align-middle">/ Mã sản phẩm</div>
+                        <div class="text-uppercase align-middle">/ Mã SKU</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Số lượng tồn</div>
+                        <div class="text-uppercase align-middle">/ Số lượng bán</div>
+                        <div class="text-uppercase align-middle">/ Giá sản phẩm</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Cửa hàng</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Ngày tạo</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Ngày cập nhật</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Người thao tác</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Chức năng</div>
+                    </th>
+                </tr>
+            </thead>
+        
+        
+            <tbody></tbody>
+        </table>
     </div>
+</div>
+<div class="list-modal">
+    @include('admin.product_stock.modals.create')
+    @include('admin._partials.modal-noti.not-found')
 </div>
 @endsection
 @push('js')
@@ -79,7 +112,13 @@
         loading: elements.modal.find('#loading'),
     };
 
-    function renderTable(){
+    elements.modal.on('hidden.bs.modal', function(){
+        elements_modal.form[0].reset();
+        elements_modal.product_id.val("").trigger("change");
+        elements_modal.store_id.val("").trigger("change");
+    })
+
+    function renderTable(search){
         elements.table_manage.DataTable({
             language: {
                     url: @json(asset('/assets/js/vi.json')),
@@ -87,6 +126,9 @@
                 ajax: {
                     url: elements.table_manage.data('action'),
                     type: "GET",
+                    data: {
+                        search: search,
+                    }
                 },
                 searching: false,
                 stateSave: true,
@@ -153,7 +195,7 @@
                     createToast('success', response.message);
                     elements.table_manage.DataTable().destroy();
                     elements.table_manage.find('tbody').empty();
-                    renderTable();
+                    renderTable(window.location.search);;
                 }
                 
             },
@@ -193,7 +235,7 @@
                     createToast('success', res.message);
                     elements.table_manage.DataTable().destroy();
                     elements.table_manage.find('tbody').empty();
-                    renderTable();
+                     renderTable(window.location.search);;
                 }
             },
             error: function(err){
@@ -211,7 +253,11 @@
     }
 
     $(document).ready(function(){
-        renderTable();
+        let params = new URLSearchParams(window.location.search);
+        if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
+        if (params.get("store")) $("#storeSelect").val(params.get("store")).trigger("change");
+        
+        renderTable(window.location.search);
 
         elements.btn_show_modal_create.click(function(e){
             e.preventDefault();
@@ -272,6 +318,33 @@
         elements.modal.on('hidden.bs.modal', function(e){
             elements_modal.form.find('select.select2').trigger("").change();
             elements_modal.form[0].reset();
+        })
+
+        $("#btn-filter").click(function(e){
+            e.preventDefault();
+
+            let search = $.trim($("#searchInput").val());
+            let storeSelect = $("#storeSelect").val();
+
+            let params = new URLSearchParams();
+
+            if (search) params.set("search", search);
+            if (storeSelect) params.set("store", storeSelect);
+
+            const queryString = params.toString();
+            const fullUrl = window.location.pathname + '?' + queryString;
+
+            // Reload với query string
+            window.history.pushState({}, '', fullUrl);
+            // mai xử lý search ajax
+            elements.table_manage.DataTable().clear().destroy();
+            renderTable(queryString)
+        });
+
+        $("#clear-filter").click(function(e){
+            const baseUrl = window.location.origin + window.location.pathname;
+            window.history.pushState({}, "", baseUrl);
+            window.location.href = baseUrl;
         })
     });
 

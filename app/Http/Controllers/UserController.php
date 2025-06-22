@@ -43,6 +43,10 @@ class UserController extends Controller
     }
 
     public function getData(Request $request) {
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $current_user = auth()->user();
 
         $model = DB::table("users as u")
@@ -61,6 +65,13 @@ class UserController extends Controller
             default:
                 # code...
                 break;
+        }
+
+        if(isset($parsed['search'])) {
+            $model->where("u.full_name", "LIKE" , "%".trim($parsed['search'])."%");
+        }
+        if(isset($parsed['phone'])) {
+            $model->where("u.phone", "LIKE" , "%".trim($parsed['phone'])."%");
         }
 
         $datatables = DataTables::of($model)

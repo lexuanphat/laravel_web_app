@@ -19,7 +19,23 @@ class ProductStockController extends Controller
     }
 
     public function getData(Request $request){
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $model = ProductStock::with('user:id,full_name', 'product', 'store');
+
+        if(isset($parsed['search']) && !empty(trim($parsed['search']))) {
+            $search_text = trim($parsed['search']);
+            $model->whereHas('product', function($q) use ($search_text){
+                $q->where('name', 'like', "%{$search_text}%");
+            });
+        }
+
+        if(isset($parsed['store'])) {
+           $model->where("store_id", trim($parsed['store']));
+        }
+
         $datatables = DataTables::eloquent($model)
         ->addIndexColumn()
         ->addColumn(

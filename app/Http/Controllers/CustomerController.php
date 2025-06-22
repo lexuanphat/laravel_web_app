@@ -14,7 +14,19 @@ class CustomerController extends Controller
     }
 
     public function getData(Request $request) {
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $model = Customer::with('user:id,full_name')->orderBy('id', 'desc');
+
+        if(isset($parsed['search'])) {
+            $model->where("full_name", "LIKE" , "%".trim($parsed['search'])."%");
+        }
+        if(isset($parsed['phone'])) {
+            $model->where("phone", "LIKE" , "%".trim($parsed['phone'])."%");
+        }
+
         $datatables = DataTables::eloquent($model)
         ->with('user:full_name')
         ->order(function($query){

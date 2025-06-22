@@ -18,6 +18,10 @@ class ShopController extends Controller
     }
 
     public function getData(Request $request) {
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $model = Store::with('user:id,full_name');
 
         if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']) {
@@ -25,6 +29,11 @@ class ShopController extends Controller
         }
 
         $model = $model->orderBy('id', 'desc');
+
+        if(isset($parsed['search'])) {
+            $model->where("name", "LIKE" , "%".trim($parsed['search'])."%");
+        }
+
         $datatables = DataTables::eloquent($model)
         ->order(function($query){
             if(request()->has('order')) {
@@ -140,8 +149,8 @@ class ShopController extends Controller
                                     'name' => $store['name'],
                                     'contact_phone' => $store['phone'],
                                     'user_id' => $user_id,
-                                    'created_at' => date("Y-m-d H:i:s"),
                                     'updated_at' => date("Y-m-d H:i:s"),
+                                    'address' => "{$store['address']}, {$find_ward['WardName']}, {$find_district['DistrictName']}, {$find_province['ProvinceName']}",
                                 ]
                             );
 
@@ -152,6 +161,7 @@ class ShopController extends Controller
                                 'user_id' => $user_id,
                                 'created_at' => date("Y-m-d H:i:s"),
                                 'updated_at' => null,
+                                'address' => "{$store['address']}, {$find_ward['WardName']}, {$find_district['DistrictName']}, {$find_province['ProvinceName']}",
                             ]);
 
                             DB::table("store_details")->insert([
@@ -207,8 +217,8 @@ class ShopController extends Controller
                                     'name' => $store['pick_name'],
                                     'contact_phone' => $store['pick_tel'],
                                     'user_id' => $user_id,
-                                    'created_at' => date("Y-m-d H:i:s"),
                                     'updated_at' => date("Y-m-d H:i:s"),
+                                    'address' =>  $store['address'],
                                 ]
                             );
 
@@ -219,6 +229,7 @@ class ShopController extends Controller
                                 'user_id' => $user_id,
                                 'created_at' => date("Y-m-d H:i:s"),
                                 'updated_at' => null,
+                                'address' =>  $store['address'],
                             ]);
 
                             DB::table("store_details")->insert([
@@ -250,7 +261,7 @@ class ShopController extends Controller
     }
 
     public function detail($id, Request $request){
-        $data = Store::find($id, ['name', 'address', 'contact_phone']);
+        $data = Store::find($id);
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu', 404);

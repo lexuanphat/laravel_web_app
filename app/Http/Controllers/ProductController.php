@@ -12,11 +12,27 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     public function index(){
-        return view('admin.product.index');
+        $categories = Category::get();
+        return view('admin.product.index', [
+            'categories' => $categories,
+        ]);
     }
 
-    public function getData(Request $erquest){
+    public function getData(Request $request){
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $model = Product::with('user:id,full_name', 'category:id,name')->orderBy('id', 'desc');
+
+        if(isset($parsed['search']) && !empty(trim($parsed['search']))) {
+            $model->where("products.name", "LIKE", "%".trim($parsed['search'])."%");
+        }
+
+        if(isset($parsed['category'])) {
+           $model->where("products.category_id", trim($parsed['category']));
+        }
+
         $datatables = DataTables::eloquent($model)
         ->order(function($query){
             if(request()->has('order')) {

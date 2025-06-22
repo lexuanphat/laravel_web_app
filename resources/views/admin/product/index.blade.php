@@ -4,7 +4,39 @@
 <link href="{{asset('assets/vendor/quill/quill.snow.css')}}" rel="stylesheet" type="text/css" />  
 @endpush
 @section('content')
-    <div class="bg-white p-2 my-2">
+<div class="card mt-2">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+    
+            <!-- Thanh tìm kiếm chính -->
+            <div class="col">
+                <div class="input-group">
+                <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên sản phẩm">
+                </div>
+            </div>
+    
+            <div class="col">
+                <select id="categorySelect" class="form-control select2" data-toggle="select2">
+                    <option value="">Danh mục</option>
+                    @foreach($categories as $cate)
+                    <option value="{{$cate['id']}}">{{$cate['name']}}</option>
+                    @endforeach
+                </select>
+            </div>
+    
+        
+            <!-- Nút lưu -->
+            <div class="col-md-2">
+                <button class="btn btn-outline-danger" id="clear-filter">Xoá lọc</button>
+                <button class="btn btn-outline-primary" id="btn-filter">Lọc</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
         <div class="button-actions">
             <button type="button" id="btn_show_modal_create" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_product"><i class="mdi mdi-plus-circle"></i> Thêm mới sản phẩm</button>
         </div>
@@ -42,11 +74,12 @@
 
             <tbody></tbody>
         </table>
-        <div class="list-modal">
-            @include('admin.product.modals.create')
-            @include('admin._partials.modal-noti.not-found')
-        </div>
     </div>
+</div>
+<div class="list-modal">
+    @include('admin.product.modals.create')
+    @include('admin._partials.modal-noti.not-found')
+</div>
 @endsection
 @push('js')
     <script src="{{asset('assets/vendor/quill/quill.js')}}"></script>
@@ -95,7 +128,7 @@
             loading: elements.modal.find('#loading'),
         };
 
-        function renderTableStore(){
+        function renderTable(search){
             elements.table_manage.DataTable({
                 language: {
                     url: @json(asset('/assets/js/vi.json')),
@@ -103,6 +136,10 @@
                 ajax: {
                     url: elements.table_manage.data('action'),
                     type: "GET",
+                    data: {
+                        search: search
+                    },
+
                 },
                 searching: false,
                 stateSave: true,
@@ -174,7 +211,7 @@
                         createToast('success', response.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                        renderTable(window.location.search);
                     }
                     
                 },
@@ -221,7 +258,7 @@
                         createToast('success', response.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                        renderTable(window.location.search);
                     }
                     
                 },
@@ -261,7 +298,7 @@
                         createToast('success', res.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                        renderTable(window.location.search);
                     }
                 },
                 error: function(err){
@@ -322,7 +359,11 @@
         }
 
         $(document).ready(function(){
-            renderTableStore();
+            let params = new URLSearchParams(window.location.search);
+            if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
+            if (params.get("category")) $("#categorySelect").val(params.get("category")).trigger("change");
+            
+            renderTable(window.location.search);
 
             elements.btn_show_modal_create.click(function(e){
                 e.preventDefault();
@@ -429,6 +470,35 @@
                 elements_modal.quill_editor.setContents([]);
                 elements_modal.form[0].reset();
             });
+
+            $("#btn-filter").click(function(e){
+                e.preventDefault();
+
+                let search = $.trim($("#searchInput").val());
+                let categorySelect = $("#categorySelect").val();
+
+                let params = new URLSearchParams();
+
+                if (search) params.set("search", search);
+                if (categorySelect) params.set("category", categorySelect);
+
+                const queryString = params.toString();
+                const fullUrl = window.location.pathname + '?' + queryString;
+
+                // Reload với query string
+                window.history.pushState({}, '', fullUrl);
+                // mai xử lý search ajax
+                elements.table_manage.DataTable().clear().destroy();
+
+
+                renderTable(queryString)
+            });
+
+            $("#clear-filter").click(function(e){
+                const baseUrl = window.location.origin + window.location.pathname;
+                window.history.pushState({}, "", baseUrl);
+                window.location.href = baseUrl;
+            })
         })
 
         $(document).on("click", ".remove-record", function(){
@@ -532,7 +602,7 @@
                         createToast('success', res.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                        renderTable(window.location.search);
                     }
                 },
                 error: function(err){
@@ -571,7 +641,7 @@
                         createToast('success', response.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                        renderTable(window.location.search);
                     }
                     
                 },
@@ -616,7 +686,7 @@
                         createToast('success', response.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                        renderTable(window.location.search);
                         
                     }
                     
@@ -645,7 +715,7 @@
             })
         }
 
-        function renderTableStore(){
+        function renderTable(window.location.search){
             elements.table_manage.DataTable({
                 language: {
                     // paginate: {
@@ -707,7 +777,7 @@
 
         $(document).ready(function() {
 
-            renderTableStore();
+            renderTable(window.location.search);
 
             elements.btn_create.click(function(e){
                 e.preventDefault();

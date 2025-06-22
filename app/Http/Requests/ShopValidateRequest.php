@@ -41,7 +41,7 @@ class ShopValidateRequest extends FormRequest
             $rules['name'][1] = "unique:stores,name,{$this->id}";
             $rules['contact_phone'][3] = "unique:stores,contact_phone,{$this->id}";
         }
-        dd($rules);
+
         return $rules;
     }
 

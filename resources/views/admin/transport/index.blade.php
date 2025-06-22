@@ -1,6 +1,48 @@
 @extends('_blank')
 @section('content')
-    <div class="bg-white p-2 my-2">
+<div class="card mt-2">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+    
+        <!-- Thanh tìm kiếm chính -->
+        <div class="col">
+            <div class="input-group">
+            <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên vận chuyển">
+            </div>
+        </div>
+    
+        <!-- Dropdown Ngày tạo -->
+        <div class="col">
+            <select id="dateSelect" class="form-control select2" data-toggle="select2">
+            <option value="">Ngày tạo</option>
+            <option value="today">Hôm nay</option>
+            <option value="7days">7 ngày qua</option>
+            <option value="30days">30 ngày qua</option>
+            </select>
+        </div>
+    
+        <!-- Dropdown Trạng thái -->
+        <div class="col">
+            <select id="statusSelect" class="form-control select2" data-toggle="select2">
+                <option value="">Phân loại</option>
+                <option value="shipper">Shipper</option>
+                <option value="chanh_xe">Chành xe</option>
+            </select>
+        </div>
+
+    
+        <!-- Nút lưu -->
+        <div class="col-md-2">
+            <button class="btn btn-outline-danger" id="clear-filter">Xoá lọc</button>
+            <button class="btn btn-outline-primary" id="btn-filter">Lọc</button>
+        </div>
+    
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
         <div class="button-actions">
             <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới vận chuyển</button>
         </div>
@@ -35,12 +77,13 @@
 
             <tbody></tbody>
         </table>
-        <div class="list-modal">
-            @include('admin.transport.modals.create')
-            @include('admin.transport.modals.edit')
-            @include('admin._partials.modal-noti.not-found')
-        </div>
     </div>
+</div>
+<div class="list-modal">
+    @include('admin.transport.modals.create')
+    @include('admin.transport.modals.edit')
+    @include('admin._partials.modal-noti.not-found')
+</div>
 @endsection
 @push('js')
     <script>
@@ -222,7 +265,7 @@
             })
         }
 
-        function renderTableStore(){
+        function renderTable(search){
             elements.table_manage.DataTable({
                 language: {
                     url: @json(asset('/assets/js/vi.json')),
@@ -230,6 +273,10 @@
                 ajax: {
                     url: elements.table_manage.data('action'),
                     type: "GET",
+                    data: {
+                        search: search,
+                    },
+
                 },
                 searching: false,
                 stateSave: true,
@@ -251,7 +298,12 @@
 
         $(document).ready(function() {
 
-            renderTableStore();
+            let params = new URLSearchParams(window.location.search);
+            if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
+            if (params.get("date")) $("#dateSelect").val(params.get("date")).trigger("change");
+            if (params.get("status")) $("#statusSelect").val(params.get("status")).trigger("change");
+
+            renderTable(window.location.search);
 
             elements.btn_create.click(function(e){
                 e.preventDefault();
@@ -272,6 +324,35 @@
                 let form = elements.form_edit;
                 let action = form.attr('action');
                 updateStore(action, form, $this);
+            })
+
+            $("#btn-filter").click(function(e){
+                e.preventDefault();
+
+                let search = $.trim($("#searchInput").val());
+                let date = $("#dateSelect").val();
+                let status = $("#statusSelect").val();
+
+                let params = new URLSearchParams();
+
+                if (search) params.set("search", search);
+                if (date) params.set("date", date);
+                if (status) params.set("status", status);
+
+                const queryString = params.toString();
+                const fullUrl = window.location.pathname + '?' + queryString;
+
+                // Reload với query string
+                window.history.pushState({}, '', fullUrl);
+                // mai xử lý search ajax
+                elements.table_manage.DataTable().clear().destroy();
+                renderTable(queryString)
+            });
+
+            $("#clear-filter").click(function(e){
+                const baseUrl = window.location.origin + window.location.pathname;
+                window.history.pushState({}, "", baseUrl);
+                window.location.href = baseUrl;
             })
         });
 

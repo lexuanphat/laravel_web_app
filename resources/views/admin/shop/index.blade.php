@@ -1,6 +1,29 @@
 @extends('_blank')
 @section('content')
-    <div class="bg-white p-2 my-2">
+<div class="card mt-2">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+    
+        <!-- Thanh tìm kiếm chính -->
+        <div class="col-md-6">
+            <div class="input-group">
+            <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên cửa hàng">
+            </div>
+        </div>
+
+    
+        <!-- Nút lưu -->
+        <div class="col-md-2">
+            <button class="btn btn-outline-danger" id="clear-filter">Xoá lọc</button>
+            <button class="btn btn-outline-primary" id="btn-filter">Lọc</button>
+        </div>
+    
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
         <div class="button-actions">
             @if(auth()->user()->role === app\Models\User::ROLE_ACCESS_PAGE['admin'])
                 <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
@@ -38,12 +61,13 @@
 
             <tbody></tbody>
         </table>
-        <div class="list-modal">
-            @include('admin.shop.modals.create')
-            @include('admin.shop.modals.edit')
-            @include('admin._partials.modal-noti.not-found')
-        </div>
     </div>
+</div>
+<div class="list-modal">
+    @include('admin.shop.modals.create')
+    @include('admin.shop.modals.edit')
+    @include('admin._partials.modal-noti.not-found')
+</div>
 @endsection
 @push('js')
     <script>
@@ -111,7 +135,7 @@
                         createToast('success', res.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                                    renderTable(window.location.search);
                     }
                 },
                 error: function(err){
@@ -148,7 +172,7 @@
                         createToast('success', response.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                                    renderTable(window.location.search);
                     }
                     
                 },
@@ -189,7 +213,7 @@
                         createToast('success', response.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                                    renderTable(window.location.search);
                         
                     }
                     
@@ -218,7 +242,7 @@
             })
         }
 
-        function renderTableStore(){
+        function renderTable(search){
             elements.table_manage.DataTable({
                 language: {
                     url: @json(asset('/assets/js/vi.json')),
@@ -226,6 +250,9 @@
                 ajax: {
                     url: elements.table_manage.data('action'),
                     type: "GET",
+                    data: {
+                        search: search,
+                    },
                 },
                 searching: false,
                 stateSave: true,
@@ -275,8 +302,9 @@
         }
 
         $(document).ready(function() {
-
-            renderTableStore();
+            let params = new URLSearchParams(window.location.search);
+            if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
+            renderTable(window.location.search);
 
             elements.btn_create.click(function(e){
                 e.preventDefault();
@@ -302,6 +330,33 @@
             elements.sync_store_transport.click(function(e){
                 e.preventDefault();
                 asyncStore($(this), $(this).attr('data-type_transport'));
+            })
+
+            $("#btn-filter").click(function(e){
+                e.preventDefault();
+
+                let search = $.trim($("#searchInput").val());
+                
+
+                let params = new URLSearchParams();
+
+                if (search) params.set("search", search);
+                
+
+                const queryString = params.toString();
+                const fullUrl = window.location.pathname + '?' + queryString;
+
+                // Reload với query string
+                window.history.pushState({}, '', fullUrl);
+                // mai xử lý search ajax
+                elements.table_manage.DataTable().clear().destroy();
+                renderTable(queryString)
+            });
+
+            $("#clear-filter").click(function(e){
+                const baseUrl = window.location.origin + window.location.pathname;
+                window.history.pushState({}, "", baseUrl);
+                window.location.href = baseUrl;
             })
         });
 

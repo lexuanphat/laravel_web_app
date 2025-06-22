@@ -14,7 +14,16 @@ class CategoryController extends Controller
     }
 
     public function getData(Request $request) {
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
         $model = Category::with('user:id,full_name')->withCount('products')->orderBy('id', 'desc');
+
+        if(isset($parsed['search'])) {
+            $model->where("name", "LIKE" , "%".trim($parsed['search'])."%");
+        }
+
         $datatables = DataTables::eloquent($model)
         ->order(function($query){
             if(request()->has('order')) {
