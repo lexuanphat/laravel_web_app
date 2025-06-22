@@ -83,6 +83,28 @@ $("input[name='options']").on('change', async function () {
                                 </label>
                             </div>
                         `;
+                    } else if (key === "VTP") {
+                        let data_fee_vtp = [...item?.get_fee];
+                        
+                        image = "/assets/images/transport/Viettel_Post_logo.svg";
+
+                        data_fee_vtp.map(fee_vtp => {
+                            html += `
+                            <div class="form-check mb-2 item d-flex align-items-center gap-2">
+                                <input type="radio" id="${fee_vtp['service_id']}" name="hang_van_chuyen" value="${fee_vtp['service_id']}" class="form-check-input">
+                                <label class="form-check-label" for="${fee_vtp['service_id']}">
+                                    <img height="35px" src="${image}" alt="image" class="">
+                                    <span><b>Viettel Post</b></span>
+                                    <div class="leadtime">
+                                        Thời gian giao dự kiến: <b>${fee_vtp['delivery_time']}</b>
+                                    </div>
+                                    <div class="fee">
+                                        Loại dịch vụ: <b>${fee_vtp['service_name']}</b> - Cước phí: <b>${(fee_vtp['service_cost'].toLocaleString('vi'))}</b>
+                                    </div>
+                                </label>
+                            </div>
+                            `;
+                        });
                     }
                     
                 })

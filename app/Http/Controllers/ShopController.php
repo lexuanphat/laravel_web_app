@@ -77,6 +77,8 @@ class ShopController extends Controller
         $data_tokens = DB::table("tokens")->get()->keyBy('is_transport')->toArray();
         // $stores_database = DB::table("stores")->get()->keyBy('transport_id');
         $user_id = auth()->user()->id;
+        $type_transport = $request->type_transport;
+
         if(isset($data_tokens[$request->type_transport])) {
             $data_tokens = $data_tokens[$request->type_transport];
             if($request->type_transport === 'GHN') {
@@ -245,6 +247,73 @@ class ShopController extends Controller
 
                     return $this->successResponse([], "Cập nhật thành công {$store_created} cửa hàng GHTK");
                 }
+            } else if($type_transport == 'VTP') {
+                $stores = $this->_apiGetAddressVTP("{$data_tokens->api}/v2/user/listInventory", $data_tokens->_token);
+
+                if(count($stores) > 0) {
+                    
+                    $store_created = 0;
+                    foreach($stores as $store) {
+                        $find_store = DB::table("stores")
+                        ->where("name", $store['name'])
+                        ->where("contact_phone", $store['phone'])
+                        ->first();
+
+                        if($find_store) {
+                            $find_store_detail = DB::table("store_details")
+                            ->where("store_id", $find_store->id)->where("is_transport", "VTP")->first();
+                            
+                            if($find_store_detail) {
+                                DB::table("store_details")
+                                    ->where("store_id", $find_store->id)
+                                    ->where("is_transport", "VTP")
+                                    ->update([
+                                        'address' =>  $store['address'],
+                                        'response_transport' => json_encode($store),
+                                    ]);
+                            } else {
+                                DB::table("store_details")->insert([
+                                    'store_id'           => $find_store->id,
+                                    'address'            => $store['address'],
+                                    'transport_id'       => $store['groupaddressId'],
+                                    'response_transport' => json_encode($store),
+                                    'is_transport'       => 'VTP',
+                                ]);
+                            }
+
+                            DB::table("stores")
+                            ->where("id", $find_store->id)->update(
+                                [
+                                    'name' => $store['name'],
+                                    'contact_phone' => $store['phone'],
+                                    'user_id' => $user_id,
+                                    'created_at' => date("Y-m-d H:i:s"),
+                                    'updated_at' => date("Y-m-d H:i:s"),
+                                ]
+                            );
+                        } else {
+                            $id = DB::table("stores")->insertGetId([
+                                'name' => $store['name'],
+                                'contact_phone' => $store['phone'],
+                                'user_id' => $user_id,
+                                'created_at' => date("Y-m-d H:i:s"),
+                                'updated_at' => null,
+                            ]);
+
+                            DB::table("store_details")->insert([
+                                'store_id' => $id,
+                                'address' =>  $store['address'],
+                                'transport_id' => $store['groupaddressId'],
+                                'response_transport' => json_encode($store),
+                                'is_transport' => 'VTP',
+                            ]);
+                        }
+
+                        $store_created++;
+                    }
+                    
+                    return $this->successResponse([], "Cập nhật thành công {$store_created} cửa hàng Viettel Post");
+                }
             }
         }
     }
@@ -378,6 +447,27 @@ class ShopController extends Controller
             }
         }else {
             $validator->errors()->add('address', 'Không thể kết nối tới GHN API');
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+    }
+
+    private function _apiGetAddressVTP($api, $token) {
+        $validator = Validator::make([], []);
+
+        $response = Http::withHeaders([
+            'token' => $token,
+        ])->get($api);
+
+        if($response->successful()) { 
+            $data = $response->json();
+            if (isset($data['status']) && $data['status'] == 200) {
+                return $data['data'];
+            } else {
+                $validator->errors()->add('address', 'Viettel Post API trả về lỗi: ' . ($data['message'] ?? 'Không rõ lỗi'));
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+        }else {
+            $validator->errors()->add('address', 'Không thể kết nối tới Viettel Post API');
             throw new \Illuminate\Validation\ValidationException($validator);
         }
     }

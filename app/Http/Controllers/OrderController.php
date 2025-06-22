@@ -908,10 +908,52 @@ class OrderController extends Controller
                 $data_response['GHTK'] = [
                     'get_fee' => $get_fee,
                 ];
+            } 
+
+            if($store->is_transport === "VTP") {
+
+                $res_fee_vtp = $this->apiGetFeeViettelPost($request);
+
+                $data_response['VTP'] = [
+                    'get_fee' => $res_fee_vtp,
+                ];
             }
         }
 
         return $this->successResponse($data_response, 'Lấy dữ liệu thành công');
+    }
+
+
+    public function apiGetFeeViettelPost(Request $request) {
+        if(!$request->data) {
+            return $this->errorResponse('Không có dữ liệu đặt hàng');
+        }
+        if(!$request->store_id) {
+            return $this->errorResponse('Chưa chọn cửa hàng');
+        }
+        if(!$request->customer_id) {
+            return $this->errorResponse('Chưa chọn khách hàng');
+        }
+
+        $store = DB::SELECT("SELECT * FROM store_details WHERE store_id = {$request->store_id} AND is_transport = 'VTP' LIMIT 1");
+        $store = $store[0];
+
+        $data_post = [
+            "SENDER_ADDRESS"   => $store->address,
+            "RECEIVER_ADDRESS" => $request->address,
+            "PRODUCT_TYPE"     => "HH",
+            "PRODUCT_WEIGHT"   => $request->weight ?? 0,
+            "PRODUCT_PRICE"    => 0,
+            "MONEY_COLLECTION" => "0",
+            "PRODUCT_LENGTH"   => isset($request->length) && !empty($request->length) ?  (int) $request->length : 0,
+            "PRODUCT_WIDTH"    => isset($request->width) && !empty($request->width) ?  (int) $request->width : 0,
+            "PRODUCT_HEIGHT"   => isset($request->height) && !empty($request->height) ?  (int) $request->height : 0,
+            "TYPE"             => 1
+        ];
+
+        $fee_vtp = $this->_getFeeVTP($data_post);
+
+        return $fee_vtp;
     }
 
     private function _getLeadtime($from_district_id, $from_ward_code, $to_district_id, $to_ward_code, $service_id, $shop_id){
@@ -1071,5 +1113,46 @@ class OrderController extends Controller
         }
 
         return false;
+    }
+
+    private function _getFeeVNPost($data, $shop_id) {
+        
+    }
+
+    private function _getFeeVTP($data) {
+        $data_token = DB::table("tokens")->where("is_transport", "VTP")->first();
+        $response = Http::withHeaders([
+            'token' => $data_token->_token,
+        ])->post("{$data_token->api}/v2/order/getPriceAllNlp", $data);
+
+        if(!$response->successful()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([$response->json()['code_message_value']]);
+        }
+
+        $data = $response->json();
+
+        if($response->status() != 200){
+            throw \Illuminate\Validation\ValidationException::withMessages(["Có lỗi vui lòng kiểm tra lại"]);
+        }
+        $result = $data['RESULT'];
+
+        $fee_vtp = array_map(function ($item) {
+            $info_time          = explode(' ',$item['THOI_GIAN']);
+            $hour               = $info_time[0];
+            $text_hour          = $info_time[1];
+            $day                = floor($hour / 24);
+            $hour               = $hour % 24;
+            $text_delivery_time = $day > 0 ? "$day ngày $hour $text_hour" : $item['THOI_GIAN'];
+
+            return [
+                'service_id'    => $item['MA_DV_CHINH'],     // "MA_DV_CHINH"    
+                'service_name'  => $item['TEN_DICHVU'],      // "TEN_DICHVU"     
+                'service_cost'  => $item['GIA_CUOC'],        // "GIA_CUOC"       
+                'delivery_time' => $text_delivery_time,       // "THOI_GIAN"      
+                'weight'        => $item['EXCHANGE_WEIGHT']  // "EXCHANGE_WEIGHT"
+            ];
+        }, $result);
+
+        return $fee_vtp;
     }
 }

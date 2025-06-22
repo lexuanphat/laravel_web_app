@@ -29,6 +29,7 @@
                 <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#modal_create"><i class="mdi mdi-plus-circle"></i> Thêm mới cửa hàng</button>
                 <button type="button" class="btn text-white mb-2 sync_store_transport" style="background-color: #f26522" data-type_transport="GHN"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHN</button>
                 <button type="button" class="btn text-white mb-2 sync_store_transport" style="background-color: #069255" data-type_transport="GHTK"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với GHTK</button>
+                <button type="button" class="btn text-white mb-2 sync_store_transport" style="background-color: red" data-type_transport="VTP"><i class="ri-shape-line"></i> Đồng bộ cửa hàng với Viettel Post</button>
             @endif
         </div>
         <table id="table_manage" data-action="{{route('admin.shop.get_data')}}" class="table dt-responsive w-100">

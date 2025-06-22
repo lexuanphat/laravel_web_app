@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class TokenTransportController extends Controller
 {
     public function index(Request $request){
-        $data = DB::table("tokens")->whereIn("is_transport", ["GHN", "GHTK"])->get()->keyBy('is_transport');
+        $data = DB::table("tokens")->whereIn("is_transport", ["GHN", "GHTK", "VTP"])->get()->keyBy('is_transport');
         return view('admin.token_transport.index', [
             'data' => $data
         ]);
