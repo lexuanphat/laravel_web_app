@@ -157,7 +157,7 @@
                         createToast('success', res.message);
                         elements.table_manage.DataTable().destroy();
                         elements.table_manage.find('tbody').empty();
-                        renderTableStore();
+                        renderTableStore(window.location.search);
                     }
                 },
                 error: function(err){
