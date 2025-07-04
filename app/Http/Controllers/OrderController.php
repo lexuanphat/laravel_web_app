@@ -122,7 +122,7 @@ class OrderController extends Controller
 
         $list_ids_valid = [];
         foreach($ids as $id) {
-            $is_valid = DB::table("order_shipments")->where("order_id", $id)->whereNull("shipping_partner_id")->exists();
+            $is_valid = DB::table("order_shipments")->where("order_id", $id)->whereNotIn("shipping_partner_id", array_keys(self::GUESS_TRANSPORT))->exists();
             if(!$is_valid) {
                 $validator->errors()->add('status_code', 'Có đơn hàng không hợp lệ, vui lòng kiểm tra lại');
                 throw new \Illuminate\Validation\ValidationException($validator);
