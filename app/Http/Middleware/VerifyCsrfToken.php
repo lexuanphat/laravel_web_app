@@ -13,5 +13,6 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         '/admin/callback/v1/ghn',
+        '/admin/callback/v1/ghtk',
     ];
 }

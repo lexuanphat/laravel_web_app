@@ -33,9 +33,9 @@ class Customer extends Model
         'created_at',
         'updated_at',
         'address',
-        'ward_text',
-        'district_text',
-        'province_text',
+        'ward_code',
+        'district_code',
+        'province_code',
     ];
 
     protected $casts = [

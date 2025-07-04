@@ -34,7 +34,8 @@ Route::group([
 
     Auth::routes();
 
-    $route->post('/callback/v1/ghn', [CallBackController::class, 'callback'])->withoutMiddleware('check_transport_init')->name('callback.ghn');
+    $route->post('/callback/v1/ghn', [CallBackController::class, 'callbackGhn'])->withoutMiddleware('check_transport_init')->name('callback.ghn');
+    $route->post('/callback/v1/ghtk', [CallBackController::class, 'callbackGhtk'])->withoutMiddleware('check_transport_init')->name('callback.ghtk');
 
     $route->post('login', [LoginController::class, 'login'])->name('login.post');
 
@@ -45,12 +46,14 @@ Route::group([
         // Quản lý đơn hàng
         $route->get('/order', [OrderController::class, 'index'])->name('order');
         $route->get('/order/getData', [OrderController::class, 'getData'])->name('order.get_data');
+        $route->post('/order/changeStatus', [OrderController::class, 'changeStatus'])->name('order.change_status');
         $route->get('/order/detail/{id}', [OrderController::class, 'detail'])->name('order.detail');
         $route->get('/order/create', [OrderController::class, 'create'])->name('order.create');
         $route->get('/order/getDataCustomer', [OrderController::class, 'getDataCustomer'])->name('order.get_data_customer');
         $route->get('/order/getDataProduct', [OrderController::class, 'getDataProduct'])->name('order.get_data_product');
         $route->post('/order/apiGetFee', [OrderController::class, 'apiGetFee'])->name('order.api_get_fee');
         $route->post('/order/createOrder', [OrderController::class, 'createOrder'])->name('order.create_order');
+        $route->post('/order/cancelOrderPartner', [OrderController::class, 'cancelOrderPartner'])->name('order.cancel_order_partner');
 
         // Quản lý danh mục sản phẩm
         $route->get('/category', [CategoryController::class, 'index'])->name('category');

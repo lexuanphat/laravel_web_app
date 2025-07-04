@@ -1,57 +1,82 @@
 @extends('_blank')
+@push('style')
+<style>
+    .table .table-user img{
+        height: 45px !important;
+        width: auto !important;
+    }
+
+    #table_manage tr.cancle {
+        background: #ff898a;
+    }
+</style>
+@endpush
 @section('content')
+@include('admin.order.modal-status')
 <div class="row mt-2">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <div class="row g-2 align-items-center">
             
-                <!-- Thanh tìm kiếm chính -->
-                <div class="col-md-3">
-                    <div class="input-group">
-                    <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo mã đơn hàng, Tên khách hàng, Tên sản phẩm">
+               <div class="col-md-10 row row-gap-2">
+                    <!-- Thanh tìm kiếm chính -->
+                    <div class='col-md-4'>
+                        <div class="input-group">
+                        <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo mã đơn hàng, Tên khách hàng, Tên sản phẩm">
+                        </div>
                     </div>
-                </div>
-            
-                <!-- Dropdown Ngày tạo -->
-                <div class="col">
-                    <select id="dateSelect" class="form-control select2" data-toggle="select2">
-                    <option value="">Ngày tạo</option>
-                    <option value="today">Hôm nay</option>
-                    <option value="7days">7 ngày qua</option>
-                    <option value="30days">30 ngày qua</option>
-                    </select>
-                </div>
-            
-                <!-- Dropdown Trạng thái -->
-                <div class="col">
-                    <select id="statusSelect" class="form-control select2" data-toggle="select2">
-                        <option value="">Trạng thái</option>
-                        <option value="pending">Chờ xử lý</option>
-                        <option value="confirmed">Đã xác nhận</option>
-                        <option value="completed">Hoàn tất</option>
-                    </select>
-                </div>
-            
-                <!-- Dropdown Nhân viên -->
-                <div class="col-md-2">
-                    <select id="staffSelect" class="form-control select2" data-toggle="select2">
-                        <option value="">Nhân viên phụ trách</option>
-                        @foreach($staffs as $staff)
-                        <option value="{{$staff->id}}">{{$staff->full_name}}</option>
-                        @endforeach
-                    </select>
-                </div>
-            
-                <!-- Dropdown Tình trạng công nợ -->
-                <div class="col-md-2">
-                    <select id="status_return" class="select2 form-control select2-multiple"  multiple="multiple" data-toggle="select2" data-placeholder="Tình trạng công nợ">
-                    <option value="return_full">Trả hết</option>
-                    <option value="return_one_part">Trả 1 phần</option>
-                    <option value="no_return">Chưa trả</option>
-                    </select>
-                </div>
+                
+                    <!-- Dropdown Ngày tạo -->
+                    <div class='col-md-4'>
+                        <select id="dateSelect" class="form-control select2" data-toggle="select2">
+                        <option value="">Ngày tạo</option>
+                        <option value="today">Hôm nay</option>
+                        <option value="7days">7 ngày qua</option>
+                        <option value="30days">30 ngày qua</option>
+                        </select>
+                    </div>
+                
+                    <!-- Dropdown Trạng thái -->
+                    <div class='col-md-4'>
+                        <select id="statusSelect" class="form-control select2" data-toggle="select2">
+                            <option value="">Trạng thái</option>
+                            <option value="pending">Chờ xử lý</option>
+                            <option value="confirmed">Đã xác nhận</option>
+                            <option value="completed">Hoàn tất</option>
+                        </select>
+                    </div>
+                
+                    <!-- Dropdown Nhân viên -->
+                    <div class='col-md-4'>
+                        <select id="staffSelect" class="form-control select2" data-toggle="select2">
+                            <option value="">Nhân viên phụ trách</option>
+                            @foreach($staffs as $staff)
+                            <option value="{{$staff->id}}">{{$staff->full_name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                
+                    <!-- Dropdown Tình trạng công nợ -->
+                    <div class='col-md-4'>
+                        <select id="status_return" class="select2 form-control select2-multiple"  multiple="multiple" data-toggle="select2" data-placeholder="Tình trạng công nợ">
+                        <option value="return_full">Trả hết</option>
+                        <option value="return_one_part">Trả 1 phần</option>
+                        <option value="no_return">Chưa trả</option>
+                        </select>
+                    </div>
+
+                    {{-- Trạng thái đơn hàng --}}
+                    <div class='col-md-4'>
+                        <select id="status_order" class="form-control select2" data-toggle="select2">
+                            <option value="">Trạng thái đơn hàng</option>
+                            <option value="completed">Hoàn tất đơn</option>
+                            <option value="returned">Bị trả hàng</option>
+                            <option value="-1">Tất cả</option>
+                        </select>
+                    </div>
+               </div>
             
                 <!-- Nút lưu -->
                 <div class="col-md-2">
@@ -61,6 +86,11 @@
             
                 </div>
             </div>
+        </div>
+        <div class="text-end mb-3">
+            <button type="button" class="btn btn-primary" id="btn_show_modal_change_status_order">
+                Chuyển trạng thái đơn
+            </button>
         </div>
         <div class="card">
             <div class="card-body">
@@ -98,6 +128,14 @@
                     <thead class="table-light">
                         <tr>
                             <th>
+                                <div class="align-middle text-center colorHeader">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="check-input-all">
+                                        <label class="form-check-label" for="check-input-all">&nbsp;</label>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
                                 <div class="align-middle text-center colorHeader">Mã đơn hàng</div>
                             </th>
                             <th>
@@ -110,12 +148,14 @@
                                 <div class="align-middle text-center colorHeader">Trạng thái đơn hàng</div>
                             </th>
                             <th>
-                                <div class="align-middle text-center colorHeader">Thanh toán</div>
+                                <div class="align-middle text-center colorHeader">Đối tượng vận chuyển</div>
                             </th>
                             <th>
                                 <div class="align-middle text-center colorHeader">Khách phải trả</div>
                             </th>
-                            
+                            <th>
+                                <div class="align-middle text-center colorHeader">Chức năng</div>
+                            </th>
                         </tr>
                     </thead>
         
@@ -128,6 +168,8 @@
 </div>
 @endsection
 @push('js')
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 <script>
     const elements = {
         table_manage: $("#table_manage")
@@ -150,13 +192,74 @@
             serverSide: true,
             ordering: false,
             columns: [
-                { data: 'code_order', class: 'align-middle'},
-                { data: 'create_date', class: 'align-middle'},
-                { data: 'full_name', class: 'align-middle'},
-                { data: 'status_transport', class: 'align-middle'},
-                { data: 'status_payment', class: 'align-middle'},
-                { data: 'customer_paid_total', class: 'align-middle'},
+                { data: 'checkbox', class: 'align-middle'},
+                { data: 'code', class: 'align-middle'},
+                { data: 'created_at', class: 'align-middle'},
+                { data: 'main_customer_full_name', class: 'align-middle'},
+                { data: 'status', class: 'align-middle'},
+                { data: 'object_partner', class: 'align-middle'},
+                { data: 'total_amount', class: 'align-middle'},
+                { data: 'function', class: 'align-middle'},
             ],
+            createdRow: function (row, data, dataIndex){
+                if (data.status_raw == 4) {
+                    $(row).addClass('cancle');
+                }
+            }
+        });
+    }
+
+    function cancelOrderPartner(store_id, order_id, key_partner){
+        swal({
+            title: "Bạn có chắc huỷ đơn?",
+            text: "Ấn xác nhận để huy đơn hàng này",
+            icon: "warning",
+            buttons: ['Đóng', 'Xác nhận'],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+        if (willDelete) {
+            $.ajax({
+                url: @json(route('admin.order.cancel_order_partner')),
+                type: "POST",
+                data: {
+                    _token: $("[name='_token']").val(),
+                    store_id: store_id,
+                    order_id: order_id,
+                    key_partner: key_partner,
+                },
+                beforeSend: function(){},
+                success: function(response){
+                    if (response.success) {
+                        createToast('success', response.message);
+                        elements.table_manage.DataTable().destroy();
+                        renderTable(window.location.search);
+                    }
+                    
+                },
+                error: function(errors){
+                    console.log(errors);
+                    
+                    let err = errors.responseJSON.message;
+                    if(err) {
+                        swal({
+                            icon: "warning",
+                            title: "Thông báo",
+                            button: "Đóng",
+                            text: err,
+                        })
+                    } else {
+                        swal({
+                            icon: "error",
+                            title: "Có lỗi",
+                            text: "Liên hệ kỹ thuật",
+                            button: "Đóng",
+                        })
+                    }
+                },
+                
+            });
+        } 
         });
     }
 
@@ -166,6 +269,7 @@
         if (params.get("date")) $("#dateSelect").val(params.get("date")).trigger("change");
         if (params.get("status")) $("#statusSelect").val(params.get("status")).trigger("change");
         if (params.get("staff")) $("#staffSelect").val(params.get("staff")).trigger("change");
+        if (params.get("status_order")) $("#status_order").val(params.get("status_order")).trigger("change");
         if (params.get("status_return")) {
             $("#status_return").val(params.get("status_return").split(",")).trigger('change');
         }
@@ -180,6 +284,7 @@
             let status = $("#statusSelect").val();
             let staff = $("#staffSelect").val();
             let status_return = $("#status_return").val();
+            let status_order = $("#status_order").val();
 
             let params = new URLSearchParams();
 
@@ -187,6 +292,7 @@
             if (date) params.set("date", date);
             if (status) params.set("status", status);
             if (staff) params.set("staff", staff);
+            if (status_order) params.set("status_order", status_order);
             if (status_return && status_return.length > 0) params.set("status_return", status_return.join(","));
 
             const queryString = params.toString();
@@ -204,6 +310,97 @@
             window.history.pushState({}, "", baseUrl);
             window.location.href = baseUrl;
         })
+
+        $("#btn_show_modal_change_status_order").click(function(e){
+            e.preventDefault();
+            let input_checked = $(".check-input-item:not(:disabled):checked")
+            if(input_checked.length === 0) {
+                alert("Vui lòng chọn đơn hàng cần chuyển");
+                return;
+            }
+
+            $("#modal_change_status_order").modal('show');
+        });
+
+        $("#btn_change_status_order").click(function(e){
+            e.preventDefault();
+            let $this = $(this);
+            let input_checked = $(".check-input-item:not(:disabled):checked")
+            if(input_checked.length === 0) {
+                alert("Vui lòng chọn đơn hàng cần chuyển");
+                return;
+            }
+
+            let ids = [];
+
+            $(".check-input-item:not(:disabled):checked").each(function(index, item){
+                ids.push(item.value);
+            });
+
+            $.ajax({
+                url: @json(route("admin.order.change_status")),
+                type: "POST",
+                data: {
+                    _token: $("[name='_token']").val(),
+                    ids: ids,
+                    status_code: $("#status_code").val(),
+                    note_logs: $("#note_logs").val(),
+                },
+                beforeSend: function(){
+                    $('#form_action').find('.form-control').removeClass('is-invalid');
+                    $('#form_action').find('.invalid-feedback').empty();
+
+                    $this.prop("disabled", true);
+                    $this.find('#loading').show();
+                    $this.find('.add-new').hide();
+                },
+                success: function(response){
+                    if(response.success) {
+                        $("#modal_change_status_order").modal('hide')
+                        createToast('success', response.message);
+                        elements.table_manage.DataTable().clear().destroy();
+                        renderTable(window.location.search);
+                    }
+                },
+                error: function(errors){
+                    let response_err = errors.responseJSON;
+                    if(response_err) {
+                        $.each(response_err.errors, function(key, item){
+                             if(key === 'status_code'){
+                                $('#form_action').find("#"+key).addClass('is-invalid');
+                                $('#form_action').find("#"+key).next().next().text(item[0]);
+                            } else {
+                                $('#form_action').find("#"+key).addClass('is-invalid');
+                                $('#form_action').find("#"+key).next().text(item[0]);
+                            }
+                        })
+                    }
+                },
+                complete: function(){
+                    $this.prop("disabled", false);
+                    $this.find('#loading').hide();
+                    $this.find('.add-new').show();
+                }
+            });
+        })
+    })
+
+    $("#modal_change_status_order").on('hidden.bs.modal', function (e) {
+       $("#modal_change_status_order").find('.form-control').removeClass('is-invalid')
+       $("#modal_change_status_order").find('.invalid-feedback').empty();
+       $("#modal_change_status_order").find('#form_action')[0].reset();
+
+       $("#modal_change_status_order").find('#status_code').val('').trigger('change');
+    });
+
+    $(document).on('click', '#check-input-all', function(e){
+        let $this = $(this);
+        let checked = $this.prop('checked');
+        if(checked) {
+            $(".check-input-item:not(:disabled):not(:checked)").prop('checked', true);
+        } else {
+            $(".check-input-item:not(:disabled)").prop('checked', false);
+        }
     })
 </script>
 @endpush

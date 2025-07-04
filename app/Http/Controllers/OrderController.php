@@ -2,19 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\OrderStatusValidateRequest;
+use App\Http\Requests\OrderValidateRequest;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\Transport;
+use App\Services\Shipping\Ghn;
+use App\Services\Shipping\Ghtk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
+
 use DataTables;
 class OrderController extends Controller
 {
+    private const PARTNER = [
+        'GHN' => 'GHN',
+        'GHTK' => 'GHTK',
+    ];
     private const PREFIX_KEY_CODE = "DH-";
     private const STATUS_GHN = [
         'ready_to_pick'             => 'Mới tạo đơn hàng',
@@ -54,21 +64,370 @@ class OrderController extends Controller
         '-1' => "Giao hàng nhanh",
         '-2' => "Giao hàng tiết kiệm",
     ];
+    private const IMAGE_TRANSPORT = [
+        '-1' => '/assets/images/transport/logo-ghn-new-vip.png',
+        '-2' => '/assets/images/transport/logo-ghtk.png',
+    ];
     private const TRANSPORT_TYPE = [
         ...Transport::ROLE_RENDER_BLADE,
         'DVVC' => 'Hãng vận chuyển',
     ];
+
+    const ORDER_STATUS = [
+        'processing' => 1,
+        'delivering' => 2,
+        'delivered' => 3,
+        'cancelled' => 4,
+        'failed' => 5,
+        'returned' => 6,
+        'refunded' => 7,
+        'completed' => 8,
+        'requested_cancel' => 9,
+    ];
+
+    const ORDER_STATUS_MESSAGE = [
+        1 => 'Đang chuẩn bị hàng / đóng gói',
+        2 => 'Đang giao',
+        3 => 'Giao thành công',
+        4 => 'Đã hủy đơn',
+        5 => 'Giao thất bại',
+        6 => 'Bị trả hàng',
+        7 => 'Đã hoàn tiền',
+        8 => 'Hoàn tất đơn',
+        9 => 'Đã gửi yêu cầu huỷ đơn',
+    ];
+
     public function index(){
         $staffs = DB::table("users")
         ->selectRaw("id, full_name")
         ->get();
 
+        $status_order = self::ORDER_STATUS_MESSAGE;
+
         return view("admin.order.index", [
             'staffs' => $staffs,
+            'status_order' => $status_order,
         ]);
     }
 
-    public function getData(Request $request){
+    public function changeStatus(OrderStatusValidateRequest $request) {
+        $validated = $request->validated();
+
+        $validator = Validator::make( [], []);
+        $ids = isset($request->ids) && !empty($request->ids) ? $request->ids : [];
+        if(empty($ids)) {
+            $validator->errors()->add('status_code', 'Vui lòng chọn đơn hàng');
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+
+        $list_ids_valid = [];
+        foreach($ids as $id) {
+            $is_valid = DB::table("order_shipments")->where("order_id", $id)->whereNull("shipping_partner_id")->exists();
+            if(!$is_valid) {
+                $validator->errors()->add('status_code', 'Có đơn hàng không hợp lệ, vui lòng kiểm tra lại');
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+            $list_ids_valid[] = $id;
+        }
+
+        DB::beginTransaction();
+
+        try{
+            foreach($list_ids_valid as $id_valid) {
+                $query_order_shipment = DB::table("order_shipments")->where("order_id", $id_valid);
+
+                DB::table("orders")->where("id", $id_valid)->update([
+                    'status' => $validated['status_code'],
+                    'user_id' => auth()->user()->id,
+                    'updated_at' => date("Y-m-d H:i:s"),
+                ]);
+
+                $query_order_shipment->update([
+                    'current_status' => $validated['status_code'],
+                    'updated_at' => date("Y-m-d H:i:s"),
+                ]);
+
+                DB::table("order_shipment_status_logs")->insert([
+                    'order_shipment_id' => $query_order_shipment->first()->id,
+                    'status_code' => $validated['status_code'],
+                    'status_text' => self::ORDER_STATUS_MESSAGE[$validated['status_code']],
+                    'status_time' => date("Y-m-d H:i:s"),
+                    'note' => $validated['note_logs'],
+                    'raw_payload' => null,
+                    'updated_at' => date("Y-m-d H:i:s"),
+                ]);
+            }
+
+            DB::commit();
+            return $this->successResponse([], 'Cập nhật thành công');
+        }catch (\Throwable $th) {
+            dd($th);
+            DB::rollBack();
+            return $this->errorResponse('Có lỗi vui lòng thử lại');
+        }
+
+    }
+
+    public function getData(Request $request) {
+        $search = isset($request->search) && !empty($request->search) ? $request->search : "";
+        $search = ltrim($search, '?');
+        parse_str($search, $parsed);
+
+        $query = DB::table("orders")
+        ->leftJoin("customers", "orders.customer_id", "=", "customers.id")
+        ->leftJoin("order_shipments", "orders.id", "=", "order_shipments.order_id")
+        ->leftJoin('transports', 'order_shipments.shipping_partner_id', '=', 'transports.id');
+
+        if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']) {
+            $query = $query->where("orders.store_id", auth()->user()->store_id);
+        }
+
+        if(isset($parsed['date']) && !empty($parsed['date'])) {
+            $current_date = date("Y-m-d");
+
+            switch ($parsed['date']) {
+                case '7days':
+                    $filter_date = date("Y-m-d", strtotime("-7 days"));
+                    break;
+                case '30days':
+                    $filter_date = date("Y-m-d", strtotime("-30 days"));
+                    break;
+                
+                default:
+                    $filter_date = date("Y-m-d");
+                    break;
+            }
+            $query->where("orders.created_at", ">=", "$filter_date 00:00:00")->where("orders.created_at", "<=", "$current_date 23:59:59");
+        }
+
+        if(isset($parsed['staff']) && !empty($parsed['staff'])) {
+            $query->where("user_id", $parsed['staff']);
+        }
+
+        if(isset($parsed['status_order']) && !empty($parsed['status_order']) && $parsed['status_order'] != -1) {
+            $query->where("status", self::ORDER_STATUS[$parsed['status_order']]);
+        }
+
+        if(isset($parsed['search'])) {
+            $query->where(function($q)use($parsed){
+                $q->whereExists(function($q)use($parsed){
+                    $q->select(DB::raw(1))
+                    ->from("order_items")
+                    ->whereColumn('orders.id', 'order_items.order_id')
+                    ->where("product_name", "like" , "%".trim($parsed['search'])."%");
+                })
+                ->orWhere("orders.customer_full_name", trim($parsed['search']))
+                ->orWhere("orders.code", trim($parsed['search']));
+            });
+        }
+
+        $query = $query->selectRaw("
+            orders.*, customers.full_name as main_customer_full_name, order_shipments.shipping_partner_id, transports.full_name as partner_name, orders.status as status_raw
+        ")
+        ->orderBy("created_at", "DESC");
+
+        $datatables = DataTables::query($query)
+        ->editColumn('created_at', function($item){
+            return "
+                <div class='text-center'>".date("d/m/Y H:i", strtotime($item->created_at))."</div>
+            ";
+        })
+        ->editColumn('total_amount', function($item){
+            return "
+                <div class='text-end'>".number_format($item->total_amount, 0, ",", ".")."</div>
+            ";
+        })
+        ->editColumn('status', function($item){
+            $content = "";
+            if(is_null($item->shipping_partner_id) || !in_array($item->shipping_partner_id, array_keys(self::GUESS_TRANSPORT))) {
+                $content = "<div class='text-center'>".self::ORDER_STATUS_MESSAGE[$item->status]."</div>";
+            } else if($item->shipping_partner_id === -1) {
+                $content = "<div class='text-center'>".self::ORDER_STATUS_MESSAGE[$item->status]."</div>";
+            } else if($item->shipping_partner_id === -2){
+                $content = "<div class='text-center'>".Ghtk::STATUS_ORDER[$item->status]."</div>";
+            }
+
+            return $content;
+
+        })
+        ->addColumn('object_partner', function($item){
+
+            if(in_array($item->shipping_partner_id, array_keys(self::GUESS_TRANSPORT))) {
+                $image = '<img src="'.self::IMAGE_TRANSPORT[$item->shipping_partner_id].'" alt="table-user" class="me-2">';
+                $html = "<div class='table-user text-center'>".$image."</div>";
+            } else if(!is_null($item->shipping_partner_id) && $item->shipping_partner_id){
+                $html = "<div class='text-center'>{$item->partner_name}</div>";
+            } else {
+                $html = "<div class='text-center'>Nhận tại cửa hàng</div>";
+            }
+
+            return $html;
+        })
+        ->editColumn('code', function($item){
+            $link = route('admin.order.detail', ['id' => $item->id]);
+            return "
+                <div class='text-center'><a href='$link'>{$item->code}</a></div>
+            ";
+        })
+        ->addColumn('checkbox', function($item){
+            $is_disabled = '';
+            if(in_array($item->shipping_partner_id, array_keys(self::GUESS_TRANSPORT)) || is_null($item->shipping_partner_id) && $item->status === self::ORDER_STATUS['completed']
+            || is_null($item->shipping_partner_id) && $item->status === self::ORDER_STATUS['cancelled']
+            ) {
+                $is_disabled = 'disabled';
+            }
+
+            return '
+                <div class="form-check">
+                    <input type="checkbox" '.$is_disabled.' class="form-check-input check-input-item" id="check-input-'.$item->id.'" value='.$item->id.'>
+                    <label class="form-check-label" for="check-input-'.$item->id.'">&nbsp;</label>
+                </div>
+            ';
+        })
+        ->addColumn('function', function($item){
+            $link = route('admin.order.detail', ['id' => $item->id]);
+            $elements = "<div class='d-flex flex-wrap justify-content-center'>";
+            $elements .= "<a href='$link'><i class='ri-eye-fill fs-4'> </i></a>";
+            if(in_array($item->shipping_partner_id, array_keys(self::GUESS_TRANSPORT))) {
+                $is_disabled = "";
+                $text = "Huỷ đơn hàng";
+                $key_partner = self::PARTNER['GHN'];
+                if($item->shipping_partner_id == -2){
+                    $key_partner = self::PARTNER['GHTK'];
+                }
+                if($item->status === self::ORDER_STATUS['cancelled']) {
+                    $is_disabled = "disabled";
+                }
+                if($item->status === self::ORDER_STATUS['requested_cancel']) {
+                    $is_disabled = "disabled";
+                    $text = "Đã gửi yêu cầu";
+                }
+                $elements .= '<button class="btn btn-primary" '.$is_disabled.' onclick="cancelOrderPartner('.$item->store_id.', '.$item->id.', `'.$key_partner.'`)">'.$text.'</button>';
+            }
+            $elements .= "</div>";
+
+            return $elements;
+        })
+        ->rawColumns(['total_amount', 'created_at', 'status', 'code', 'function', 'checkbox', 'object_partner']);
+        return $datatables->toJson();
+    }
+
+    public function cancelOrderPartner(Request $request) {
+        $find_order = DB::table("orders")
+        ->join("store_details", "orders.store_id", "=", "store_details.store_id")
+        ->join("order_shipments", "orders.id", "=", "order_shipments.order_id")
+        ->join("tokens", "store_details.is_transport", "=", "tokens.is_transport")
+        ->where("orders.id", $request->order_id ?: 0)
+        ->where("store_details.is_transport", $request->key_partner ?: 0)
+        ->where("orders.store_id", $request->store_id ?: 0 )
+        ->where("orders.status", "!=", self::ORDER_STATUS['cancelled'])
+        ->selectRaw("
+            order_shipments.tracking_number, tokens.api, tokens._token, store_details.transport_id, order_shipments.id as order_shipment_id,
+            (
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'product_id', oi.product_id,
+                        'product_quantity', oi.product_quantity
+                    )
+                )
+                FROM order_items as oi
+                WHERE oi.order_id = orders.id AND oi.order_id = orders.id
+            ) as items
+        ")
+        ->first();
+
+        if(!$find_order) {
+            return $this->errorResponse('Không tìm thấy đơn hàng');
+        }
+
+        DB::beginTransaction();
+        try{
+            if($request->key_partner === self::PARTNER['GHN']) {
+                $ghn_service = new Ghn($find_order->_token, $find_order->transport_id, $find_order->api);
+                $response =  $ghn_service->cancelOrder($find_order->tracking_number);
+
+                if(isset($response[0]) && $response[0]['result']) {
+                    DB::table("orders")->where("id", $request->order_id)->update([
+                        'status' => self::ORDER_STATUS['cancelled'],
+                    ]);
+                    DB::table("order_shipments")
+                    ->where("order_id", $request->order_id)
+                    ->where("shipping_partner_id", "-1")
+                    ->update([
+                        'current_status' => self::ORDER_STATUS['cancelled'],
+                    ]);
+                    DB::table("order_shipment_status_logs")->insert([
+                        'order_shipment_id' => $find_order->order_shipment_id,
+                        'status_code' => self::ORDER_STATUS['cancelled'],
+                        'status_text' => self::ORDER_STATUS_MESSAGE[self::ORDER_STATUS['cancelled']],
+                        'status_time' => date("Y-m-d H:i:s"),
+                        'note' => isset($request->note) ? $request->note : null,
+                        'raw_payload' => json_encode($response),
+                        'created_at' => date("Y-m-d H:i:s"),
+                    ]);
+
+                    foreach(json_decode($find_order->items, true) as $prod_item) {
+                        DB::table("product_stocks")
+                        ->where("product_id", $prod_item['product_id'])
+                        ->where("store_id", $request->order_id)
+                        ->update([
+                            "quantity_sold" => DB::raw("quantity_sold + {$prod_item['product_quantity']}")
+                        ]);
+                    }
+                    
+                    DB::commit();
+
+                    return $this->successResponse([], 'Huỷ đơn thành công');
+                }
+    
+            } else if($request->key_partner === self::PARTNER['GHTK']){
+                $ghtk_service = new Ghtk($find_order->_token, $find_order->transport_id, $find_order->api);
+                $response =  $ghtk_service->cancelOrder($find_order->tracking_number);
+
+                if(isset($response['success']) && $response['success']) {
+                    $message = "";
+                    if(isset($response['log_id'])) {
+                        // Chưa biết GHTK bắn về cái gì nên chưa biết code chỗ này
+                    } else {
+                        DB::table("orders")->where("id", $request->order_id)->update([
+                            'status' => self::ORDER_STATUS['requested_cancel'],
+                        ]);
+                        DB::table("order_shipments")
+                        ->where("order_id", $request->order_id)
+                        ->where("shipping_partner_id", "-1")
+                        ->update([
+                            'current_status' => self::ORDER_STATUS['requested_cancel'],
+                        ]);
+
+                        DB::table("order_shipment_status_logs")->insert([
+                            'order_shipment_id' => $find_order->order_shipment_id,
+                            'status_code' => self::ORDER_STATUS['requested_cancel'],
+                            'status_text' => self::ORDER_STATUS_MESSAGE[self::ORDER_STATUS['requested_cancel']],
+                            'status_time' => date("Y-m-d H:i:s"),
+                            'note' => isset($request->note) ? $request->note : null,
+                            'raw_payload' => json_encode($response),
+                            'created_at' => date("Y-m-d H:i:s"),
+                        ]);
+
+                        $message = $response['message'];
+                    }
+
+                    DB::commit();
+
+                    return $this->successResponse([], $message);
+                }
+
+            } else {
+                return $this->errorResponse('Đơn hàng không hợp lệ');
+            }
+        }catch(\Throwable $th){
+            DB::rollback();
+            throw $th;
+            return $this->errorResponse('Có lỗi xảy ra, vui lòng kiểm tra lại');
+        }
+    }
+
+    public function getDataOld(Request $request){
         $search = isset($request->search) && !empty($request->search) ? $request->search : "";
         $search = ltrim($search, '?');
         parse_str($search, $parsed);
@@ -131,7 +490,7 @@ class OrderController extends Controller
                 <div class='text-center'>{$create_date}</div>
             ";
         })
-        ->editColumn('code_order', function($data){
+        ->editColumn('code', function($data){
             $link = route("admin.order.detail", ['id' => $data->id]);
             return "
                 <div class='colorHeader fw-bold'>
@@ -139,16 +498,16 @@ class OrderController extends Controller
                 </div>
             ";
         })
-        ->editColumn('full_name', function($data){
+        ->editColumn('customer_full_name', function($data){
             return "
-                <div class='text-center'>{$data->full_name}</div>
+                <div class='text-center'>{$data->customer_full_name}</div>
             ";
         })
-        ->editColumn('customer_paid_total', function($data){
-            $customer_paid_total = number_format($data->customer_paid_total, 0, ',', '.');
+        ->editColumn('paid_amount', function($data){
+            $paid_amount = number_format($data->paid_amount, 0, ',', '.');
     
             return "
-                <div class='text-end'>{$customer_paid_total}</div>
+                <div class='text-end'>{$paid_amount}</div>
             ";
         })
         ->addColumn('status_payment', function($data){
@@ -182,9 +541,53 @@ class OrderController extends Controller
         return $datatables->toJson();
     }
 
-    public function detail($id, Request $request){
+    public function detail($id, Request $request) {
+        $data = DB::table("orders")
+        ->leftJoin('order_shipments', 'orders.id', '=', 'order_shipments.order_id')
+        ->where("orders.id", $id);
 
-        $detailsSub = DB::table('order_details')
+        if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']){
+            $data = $data->where('orders.store_id', auth()->user()->store_id);
+        }
+
+        $data = $data->selectRaw("
+            orders.*, order_shipments.shipping_partner_id, order_shipments.shipping_fee, 
+            order_shipments.current_status, order_shipments.tracking_number, order_shipments.cod,
+            order_shipments.note as note_transport, order_shipments.id as order_shipment_id
+        ")
+        ->first();
+
+        if(!$data) {
+            return redirect()->back();
+        }
+
+        $data->items = DB::table("order_items")
+        ->where("order_id", $id)
+        ->get()->toArray();
+
+        $data->logs = DB::table("order_shipment_status_logs")
+        ->where("order_shipment_id", $data->order_shipment_id)
+        ->orderBy("status_time")
+        ->get()->toArray();
+
+        $data->transport_partner = 'Nhận tại cửa hàng';
+        if($data->shipping_partner_id === -1) {
+            $data->transport_partner = self::GUESS_TRANSPORT[-1];
+        } else if($data->shipping_partner_id === -2){
+            $data->transport_partner = self::GUESS_TRANSPORT[-2];
+        } else if(!is_null($data->shipping_partner_id)) {
+            $data->transport_partner = DB::table("transports")->where('id', $data->shipping_partner_id)->value('role');
+            $data->transport_partner = Transport::ROLE_RENDER_BLADE[$data->transport_partner];
+        }
+
+        return view("admin.order.detail", [
+            'data' => $data,
+        ]);
+    }
+
+    public function detailOld($id, Request $request){
+
+        $detailsSub = DB::table('order_items')
         ->join('orders', 'order_details.order_id', '=', 'orders.id');
 
         if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']){
@@ -284,13 +687,13 @@ class OrderController extends Controller
         
         $get_store = Store::get();
 
-        return view('admin.order.create', [
+        return view('admin.order.create-new', [
             'get_transport' => $get_transport,
             'get_store' => $get_store,
         ]);
     }
     public function getDataCustomer(Request $request){
-        $results = Customer::selectRaw("*, CONCAT(address, ', ', ward_text, ', ', district_text, ', ', province_text) as full_address")
+        $results = Customer::selectRaw("*")
         ->where(function ($q) use ($request) {
             $q->where("full_name", "like", "%{$request->search}%")
               ->orWhere("phone", "like", "%{$request->search}%")
@@ -300,14 +703,389 @@ class OrderController extends Controller
         return $this->successResponse($results, 'Lấy dữ liệu thành công');
     }
 
+    public function createOrder(OrderValidateRequest $request) {
+        $validator = Validator::make([], []);
 
-    public function createOrder(Request $request){
+        $validated = $request->validated();
+        
+        $data_insert_order = [
+            'code' => self::generateCode(),
+            'customer_id' => $validated['customer']['id'],
+            'customer_phone' => $validated['customer']['phone'],
+            'customer_full_name' => $validated['customer']['full_name'],
+            'customer_province' => $validated['customer']['province'],
+            'customer_district' => $validated['customer']['district'],
+            'customer_ward' => $validated['customer']['ward'],
+            'customer_address' => $validated['customer']['address'],
+            'store_id' => $validated['store_id'],
+            'total_discount' => $validated['discount_total'],
+            'paid_amount' => $validated['customer_has_paid_total'] * 1,
+            'shipping_fee_payer' => $validated['client_request_transport']['shipping_fee_payer'],
+            'source' => $validated['source'],
+            'status' => self::ORDER_STATUS['processing'],
+            'note' => $validated['note'],
+            'user_id' => auth()->user()->id,
+            'created_at' => date("Y-m-d H:i:s"),
+            'updated_at' => null,
+        ];
+
+        $get_products = $this->_getProducts();
+        $total_price = 0;
+        $data_insert_order_items = [];
+        $check_stocks = [];
+
+        # dành cho GHN
+        $calculate_weight = 0;
+        $items = [];
+        $items_ghtk = [];
+        foreach($validated['products'] as $prod) {
+            # dành cho GHN
+            $calculate_weight += $get_products[$prod['product_id']]->weight * (int) $prod['quantity'];
+            $items[] = [
+                'name' => $get_products[$prod['product_id']]->name,
+                'code' => $get_products[$prod['product_id']]->code,
+                'quantity' => (int) $prod['quantity'],
+                'price' => (int) $get_products[$prod['product_id']]->price,
+                'length' => (int)$get_products[$prod['product_id']]->length,
+                'width' => (int)$get_products[$prod['product_id']]->width,
+                'weight' => (int)$get_products[$prod['product_id']]->weight,
+                'height' => (int)$get_products[$prod['product_id']]->height,
+            ];
+            $items_ghtk[] = [
+                'name' => $get_products[$prod['product_id']]->name,
+                'price' => (int) $get_products[$prod['product_id']]->price,
+                'product_code' => $get_products[$prod['product_id']]->code,
+                'quantity' => (int) $prod['quantity'],
+                'weight' => (double) ($get_products[$prod['product_id']]->weight / 1000),
+            ];
+
+            $calculate_price_quantity = $get_products[$prod['product_id']]->price * $prod['quantity'];
+            $product_total_discount = 0;
+            if($prod['is_option'] === "1") { # giảm giá = GIÁ TRỊ
+                $product_total_discount = $calculate_price_quantity - $prod['discount'];
+            } else { # giảm giá = %
+                $discount = ($calculate_price_quantity * $prod['discount']) / 100;
+                $product_total_discount = $calculate_price_quantity - $discount;
+            }
+
+            $total_price += $product_total_discount;
+
+            $data_insert_order_items[] = [
+                'product_id' => $prod['product_id'],
+                'product_name' => $get_products[$prod['product_id']]->name,
+                'product_quantity' => $prod['quantity'],
+                'product_price' => $get_products[$prod['product_id']]->price,
+                'is_discount' => $prod['is_option'],
+                'product_discount' => $prod['discount'],
+                'product_total' => $get_products[$prod['product_id']]->price * $prod['quantity'],
+                'product_total_discount' => $product_total_discount,
+                'created_at' => date("Y-m-d H:i:s"),
+                'updated_at' => null,
+            ];
+            
+            if(isset($check_stocks[$prod['product_id']])) {
+                $check_stocks[$prod['product_id']] += $prod['quantity'];
+            } else {
+                $check_stocks[$prod['product_id']] = $prod['quantity'];
+            }
+        }
+
+        $data_insert_order['total_price'] =  $total_price;
+        $data_insert_order['total_amount'] =  $total_price - (($total_price * $data_insert_order['total_discount']) / 100);
+
+        DB::beginTransaction();
+
+        try {
+
+            /**
+             * Check số lượng tồn của sản phẩm
+             */
+            $get_stocks = DB::table("product_stocks")
+            ->where("store_id", $validated['store_id'])
+            ->whereIn('product_id', array_keys($check_stocks))
+            ->get();
+    
+            foreach($get_stocks as $item) {
+                if( ($item->quantity_sold + $check_stocks[$item->product_id]) > $item->available_quantity ) {
+                    DB::rollback();
+                    $validator->errors()->add('products', 'Có sản phẩm bán vượt quá số lượng cho phép bán, vui lòng kiểm tra lại');
+                    throw new \Illuminate\Validation\ValidationException($validator);
+                }
+    
+                $item->quantity_sold +=  $check_stocks[$item->product_id];
+            }
+
+            /**
+             * Cập nhật lại số lượng tồn
+             */
+            foreach($get_stocks as $item) {
+                DB::table("product_stocks")->where("store_id",  $validated['store_id'])->where("product_id", $item->product_id)->update([
+                    'quantity_sold' => $item->quantity_sold,
+                ]);
+            }
+
+            /**
+             * Trường hợp nhận tại cửa hàng
+             */
+            if((int)$validated['client_request_transport']['type'] === 3) {
+                $order_id = DB::table("orders")->insertGetId($data_insert_order);
+                foreach($data_insert_order_items as $key => $item) {
+                    $data_insert_order_items[$key]['order_id'] = $order_id;
+                }
+
+                DB::table("order_items")->insert($data_insert_order_items);
+
+                $order_shipment_id = DB::table("order_shipments")->insertGetId([
+                    'order_id' => $order_id,
+                    'shipping_partner_id' => null,
+                    'tracking_number' => null,
+                    'current_status' => $data_insert_order['status'],
+                    'shipping_fee' => 0,
+                    'height' => 0,
+                    'width' => 0,
+                    'length' => 0,
+                    'weight' => 0,
+                    'cod' => 0,
+                    'note' => null,
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'updated_at' => null,
+                ]);
+                DB::table("order_shipment_status_logs")->insert([
+                    'order_shipment_id' => $order_shipment_id,
+                    'status_code' =>  $data_insert_order['status'],
+                    'status_text' => self::ORDER_STATUS_MESSAGE[$data_insert_order['status']],
+                    'status_time' => date("Y-m-d H:i:s"),
+                    'raw_payload' => null,
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'updated_at' => null,
+                ]);
+
+                DB::commit();
+                return $this->successResponse(['link_redirect' => route('admin.order.detail', ['id' => $order_id])], 'Tạo đơn thành công');
+            }
+
+            /**
+             * TH Vận chuyển ngoài (Gọi riêng shipper để ship đồ)
+             */
+
+            if((int)$validated['client_request_transport']['type'] === 2) {
+                $order_id = DB::table("orders")->insertGetId($data_insert_order);
+                foreach($data_insert_order_items as $key => $item) {
+                    $data_insert_order_items[$key]['order_id'] = $order_id;
+                }
+
+                DB::table("order_items")->insert($data_insert_order_items);
+
+                $order_shipment_id = DB::table("order_shipments")->insertGetId([
+                    'order_id' => $order_id,
+                    'shipping_partner_id' => $validated['client_request_transport']['shipping_partner_id'],
+                    'tracking_number' => null,
+                    'current_status' => $data_insert_order['status'],
+                    'shipping_fee' => str_replace(".", "", $validated['client_request_transport']['shipping_fee']),
+                    'height' => str_replace(".", "", $validated['client_request_transport']['height']),
+                    'width' => str_replace(".", "", $validated['client_request_transport']['width']),
+                    'length' => str_replace(".", "", $validated['client_request_transport']['length']),
+                    'weight' => str_replace(".", "", $validated['client_request_transport']['gam']),
+                    'cod' => str_replace(".", "", $validated['client_request_transport']['cod']),
+                    'note' => $validated['client_request_transport']['require_transport_option'],
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'updated_at' => null,
+                ]);
+                DB::table("order_shipment_status_logs")->insert([
+                    'order_shipment_id' => $order_shipment_id,
+                    'status_code' =>  $data_insert_order['status'],
+                    'status_text' => self::ORDER_STATUS_MESSAGE[$data_insert_order['status']],
+                    'status_time' => date("Y-m-d H:i:s"),
+                    'raw_payload' => null,
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'updated_at' => null,
+                ]);
+
+                DB::commit();
+                return $this->successResponse(['link_redirect' => route('admin.order.detail', ['id' => $order_id])], 'Tạo đơn thành công');
+            }
+
+             /**
+             * TH Đẩy hãng vận chuyển
+            */
+            if((int)$validated['client_request_transport']['type'] === 1){
+                // đẩy đơn qua vận chuyển xong rồi lưu đơn hàng vào DB
+                if($validated['client_request_transport']['shipping_partner_id'] === self::PARTNER['GHN']) {
+                    $store = $this->_getStore($validated['store_id'], self::PARTNER['GHN']);
+
+                    $ghn_service = new Ghn($store->_token, $store->shop_id, $store->api);
+                    $ghn_service->setProvinceName($validated['customer']['province_text'])
+                    ->setDistrictName($validated['customer']['district_text'])
+                    ->setWardName($validated['customer']['ward_text'])
+                    ->setDetailName($validated['customer']['address']);
+
+                    $response = $ghn_service->createOrder([
+                        'payment_type_id' => $validated['client_request_transport']['shipping_fee_payer'] === 'shop' ? 1 : 2,
+                        'note' => $validated['client_request_transport']['note_transport'],
+                        'required_note' => $validated['client_request_transport']['require_transport_option'],
+                        'to_name' => $validated['customer']['full_name'],
+                        'to_phone' => $validated['customer']['phone'],
+                        'cod_amount' => (int)$validated['client_request_transport']['cod'],
+                        "weight" => (int)$validated['client_request_transport']['gam'],
+                        "length" => (int)$validated['client_request_transport']['length'],
+                        "width" => (int)$validated['client_request_transport']['width'],
+                        "height" => (int)$validated['client_request_transport']['height'],
+                        "service_type_id" => (int) ($validated['client_request_transport']['gam'] > 0 ? $validated['client_request_transport']['gam'] : $calculate_weight) >= 20000 ? 5 : 2,
+                        'items' => $items,
+                        'client_order_code' => $data_insert_order['code'],
+                    ]);
+
+                    if(isset($response['order_code'])) {
+                        $order_id = DB::table("orders")->insertGetId($data_insert_order);
+
+                        foreach($data_insert_order_items as $key => $item) {
+                            $data_insert_order_items[$key]['order_id'] = $order_id;
+                        }
+        
+                        DB::table("order_items")->insert($data_insert_order_items);
+
+                        $order_shipment_id = DB::table("order_shipments")->insertGetId([
+                            'order_id' => $order_id,
+                            'shipping_partner_id' => -1,
+                            'tracking_number' => $response['order_code'],
+                            'current_status' => $data_insert_order['status'],
+                            'shipping_fee' => $response['total_fee'],
+                            'height' => str_replace(".", "", $validated['client_request_transport']['height']),
+                            'width' => str_replace(".", "", $validated['client_request_transport']['width']),
+                            'length' => str_replace(".", "", $validated['client_request_transport']['length']),
+                            'weight' => str_replace(".", "", $validated['client_request_transport']['gam']),
+                            'cod' => str_replace(".", "", $validated['client_request_transport']['cod']),
+                            'note' => $validated['client_request_transport']['require_transport_option'],
+                            'created_at' => date("Y-m-d H:i:s"),
+                            'updated_at' => null,
+                        ]);
+
+                        DB::table("order_shipment_status_logs")->insert([
+                            'order_shipment_id' => $order_shipment_id,
+                            'status_code' =>  $data_insert_order['status'],
+                            'status_text' => self::ORDER_STATUS_MESSAGE[$data_insert_order['status']],
+                            'status_time' => date("Y-m-d H:i:s"),
+                            'raw_payload' => json_encode($response),
+                            'created_at' => date("Y-m-d H:i:s"),
+                            'updated_at' => null,
+                        ]);
+
+                        DB::commit();
+
+                        return $this->successResponse(['link_redirect' => route('admin.order.detail', ['id' => $order_id])], 'Tạo đơn thành công');
+                    }
+
+                    return $this->errorReponse('Có lỗi vui lòng kiểm tra lại');
+                } else if($validated['client_request_transport']['shipping_partner_id'] === self::PARTNER['GHTK']){
+                    $store = $this->_getStore($validated['store_id'], self::PARTNER['GHTK'], [
+                        'store_details.response_transport'
+                    ]);
+                    $ghtk_service = new Ghtk($store->_token, $store->shop_id, $store->api);
+                    $ghtk_service->setProvinceName($validated['customer']['province_text'])
+                    ->setDistrictName($validated['customer']['district_text'])
+                    ->setWardName($validated['customer']['ward_text'])
+                    ->setDetailName($validated['customer']['address']);
+
+                    $response_transport = json_decode($store->response_transport, true);
+                    $extract_address = $ghtk_service->extractAddressParts($response_transport['address']);
+
+                    $response = $ghtk_service->createOrder([
+                        "order" => [
+                            "id" => $data_insert_order['code'],
+                            "pick_name" => $response_transport['pick_name'],
+                            "pick_address" => $response_transport['address'],
+                            "pick_province" => $extract_address['province'],
+                            "pick_district" => $extract_address['district'],
+                            "pick_ward" => $extract_address['ward'],
+                            "pick_tel" => $response_transport['pick_tel'],
+                            "tel" => $validated['customer']['phone'],
+                            "name" => $validated['customer']['full_name'],
+                            "hamlet" => "Khác",
+                            "is_freeship" => "1",
+                            "pick_money" => (int)$validated['client_request_transport']['cod'],
+                            "note" => $validated['client_request_transport']['note_transport'],
+                            "value" => 10000,
+                            "transport" => "road",
+                        ],
+                        "products" => $items_ghtk,
+                    ]);
+
+                    if($response['success'] && isset($response['order'])) {
+                        $data_insert_order['status'] = $response['order']['status_id'];
+
+                        $order_id = DB::table("orders")->insertGetId($data_insert_order);
+
+                        foreach($data_insert_order_items as $key => $item) {
+                            $data_insert_order_items[$key]['order_id'] = $order_id;
+                        }
+        
+                        DB::table("order_items")->insert($data_insert_order_items);
+
+                        $order_shipment_id = DB::table("order_shipments")->insertGetId([
+                            'order_id' => $order_id,
+                            'shipping_partner_id' => -2,
+                            'tracking_number' => $response['order']['label'],
+                            'current_status' => $data_insert_order['status'],
+                            'shipping_fee' => $response['order']['fee'],
+                            'height' => str_replace(".", "", $validated['client_request_transport']['height']),
+                            'width' => str_replace(".", "", $validated['client_request_transport']['width']),
+                            'length' => str_replace(".", "", $validated['client_request_transport']['length']),
+                            'weight' => str_replace(".", "", $validated['client_request_transport']['gam']),
+                            'cod' => str_replace(".", "", $validated['client_request_transport']['cod']),
+                            'note' => $validated['client_request_transport']['require_transport_option'],
+                            'created_at' => date("Y-m-d H:i:s"),
+                            'updated_at' => null,
+                        ]);
+
+                        DB::table("order_shipment_status_logs")->insert([
+                            'order_shipment_id' => $order_shipment_id,
+                            'status_code' =>  $response['order']['status_id'],
+                            'status_text' => $ghtk_service::STATUS_ORDER[$response['order']['status_id']],
+                            'status_time' => date("Y-m-d H:i:s"),
+                            'raw_payload' => json_encode($response),
+                            'created_at' => date("Y-m-d H:i:s"),
+                            'updated_at' => null,
+                        ]);
+
+                        DB::commit();
+
+                        return $this->successResponse(['link_redirect' => route('admin.order.detail', ['id' => $order_id])], 'Tạo đơn thành công');
+                    }
+                }
+            }
+
+
+
+        } catch (\Throwable $th) {
+            DB::rollback();
+            throw $th;
+            return $this->errorResponse('Có lỗi xảy ra, vui lòng kiểm tra lại');
+        }
+
+
+    }
+
+    private function _getStore($store_id, $partner, $add_select = []){
+        $data = DB::table("store_details")
+                    ->join("tokens", "store_details.is_transport", "=", "tokens.is_transport")
+                    ->where("store_details.store_id", $store_id)
+                    ->where("store_details.is_transport",  $partner)
+                    ->selectRaw("store_details.transport_id as shop_id, tokens.api, tokens._token");
+
+        if(!empty($add_select) && is_array($add_select)) {
+            $data->addSelect(implode(",", $add_select));
+        }
+
+        return $data->first();
+    }
+
+    public function createOrderOld(Request $request){
         $data_request = json_decode($request->data);
 
         $request_custom = new Request(json_decode(json_encode($data_request), true));
         $package_and_delivery = $data_request->package_and_delivery;
         $rules = [
-            'store_id' => 'required|integer|exists:stores,id',
+            'store_id' => 'required|exists:stores,id',
             // CUSTOMER
             'customer.full_name' => 'required|string|max:255',
             'customer.phone' => 'required|string|max:15',
@@ -781,7 +1559,7 @@ class OrderController extends Controller
     public static function generateCode($length = 10) {
         do {
             $code = self::PREFIX_KEY_CODE . Str::upper(Str::random($length));
-        } while (DB::table('orders')->where('code_order', $code)->exists());
+        } while (DB::table('orders')->where('code', $code)->exists());
     
         return $code;
     }
@@ -799,7 +1577,88 @@ class OrderController extends Controller
         return $this->successResponse($results, 'Lấy dữ liệu thành công');
     }
 
+    private function _getProducts(){
+        return DB::table("products")->get()->keyBy('id')->toArray();
+    }
+
     public function apiGetFee(Request $request) {
+        if(!$request->data) {
+            return $this->errorResponse('Không có dữ liệu đặt hàng');
+        }
+        if(!$request->store_id) {
+            return $this->errorResponse('Chưa chọn cửa hàng');
+        }
+        if(!$request->customers) {
+            return $this->errorResponse('Chưa chọn khách hàng');
+        }
+
+        $request_data = json_decode($request->data);
+        $request_customers = json_decode($request->customers);
+
+        if(!$request_customers->id) {
+            return $this->errorResponse('Chưa chọn khách hàng');
+        }
+
+        if(empty($request_data)) {
+            return $this->errorResponse('Không có dữ liệu đặt hàng');
+        }
+
+        $transport_partner = DB::SELECT("
+            SELECT store_details.*, tokens._token, tokens.api FROM store_details
+            JOIN tokens ON store_details.is_transport = tokens.is_transport
+            WHERE store_details.store_id = ?
+        ", [$request->store_id]);
+
+        if(empty($transport_partner)) {
+            return $this->errorResponse('Cửa hàng này không có vận chuyển hợp lệ');
+        }
+
+        $products = $this->_getProducts();
+        $calculate_weight = 0;
+        foreach($request_data as $prod) {
+            $calculate_weight += $products[$prod->product_id]->weight * (int) $prod->quantity;
+        }
+
+        $client_reponse = [];
+
+        foreach($transport_partner as $partner) {
+            $response_transport = json_decode($partner->response_transport);
+
+            if($partner->is_transport === self::PARTNER['GHN']) {
+                $ghn_service = new Ghn($partner->_token, $response_transport->_id, $partner->api);
+                $ghn_service->setProvinceName($request_customers->province)
+                ->setDistrictName($request_customers->district)
+                ->setWardName($request_customers->ward)
+                ->setDetailName($request_customers->address);
+
+                $ghn_fee = $ghn_service->calculateFee([
+                    'weight' => (int) ($request->weight > 0 ? $request->weight : $calculate_weight),
+                    'service_type_id' => (int) ($request->weight > 0 ? $request->weight : $calculate_weight) >= 20000 ? 5 : 2,
+                ]);
+
+                $client_reponse[self::PARTNER['GHN']] = $ghn_fee;
+
+            } else if($partner->is_transport === self::PARTNER['GHTK']){
+                
+                $ghtk_service = new Ghtk($partner->_token, $response_transport->pick_address_id, $partner->api);
+                $ghtk_service->setPickAddress($response_transport->address)
+                ->setProvinceName($request_customers->province)
+                ->setDistrictName($request_customers->district)
+                ->setWardName($request_customers->ward)
+                ->setDetailName($request_customers->address);
+                $ghtk_fee = $ghtk_service->calculateFee([
+                    "weight" => (int) ($request->weight > 0 ? $request->weight : $calculate_weight),
+                    "deliver_option" => "none",
+                ]);
+
+                $client_reponse[self::PARTNER['GHTK']] = $ghtk_fee;
+            }
+        }
+
+        return $this->successResponse($client_reponse, 'Lấy dữ liệu thành công');
+    }
+
+    public function apiGetFeeOld(Request $request) {
         if(!$request->data) {
             return $this->errorResponse('Không có dữ liệu đặt hàng');
         }

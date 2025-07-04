@@ -370,7 +370,8 @@ class ShopController extends Controller
 
         if($response->successful()) { 
             $data = $response->json();
-            if (isset($data['code']) && $data['code'] == 200) {
+
+            if ((isset($data['code']) && $data['code'] == 200) || !empty($data['data'])) {
                 return $data['data'];
             } else {
                 $validator->errors()->add('address', 'GHN API trả về lỗi: ' . ($data['message'] ?? 'Không rõ lỗi'));

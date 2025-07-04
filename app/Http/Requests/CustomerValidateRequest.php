@@ -49,17 +49,20 @@ class CustomerValidateRequest extends FormRequest
                 'required',
                 'string',
             ],
-            'ward_text' => [
+            'ward_code' => [
                 'required',
-                'string',
+                'numeric',
+                'gt:0',
             ],
-            'district_text' => [
+            'district_code' => [
                 'required',
-                'string',
+                'numeric',
+                'gt:0',
             ],
-            'province_text' => [
+            'province_code' => [
                 'required',
-                'string',
+                'numeric',
+                'gt:0',
             ],
         ];
 
@@ -77,7 +80,9 @@ class CustomerValidateRequest extends FormRequest
             'regex' => 'không hợp lệ',
             'email' => 'không hợp lệ',
             'in' => 'không hợp lệ',
+            'gt' => 'không hợp lệ',
             'date' => 'không hợp lệ',
+            'numeric' => 'không hợp lệ',
             'unique' => 'dữ liệu đã tồn tại',
         ];
     }

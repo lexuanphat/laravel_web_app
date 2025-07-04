@@ -454,6 +454,7 @@
                 e.preventDefault();
                 elements_modal.desc.val(elements_modal.quill_editor.getSemanticHTML());
                 let form_data = new FormData(elements_modal.form[0]);
+                form_data.append('weight', $("#weight").val().replaceAll(".", ""))
 
                 if(elements_modal.text_action.text() === title.btn_create) {
                     createItem(route.create, form_data);

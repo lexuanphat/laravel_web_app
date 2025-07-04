@@ -10,7 +10,7 @@ use DataTables;
 class CustomerController extends Controller
 {
     public function index(){
-        return view('admin.customer.index');
+        return view('admin.customer.index-new');
     }
 
     public function getData(Request $request) {
@@ -109,8 +109,8 @@ class CustomerController extends Controller
         }
 
         $data_update = $request->validated();
-        $validated['user_id'] = auth()->user()->id;
-        $validated['created_at'] = null;
+        $data_update['user_id'] = auth()->user()->id;
+        $data_update['updated_at'] = date("Y-m-d H:i:s");
         $data->update($data_update);
 
         return $this->successResponse($data, 'Cập nhật thành công');
