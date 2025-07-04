@@ -19,10 +19,10 @@
                     'name' => 'Danh sách đơn hàng',
                     'link' => route('admin.order'),
                 ],
-                [
-                    'name' => 'Khách hàng trả',
-                    'link' => route('admin.category'),
-                ],
+                // [
+                //     'name' => 'Khách hàng trả',
+                //     'link' => route('admin.category'),
+                // ],
             ],
         ],
         [
