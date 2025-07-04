@@ -243,8 +243,12 @@ class OrderController extends Controller
                 $content = "<div class='text-center'>".self::ORDER_STATUS_MESSAGE[$item->status]."</div>";
             } else if($item->shipping_partner_id === -1) {
                 $content = "<div class='text-center'>".self::ORDER_STATUS_MESSAGE[$item->status]."</div>";
-            } else if($item->shipping_partner_id === -2){
-                $content = "<div class='text-center'>".Ghtk::STATUS_ORDER[$item->status]."</div>";
+            } else if($item->shipping_partner_id === -2){$content = "<div class='text-center'>".Ghtk::STATUS_ORDER[$item->status]."</div>";
+                if($item->status === self::ORDER_STATUS['requested_cancel']) {
+                    $content = "<div class='text-center'>".self::ORDER_STATUS_MESSAGE[$item->status]."</div>";
+                } else {
+                    $content = "<div class='text-center'>".Ghtk::STATUS_ORDER[$item->status]."</div>";
+                }
             }
 
             return $content;
