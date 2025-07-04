@@ -12,5 +12,7 @@ class CallBackController extends Controller
 
     public function callbackGhtk(Request $request) {
         file_put_contents("callback-ghtk.txt", "<pre>".print_r($request->all(), true)."</pre>", FILE_APPEND);
+
+        return $this->successResponse([], 'Ok');
     }
 }
