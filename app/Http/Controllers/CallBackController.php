@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CallBackController extends Controller
 {
     public function callbackGhn(Request $request) {
-        file_put_contents("callback-ghn.txt", "<pre>".print_r($request->all(), true)."</pre>", FILE_APPEND);
+        Log::info('Webhook GHN nhận được:', $request->all());
+
+        return $this->successResponse([], 'Ok');
     }
 
     public function callbackGhtk(Request $request) {
-        file_put_contents("callback-ghtk.txt", "<pre>".print_r($request->all(), true)."</pre>", FILE_APPEND);
+        Log::info('Webhook GHTK nhận được:', $request->all());
 
         return $this->successResponse([], 'Ok');
     }
