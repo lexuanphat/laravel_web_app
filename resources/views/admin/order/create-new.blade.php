@@ -239,7 +239,7 @@
                             <textarea class="form-control" name="note" id="note_transport" rows="5"></textarea>
                         </div>
                         <div class="mb-3">
-                            <button class="btn btn-primary w-100">Tính lại phí</button>
+                            <button type="button" class="btn btn-primary w-100 btn_char_fee_transport">Tính lại phí</button>
                         </div>
                     </div>
                 </div>
@@ -309,6 +309,7 @@
     let data_response_transport = [];
     let get_transport = @json($get_transport);
 </script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
     // Chứa các function
     function formatCustomer(repo) {
@@ -374,7 +375,7 @@
                                     <input type="text" id="address" name="address" value="${data.address}" class="form-control" placeholder="-- Nhập địa chỉ --">
                                 </div>
                                 <div class="col-12 text-center">
-                                    <button class="btn btn-primary w-100" id="btn_char_fee_transport" disabled>Tính lại cước phí vận chuyển</button>    
+                                    <button class="btn btn-primary w-100 btn_char_fee_transport" id="btn_char_fee_transport" disabled>Tính lại cước phí vận chuyển</button>    
                                 </div>
                             </div>
                         </div>
@@ -669,8 +670,16 @@
     $(document).on('change', '#ward_code, #address', function(){
         CARD_INFO_CUSTOMER.find('#btn_char_fee_transport').prop('disabled', false)
     })
-    $(document).on('click', '#btn_char_fee_transport', function(){
-        alert("Đang tính cước");
+    $(document).on('click', '.btn_char_fee_transport', function(e){
+        e.preventDefault();
+        if($("[name='object_transport']:checked").val() == 1) {
+            let is_confirm = confirm('Ấn Ok để tính lại giá cước');
+            if(!is_confirm) {
+                return;
+            }
+
+            $("[name='object_transport'][value='1']").trigger('change');
+        }
     })
 
     // Javascript xử lý Chọn sản phẩm
@@ -1068,6 +1077,12 @@
                         
                     })
                     $("#option-transport").html(html);
+                    swal({
+                            icon: "success",
+                            title: "Thành công",
+                            button: "Đóng",
+                            text: "Đã tính phí vận chuyển",
+                    })
                 }
                 
             } catch (error) {
