@@ -46,12 +46,13 @@
 
         <ul class="topbar-menu d-flex align-items-center gap-3">
 
+            @if(auth()->user()->email === 'admin@gmail.com')
             <li class="d-none d-sm-inline-block">
                 <a class="nav-link" data-bs-toggle="offcanvas" href="#theme-settings-offcanvas">
                     <i class="ri-settings-3-line font-22"></i>
                 </a>
             </li>
-
+            @endif
 
             {{-- <li class="d-none d-md-inline-block">
                 <a class="nav-link" href="#" data-bs-toggle="fullscreen">
