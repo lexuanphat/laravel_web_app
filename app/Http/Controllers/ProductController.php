@@ -165,6 +165,11 @@ class ProductController extends Controller
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu, vui lòng F5 thử lại', 404);
         }
+
+        if(Product::checkProdHasOrder($id)) {
+            return $this->errorResponse('Sản phẩm có đơn nên không thể xoá', 404);
+        }
+
         $data->delete();
         return $this->successResponse($data, 'Đã xoá dữ liệu');
     }
