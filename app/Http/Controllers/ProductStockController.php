@@ -60,6 +60,11 @@ class ProductStockController extends Controller
         })
         ->addColumn('data_col_2', function($product_stock){
             $image_prod = asset("storage/{$product_stock->product->image_url}");
+
+            if(!$product_stock->product->image_url) {
+                $image_prod = "/assets/images/no-image.jpg";
+            }
+
             return "
                 <img src='{$image_prod}' loading='lazy' decoding='async' alt='contact-img' title='contact-img' class='rounded me-3' height='48' />
                 <div class='m-0 d-inline-block align-middle font-16'>
