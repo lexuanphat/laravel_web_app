@@ -23,7 +23,7 @@ class ProductStockController extends Controller
         $search = ltrim($search, '?');
         parse_str($search, $parsed);
 
-        $model = ProductStock::with('user:id,full_name', 'product', 'store');
+        $model = ProductStock::with('user:id,full_name', 'product', 'store')->orderBy('created_at', 'DESC');
 
         if(isset($parsed['search']) && !empty(trim($parsed['search']))) {
             $search_text = trim($parsed['search']);
