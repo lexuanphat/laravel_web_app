@@ -91,7 +91,7 @@ $("input[name='options']").on('change', async function () {
                         data_fee_vtp.map(fee_vtp => {
                             html += `
                             <div class="form-check mb-2 item d-flex align-items-center gap-2">
-                                <input type="radio" id="${fee_vtp['service_id']}" name="hang_van_chuyen" value="${fee_vtp['service_id']}" class="form-check-input">
+                                <input type="radio" id="${fee_vtp['service_id']}" data-transport="${key}" name="hang_van_chuyen" value="${fee_vtp['service_id']}" class="form-check-input">
                                 <label class="form-check-label" for="${fee_vtp['service_id']}">
                                     <img height="35px" src="${image}" alt="image" class="">
                                     <span><b>Viettel Post</b></span>

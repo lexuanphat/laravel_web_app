@@ -582,6 +582,12 @@ class OrderController extends Controller
                     'total_weight' => (double)$package_and_delivery->gam,
                     'value' => 10000,
                 ];
+            } else if($data_request->is_transport === 'VTP') {
+                $store = DB::table("stores")
+                ->join("store_details", "stores.id", "=", "store_details.store_id")
+                ->where("id", $store_id)
+                ->where("is_transport", "VTP")
+                ->first();
             }
         }
 
