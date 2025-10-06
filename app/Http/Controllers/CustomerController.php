@@ -87,12 +87,12 @@ class CustomerController extends Controller
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
 
-        Customer::create($validated);
-        return $this->successResponse([], 'Thêm mới thành công');
+        $data = Customer::create($validated);
+        return $this->successResponse($data, 'Thêm mới thành công');
     }
 
     public function detail($id, Request $request){
-        $data = Customer::find($id);
+        $data = Customer::find($id, ['id', 'province_code', 'full_name', 'email', 'phone', 'gender', 'date_of_birth', 'address', 'ward_code']);
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu', 404);

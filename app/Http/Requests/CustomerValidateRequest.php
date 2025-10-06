@@ -54,11 +54,6 @@ class CustomerValidateRequest extends FormRequest
                 'numeric',
                 'gt:0',
             ],
-            'district_code' => [
-                'required',
-                'numeric',
-                'gt:0',
-            ],
             'province_code' => [
                 'required',
                 'numeric',

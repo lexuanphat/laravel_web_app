@@ -38,18 +38,12 @@
                                 @include('admin.shop.modals.div-error')
                             </div>
                             <div class="col-6">
-                                <select class="form-control select2" data-toggle="select2" name="district_code" id="district_code">
-                                    <option value=''>Chọn quận huyện</option>
-                                </select>
-                                @include('admin.shop.modals.div-error')
-                            </div>
-                            <div class="col-6">
                                 <select class="form-control select2" data-toggle="select2" name="ward_code" id="ward_code">
                                     <option value=''>Chọn phường xã</option>
                                 </select>
                                 @include('admin.shop.modals.div-error')
                             </div>
-                            <div class="col-6">
+                            <div class="col-12">
                                 <input type="text" id="address" name="address" class="form-control" placeholder="-- Nhập địa chỉ --">
                                 @include('admin.shop.modals.div-error')
                             </div>

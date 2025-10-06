@@ -21,6 +21,17 @@ use Illuminate\Support\Facades\Validator;
 use DataTables;
 class OrderController extends Controller
 {
+    public $gthk_list_pick_add = [];
+    public $config_ghtk = [];
+
+    public function __construct(){
+        $find_config_api_ghtk = DB::table('tokens')->where('is_transport', $this::PARTNER['GHTK'])->selectRaw('_token, api')->first();
+        $ghtk = new Ghtk($find_config_api_ghtk->_token, '' , $find_config_api_ghtk->api);
+        
+        $this->config_ghtk = $find_config_api_ghtk;
+        $this->gthk_list_pick_add = $ghtk->getListPickAdd();
+    }
+
     private const PARTNER = [
         'GHN' => 'GHN',
         'GHTK' => 'GHTK',
@@ -191,6 +202,12 @@ class OrderController extends Controller
                     break;
                 case '30days':
                     $filter_date = date("Y-m-d", strtotime("-30 days"));
+                    break;
+                case '1year':
+                    $filter_date = date("Y-m-d", strtotime("-1 year"));
+                    break;
+                case '2year':
+                    $filter_date = date("Y-m-d", strtotime("-2 year"));
                     break;
                 
                 default:
@@ -682,6 +699,7 @@ class OrderController extends Controller
             'data' => $order,
         ]);
     }
+
     public function create(){
         $get_transport = Transport::selectRaw("
             id, 
@@ -691,11 +709,29 @@ class OrderController extends Controller
         
         $get_store = Store::get();
 
+        $get_provinces = DB::table("provinces")->selectRaw("code as id, name_with_type as text")->orderBy('text')->get();
+
+        $shipping_fees = DB::table("shipping_fees")
+        ->selectRaw("province_id, fee")->get();
+
+        $coupons = DB::table("coupon")
+        ->where('date_start_apply', '<=', date("Y-m-d"))
+        ->where('date_end_apply', '>=', date("Y-m-d"))
+        ->selectRaw("id, CONCAT(code, ' - ', FORMAT(fee, 0, 'vi-VN'), IF(type = 'PHAN_TRAM', '%', 'VNĐ')) as text, fee, type")
+        ->orderByRaw("created_at ASC, name ASC")
+        ->get();
+
+
         return view('admin.order.create-new', [
             'get_transport' => $get_transport,
             'get_store' => $get_store,
+            'get_provinces' => $get_provinces,
+            'shipping_fees' => $shipping_fees,
+            'get_list_pick_add_ghtk' =>  $this->gthk_list_pick_add,
+            'coupons' => $coupons,
         ]);
     }
+
     public function getDataCustomer(Request $request){
         $results = Customer::selectRaw("*")
         ->where(function ($q) use ($request) {
@@ -718,10 +754,10 @@ class OrderController extends Controller
             'customer_phone' => $validated['customer']['phone'],
             'customer_full_name' => $validated['customer']['full_name'],
             'customer_province' => $validated['customer']['province'],
-            'customer_district' => $validated['customer']['district'],
+            'customer_district' => '',
             'customer_ward' => $validated['customer']['ward'],
             'customer_address' => $validated['customer']['address'],
-            'store_id' => $validated['store_id'],
+            'store_id' => $validated['pick_address_id'],
             'total_discount' => $validated['discount_total'],
             'paid_amount' => $validated['customer_has_paid_total'] * 1,
             'shipping_fee_payer' => $validated['client_request_transport']['shipping_fee_payer'],
@@ -804,29 +840,29 @@ class OrderController extends Controller
             /**
              * Check số lượng tồn của sản phẩm
              */
-            $get_stocks = DB::table("product_stocks")
-            ->where("store_id", $validated['store_id'])
-            ->whereIn('product_id', array_keys($check_stocks))
-            ->get();
+            // $get_stocks = DB::table("product_stocks")
+            // ->where("store_id", $validated['store_id'])
+            // ->whereIn('product_id', array_keys($check_stocks))
+            // ->get();
     
-            foreach($get_stocks as $item) {
-                if( ($item->quantity_sold + $check_stocks[$item->product_id]) > $item->available_quantity ) {
-                    DB::rollback();
-                    $validator->errors()->add('products', 'Có sản phẩm bán vượt quá số lượng cho phép bán, vui lòng kiểm tra lại');
-                    throw new \Illuminate\Validation\ValidationException($validator);
-                }
+            // foreach($get_stocks as $item) {
+            //     if( ($item->quantity_sold + $check_stocks[$item->product_id]) > $item->available_quantity ) {
+            //         DB::rollback();
+            //         $validator->errors()->add('products', 'Có sản phẩm bán vượt quá số lượng cho phép bán, vui lòng kiểm tra lại');
+            //         throw new \Illuminate\Validation\ValidationException($validator);
+            //     }
     
-                $item->quantity_sold +=  $check_stocks[$item->product_id];
-            }
+            //     $item->quantity_sold +=  $check_stocks[$item->product_id];
+            // }
 
             /**
              * Cập nhật lại số lượng tồn
              */
-            foreach($get_stocks as $item) {
-                DB::table("product_stocks")->where("store_id",  $validated['store_id'])->where("product_id", $item->product_id)->update([
-                    'quantity_sold' => $item->quantity_sold,
-                ]);
-            }
+            // foreach($get_stocks as $item) {
+            //     DB::table("product_stocks")->where("store_id",  $validated['store_id'])->where("product_id", $item->product_id)->update([
+            //         'quantity_sold' => $item->quantity_sold,
+            //     ]);
+            // }
 
             /**
              * Trường hợp nhận tại cửa hàng
@@ -981,27 +1017,26 @@ class OrderController extends Controller
 
                     return $this->errorReponse('Có lỗi vui lòng kiểm tra lại');
                 } else if($validated['client_request_transport']['shipping_partner_id'] === self::PARTNER['GHTK']){
-                    $store = $this->_getStore($validated['store_id'], self::PARTNER['GHTK'], [
-                        'store_details.response_transport'
-                    ]);
-                    $ghtk_service = new Ghtk($store->_token, $store->shop_id, $store->api);
+                    $get_list_pick_add = collect($this->gthk_list_pick_add)->keyBy('pick_address_id')->toArray();
+                    $find_list_pick = $get_list_pick_add[$request->pick_address_id];
+
+                    $ghtk_service = new Ghtk($this->config_ghtk->_token, $find_list_pick['pick_address_id'], $this->config_ghtk->api);
                     $ghtk_service->setProvinceName($validated['customer']['province_text'])
-                    ->setDistrictName($validated['customer']['district_text'])
+                    // ->setDistrictName($validated['customer']['district_text'])
                     ->setWardName($validated['customer']['ward_text'])
                     ->setDetailName($validated['customer']['address']);
 
-                    $response_transport = json_decode($store->response_transport, true);
-                    $extract_address = $ghtk_service->extractAddressParts($response_transport['address']);
+                    $extract_address = $ghtk_service->extractAddressParts($find_list_pick['address']);
 
                     $response = $ghtk_service->createOrder([
                         "order" => [
                             "id" => $data_insert_order['code'],
-                            "pick_name" => $response_transport['pick_name'],
-                            "pick_address" => $response_transport['address'],
+                            "pick_name" => $find_list_pick['pick_name'],
+                            "pick_address" => $find_list_pick['address'],
                             "pick_province" => $extract_address['province'],
                             "pick_district" => $extract_address['district'],
                             "pick_ward" => $extract_address['ward'],
-                            "pick_tel" => $response_transport['pick_tel'],
+                            "pick_tel" => $find_list_pick['pick_tel'],
                             "tel" => $validated['customer']['phone'],
                             "name" => $validated['customer']['full_name'],
                             "hamlet" => "Khác",
@@ -1569,13 +1604,19 @@ class OrderController extends Controller
     }
 
     public function getDataProduct(Request $request){
-        $results = Product::with('productStock', 'category:id,name')->where(function($q)use($request){
+        if(!isset($request->search)) {
+            $request->search = '';
+        }
+        $province_id = isset($request->province_id) ? $request->province_id : 0;
+        $results = Product::with('category:id,name')
+        ->leftJoin('fee_product_province', function($leftJoin)use($province_id){
+            $leftJoin->on('products.id', '=', 'fee_product_province.product_id')->where("fee_product_province.province_id", $province_id);
+        })
+        ->where(function($q)use($request){
             $q->where("name", "like", "%{$request->search}%")
             ->orWhere("sku", "like", "%{$request->search}%");
         })
-        ->whereHas('productStock', function($q)use($request) {
-            $q->where('store_id', $request->store_id);
-        })
+        ->selectRaw("products.*, IF(fee_product_province.id IS NULL, products.price, fee_product_province.fee) as price")
         ->paginate(15);
         
         return $this->successResponse($results, 'Lấy dữ liệu thành công');
@@ -1589,7 +1630,7 @@ class OrderController extends Controller
         if(!$request->data) {
             return $this->errorResponse('Không có dữ liệu đặt hàng');
         }
-        if(!$request->store_id) {
+        if(!$request->pick_address_id) {
             return $this->errorResponse('Chưa chọn cửa hàng');
         }
         if(!$request->customers) {
@@ -1607,15 +1648,21 @@ class OrderController extends Controller
             return $this->errorResponse('Không có dữ liệu đặt hàng');
         }
 
-        $transport_partner = DB::SELECT("
-            SELECT store_details.*, tokens._token, tokens.api FROM store_details
-            JOIN tokens ON store_details.is_transport = tokens.is_transport
-            WHERE store_details.store_id = ?
-        ", [$request->store_id]);
+        // $transport_partner = DB::SELECT("
+        //     SELECT store_details.*, tokens._token, tokens.api FROM store_details
+        //     JOIN tokens ON store_details.is_transport = tokens.is_transport
+        //     WHERE store_details.store_id = ?
+        // ", [$request->store_id]);
 
-        if(empty($transport_partner)) {
-            return $this->errorResponse('Cửa hàng này không có vận chuyển hợp lệ');
-        }
+        // if(empty($transport_partner)) {
+        //     return $this->errorResponse('Cửa hàng này không có vận chuyển hợp lệ');
+        // }
+
+        $transport_partner = [
+           (object) [
+                'is_transport' => 'GHTK',
+            ]
+        ];
 
         $products = $this->_getProducts();
         $calculate_weight = 0;
@@ -1625,8 +1672,10 @@ class OrderController extends Controller
 
         $client_reponse = [];
 
+        $get_list_pick_add = collect($this->gthk_list_pick_add)->keyBy('pick_address_id')->toArray();
+
         foreach($transport_partner as $partner) {
-            $response_transport = json_decode($partner->response_transport);
+            // $response_transport = json_decode($partner->response_transport);
 
             if($partner->is_transport === self::PARTNER['GHN']) {
                 $ghn_service = new Ghn($partner->_token, $response_transport->_id, $partner->api);
@@ -1643,16 +1692,18 @@ class OrderController extends Controller
                 $client_reponse[self::PARTNER['GHN']] = $ghn_fee;
 
             } else if($partner->is_transport === self::PARTNER['GHTK']){
-                
-                $ghtk_service = new Ghtk($partner->_token, $response_transport->pick_address_id, $partner->api);
-                $ghtk_service->setPickAddress($response_transport->address)
+                $find_pick = $get_list_pick_add[$request->pick_address_id];
+
+                $ghtk_service = new Ghtk($this->config_ghtk->_token, $find_pick['pick_address_id'], $this->config_ghtk->api);
+
+                $ghtk_service->setPickAddress($find_pick['address'])
                 ->setProvinceName($request_customers->province)
-                ->setDistrictName($request_customers->district)
                 ->setWardName($request_customers->ward)
                 ->setDetailName($request_customers->address);
                 $ghtk_fee = $ghtk_service->calculateFee([
                     "weight" => (int) ($request->weight > 0 ? $request->weight : $calculate_weight),
                     "deliver_option" => "none",
+                    "transport" => "road",
                 ]);
 
                 $client_reponse[self::PARTNER['GHTK']] = $ghtk_fee;

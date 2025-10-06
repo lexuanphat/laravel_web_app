@@ -35,6 +35,8 @@
                         <option value="today">Hôm nay</option>
                         <option value="7days">7 ngày qua</option>
                         <option value="30days">30 ngày qua</option>
+                        <option value="1year">1 năm</option>
+                        <option value="2year">2 năm</option>
                         </select>
                     </div>
                 

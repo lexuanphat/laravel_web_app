@@ -11,6 +11,10 @@ use App\Http\Controllers\ProductStockController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\TokenTransportController;
 use App\Http\Controllers\TransportController;
+use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\ShippingFeeController;
+use App\Http\Controllers\FeeProductProvinceController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -87,6 +91,26 @@ Route::group([
         $route->post('/product-stock/store', [ProductStockController::class, 'store'])->name('product_stock.store');
         $route->delete('/product-stock/delete/{id}', [ProductStockController::class, 'delete'])->name('product_stock.delete');
 
+        // Quản lý giá sản phẩm theo khu vực
+        $route->get('/fee-product-province', [FeeProductProvinceController::class, 'index'])->name('fee_product_province');
+        $route->get('/fee-product-province/getData', [FeeProductProvinceController::class, 'getData'])->name('fee_product_province.get_data');
+        $route->get('/fee-product-province/getDataProduct', [FeeProductProvinceController::class, 'getDataProduct'])->name('fee_product_province.get_data_product');
+        $route->get('/fee-product-province/getDataProvince', [FeeProductProvinceController::class, 'getDataProvince'])->name('fee_product_province.get_data_province');
+        $route->get('/fee-product-province/detail/{id}', [FeeProductProvinceController::class, 'detail'])->name('fee_product_province.detail');
+        $route->post('/fee-product-province/store', [FeeProductProvinceController::class, 'store'])->name('fee_product_province.store');
+        $route->put('/fee-product-province/update/{id}', [FeeProductProvinceController::class, 'update'])->name('fee_product_province.update');
+        $route->delete('/fee-product-province/delete/{id}', [FeeProductProvinceController::class, 'delete'])->name('fee_product_province.delete');
+
+        // Quản lý phiếu giảm giá
+        $route->get('/coupon', [CouponController::class, 'index'])->name('coupon');
+        $route->get('/coupon/getData', [CouponController::class, 'getData'])->name('coupon.get_data');
+        $route->get('/coupon/getDataProduct', [CouponController::class, 'getDataProduct'])->name('coupon.get_data_product');
+        $route->get('/coupon/getDataProvince', [CouponController::class, 'getDataProvince'])->name('coupon.get_data_province');
+        $route->get('/coupon/detail/{id}', [CouponController::class, 'detail'])->name('coupon.detail');
+        $route->post('/coupon/store', [CouponController::class, 'store'])->name('coupon.store');
+        $route->put('/coupon/update/{id}', [CouponController::class, 'update'])->name('coupon.update');
+        $route->delete('/coupon/delete/{id}', [CouponController::class, 'delete'])->name('coupon.delete');
+
         // Quản lý nhân viến
         $route->get('/staff', [UserController::class, 'index'])->name('staff')->middleware('check_user_manage_and_admin');
         $route->get('/staff/getData', [UserController::class, 'getData'])->name('staff.get_data')->middleware('check_user_manage_and_admin');
@@ -112,6 +136,17 @@ Route::group([
         $route->get('/customer/detail/{id}', [CustomerController::class, 'detail'])->name('customer.detail');
         $route->put('/customer/update/{id}', [CustomerController::class, 'update'])->name('customer.update');
         $route->delete('/customer/delete/{id}', [CustomerController::class, 'delete'])->name('customer.delete');
+
+        // Tỉnh thành việt nam
+        $route->get('/province', [ProvinceController::class, 'getProvince'])->name('province.get_province');
+
+        // Quản lý phí vận chuyển
+        $route->get('/shipping-fee', [ShippingFeeController::class, 'index'])->name('shipping_fee');
+        $route->get('/shipping-fee/getData', [ShippingFeeController::class, 'getData'])->name('shipping_fee.get_data');
+        $route->post('/shipping-fee/store', [ShippingFeeController::class, 'store'])->name('shipping_fee.store');
+        $route->get('/shipping-fee/detail/{id}', [ShippingFeeController::class, 'detail'])->name('shipping_fee.detail');
+        $route->put('/shipping-fee/update/{id}', [ShippingFeeController::class, 'update'])->name('shipping_fee.update');
+        $route->delete('/shipping-fee/delete/{id}', [ShippingFeeController::class, 'delete'])->name('shipping_fee.delete');
 
         // Quản lý token DVVC
         $route->get('/token-transport', [TokenTransportController::class, 'index'])->withoutMiddleware('check_transport_init')->name('token_transport');

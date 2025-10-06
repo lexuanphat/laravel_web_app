@@ -142,6 +142,10 @@ class Ghtk extends Base {
         return $this->_request('post', '/services/shipment/order', $payload);
     }
 
+    public function getListPickAdd(){
+        return $this->_request('get', '/services/shipment/list_pick_add');
+    }
+
     public function cancelOrder(string $code){
         return $this->_request('post', '/services/shipment/cancel/'.$code);
     }

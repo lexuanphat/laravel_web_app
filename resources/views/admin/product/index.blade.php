@@ -373,7 +373,6 @@
             })
 
             elements_modal.category.select2({
-                minimumInputLength: 3,
                 language: "vi",
                 ajax: {
                     url: route.get_data_category,

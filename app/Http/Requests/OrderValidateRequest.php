@@ -30,16 +30,17 @@ class OrderValidateRequest extends FormRequest
         ]);
 
         $rules = [
-            'store_id' => 'required|integer|exists:stores,id',
+            // 'pick_address_id' => 'required|integer|exists:stores,id',
+            'pick_address_id' => 'required|integer',
 
             'customer.id' => 'required',
             'customer.full_name' => 'required|string|max:255',
             'customer.phone' => 'required|string|regex:/^0\d{9}$/',
             'customer.province' => 'required|string',
-            'customer.district' => 'required|string',
+            // 'customer.district' => 'required|string',
             'customer.ward' => 'required|string',
             'customer.province_text' => 'required|string',
-            'customer.district_text' => 'required|string',
+            // 'customer.district_text' => 'required|string',
             'customer.ward_text' => 'required|string',
             'customer.address' => 'required|string',
 
@@ -86,8 +87,8 @@ class OrderValidateRequest extends FormRequest
     public function messages()
     {
         $messages = [
-            'store_id.required' => 'Vui lòng chọn cửa hàng.',
-            'store_id.exists' => 'Cửa hàng không tồn tại.',
+            'pick_address_id.required' => 'Vui lòng chọn cửa hàng.',
+            'pick_address_id.exists' => 'Cửa hàng không tồn tại.',
         
             'customer.id.required' => 'Thiếu thông tin khách hàng.',
             'customer.full_name.required' => 'Vui lòng nhập họ tên khách hàng.',

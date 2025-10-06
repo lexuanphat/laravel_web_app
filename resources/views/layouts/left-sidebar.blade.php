@@ -34,7 +34,24 @@
                     'name' => 'Danh sách sản phẩm',
                     'link' => route('admin.product'),
                 ],
+                [
+                    'name' => 'Danh sách danh mục',
+                    'link' => route('admin.category'),
+                ],
+                [
+                    'name' => 'Danh sách phí vận chuyển',
+                    'link' => route('admin.shipping_fee'),
+                ],
+                [
+                    'name' => 'Danh sách phiếu giảm giá',
+                    'link' => route('admin.coupon'),
+                ],
+                [
+                    'name' => 'Danh sách giá khu vực',
+                    'link' => route('admin.fee_product_province'),
+                ],
             ],
+            
         ],
         [
             'name' => 'Quản lý vận chuyển',
@@ -47,39 +64,39 @@
                 ],
             ],
         ],
-        [
-            'name' => 'Quản lý Danh mục',
-            'link' => '',
-            'icon' => '<i class="ri-clipboard-fill"></i>',
-            'sub_menu' => [
-                [
-                    'name' => 'Danh sách danh mục',
-                    'link' => route('admin.category'),
-                ],
-            ],
-        ],
-        [
-            'name' => 'Quản Lý Kho',
-            'link' => '',
-            'icon' => '<i class="uil-dropbox"></i>',
-            'sub_menu' => [
-                [
-                    'name' => 'Danh sách quản lý kho',
-                    'link' => route('admin.product_stock'),
-                ],
-            ],
-        ],
-        [
-            'name' => 'Quản lý Cửa hàng',
-            'link' => '',
-            'icon' => '<i class="uil-store-alt"></i>',
-            'sub_menu' => [
-                [
-                    'name' => 'Danh sách cửa hàng',
-                    'link' => route('admin.shop'),
-                ],
-            ],
-        ],
+        // [
+        //     'name' => 'Quản lý Danh mục',
+        //     'link' => '',
+        //     'icon' => '<i class="ri-clipboard-fill"></i>',
+        //     'sub_menu' => [
+        //         [
+        //             'name' => 'Danh sách danh mục',
+        //             'link' => route('admin.category'),
+        //         ],
+        //     ],
+        // ],
+        // [
+        //     'name' => 'Quản Lý Kho',
+        //     'link' => '',
+        //     'icon' => '<i class="uil-dropbox"></i>',
+        //     'sub_menu' => [
+        //         [
+        //             'name' => 'Danh sách quản lý kho',
+        //             'link' => route('admin.product_stock'),
+        //         ],
+        //     ],
+        // ],
+        // [
+        //     'name' => 'Quản lý Cửa hàng',
+        //     'link' => '',
+        //     'icon' => '<i class="uil-store-alt"></i>',
+        //     'sub_menu' => [
+        //         [
+        //             'name' => 'Danh sách cửa hàng',
+        //             'link' => route('admin.shop'),
+        //         ],
+        //     ],
+        // ],
         [
             'name' => 'Quản lý Khách hàng',
             'link' => '',
@@ -107,11 +124,11 @@
             'link' => route('admin.token_transport'),
             'icon' => '<i class="ri-settings-2-line"></i>',
         ],
-        [
-            'name' => 'Báo cáo',
-            'link' => 'bao-cao-doanh-thu',
-            'icon' => '<i class="uil-chart-growth"></i>',
-        ],
+        // [
+        //     'name' => 'Báo cáo',
+        //     'link' => 'bao-cao-doanh-thu',
+        //     'icon' => '<i class="uil-chart-growth"></i>',
+        // ],
     ];
 @endphp
 <div class="leftside-menu">

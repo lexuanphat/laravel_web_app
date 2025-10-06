@@ -92,9 +92,6 @@ class ProductController extends Controller
     }
 
     public function getDataCategory(Request $request){
-        if(!isset($request->search) || empty($request->search)) {
-            return $this->successResponse([], 'Không có dữ liệu nào');
-        }
 
         $data = Category::where('name', 'like', '%'.$request->search.'%')
         ->select("id", "name")

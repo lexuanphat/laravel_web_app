@@ -1,3 +1,6 @@
+@php
+    $value_default_size = 10;
+@endphp
 <form action="{{$action}}" method="POST" id="form" enctype="multipart/form-data">
     @csrf
     <input type="hidden" name="id" value="0" id="id">
@@ -44,17 +47,17 @@
     <div class="row">
         <div class="col-md-3 mb-2">
             <label for="desc" class="required">Chiều dài (cm) <span class="text-danger">(*)</span></label>
-            <input type="text" class="form-control input_money" id="length" name="length" value="0">
+            <input type="text" class="form-control input_money" id="length" name="length" value="{{$value_default_size}}">
             @include('admin._partials.div-error')
         </div>
         <div class="col-md-3 mb-2">
             <label for="desc" class="required">Chiều rộng (cm) <span class="text-danger">(*)</span></label>
-            <input type="text" class="form-control input_money" id="width" name="width" value="0">
+            <input type="text" class="form-control input_money" id="width" name="width" value="{{$value_default_size}}">
             @include('admin._partials.div-error')
         </div>
         <div class="col-md-3 mb-2">
             <label for="desc" class="required">Chiều cao (cm) <span class="text-danger">(*)</span></label>
-            <input type="text" class="form-control input_money" id="height" name="height" value="0">
+            <input type="text" class="form-control input_money" id="height" name="height" value="{{$value_default_size}}">
             @include('admin._partials.div-error')
         </div>
         <div class="col-md-3 mb-2">

@@ -4,15 +4,101 @@
     .table-responsive {
         max-height:300px;
     }
+    #select2-customer-results li:has(#div-create-new) {
+        background-color: #C01415;
+    }
 </style>
 @endpush
 @section('content')
+
+<!-- Large modal -->
+<div class="modal fade" id="modal_add_new_customer" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" data-bs-focus="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myLargeModalLabel">Thêm mới khách hàng</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" method="POST" id="form_action">
+                    @csrf
+                    <div class="mb-2">
+                        <label for="full_name" class="required">Tên<span class="text-danger">(*)</span></label>
+                        <input type="text" id="full_name" name="full_name" placeholder="-- Nhập tên khách hàng --" class="form-control" required>
+                        @include('admin.shop.modals.div-error')
+                    </div>
+                    <div class="mb-2">
+                        <label for="phone" class="required">Số điện thoại <span class="text-danger">(*)</span></label>
+                        <input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="phone" name="phone" placeholder="-- Nhập số điện thoại khách hàng --" class="form-control" required>
+                        @include('admin.shop.modals.div-error')
+                    </div>
+                    <div class="mb-2">
+                        <label for="email"  class="required">Email</label>
+                        <input type="email" id="email" name="email" placeholder="-- Nhập địa chỉ email khách hàng --" class="form-control">
+                        @include('admin.shop.modals.div-error')
+                    </div>
+                    <div class="mb-2">
+                        <label for="date_of_birth"  class="required">Ngày tháng năm sinh</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" class="form-control">
+                        @include('admin.shop.modals.div-error')
+                    </div>
+                    <div class="mb-2">
+                        <label for=""  class="required">Địa chỉ nhận hàng <span class="text-danger">(*)</span></label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <select class="form-control select2" data-toggle="select2" name="province_code" id="province_code">
+                                    <option value=''>Chọn tỉnh thành</option>
+                                    @foreach($get_provinces as $item)
+                                    <option value="{{$item->id}}">{{$item->text}}</option>
+                                    @endforeach
+                                </select>
+                                @include('admin.shop.modals.div-error')
+                            </div>
+                            <div class="col-6">
+                                <select class="form-control select2" data-toggle="select2" name="ward_code" id="ward_code">
+                                    <option value=''>Chọn phường xã</option>
+                                </select>
+                                @include('admin.shop.modals.div-error')
+                            </div>
+                            <div class="col-12">
+                                <input type="text" id="address" name="address" class="form-control" placeholder="-- Nhập địa chỉ --">
+                                @include('admin.shop.modals.div-error')
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="male" value="0" class="custom-control-input" name="gender" checked>
+                                <label class="custom-control-label" for="male">Nam</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="female" value="1" class="custom-control-input" name="gender">
+                                <label class="custom-control-label" for="female">Nữ</label>
+                            </div>
+                        </div>
+                        @include('admin.shop.modals.div-error')
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary btn_action" id="btn_add_new_customer">
+                    @include('admin._partials.add-new')
+                    @include('admin._partials.loading')
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <div class="row g-2 py-2 max-vh-50">
     <div class="col-md-8">
         <div class="card" id="card_customer" data-route='{{route('admin.order.get_data_customer')}}'>
             <div class="card-body p-2">
                 <h5>Thông tin khách hàng <span class="text-danger">(*)</span></h5>
                 <select class="form-control select2" data-toggle="select2" data-placeholder="Tìm theo tên, SĐT, mã khách hàng...(F4)" id="customer">
+                    
                 </select>
                 <div class="result">
                     <div class="empty py-5 text-center" id="empty_customer">
@@ -34,15 +120,9 @@
                         </label>
                         <div class="col-sm-8">
                             {{-- <input type="text" class="form-control" value="{{auth()->user()->store->name}}" disabled> --}}
-                            <select name="store_id" id="store_id" data-toggle="select2">
-                                @foreach($get_store as $store)
-                                @if(auth()->user()->role === 'admin')
-                                <option value="{{$store->id}}">{{$store->name}}</option>
-                                @else
-                                    @if(auth()->user()->store_id === $store->id)
-                                    <option value="{{$store->id}}" selected>{{$store->name}}</option>
-                                    @endif
-                                @endif
+                            <select name="pick_address_id" id="pick_address_id" data-toggle="select2">
+                                @foreach($get_list_pick_add_ghtk as $item)
+                                <option value='{{$item['pick_address_id']}}'>{{$item['pick_name']}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -127,6 +207,23 @@
                             <label for="inputEmail3" class="col-7 col-form-label">Tổng tiền (<span id="cnt_total_product">0</span> sản phẩm)</label>
                             <div class="col-5">
                                 <input type="text" class="form-control border-0 text-end" readonly id="total" value="0">
+                            </div>
+                        </div>
+                        <div class="row mb-1">
+                            <label for="" class="col-6 col-form-label">Phiếu giảm giá</label>
+                            <div class="col-6">
+                                <select name="coupon" required id="coupon" class="form-control select2" data-toggle="select2">
+                                    <option value="">Chọn phiếu giảm giá</option>
+                                    @foreach($coupons as $coupon)
+                                    <option data-item='{{json_encode($coupon)}}' value="{{$coupon->id}}">{{$coupon->text}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-1">
+                            <label for="inputEmail3" class="col-7 col-form-label fw-bold">Tổng tiền sau áp dụng</label>
+                            <div class="col-5">
+                                <input type="text" class="form-control border-0 text-end fw-bold" readonly id="total_after_coupon" value="0">
                             </div>
                         </div>
                         <div class="row mb-1">
@@ -308,6 +405,7 @@
     let data_prod = [];
     let data_response_transport = [];
     let get_transport = @json($get_transport);
+    const SHIPPING_FEES = @json($shipping_fees);
 </script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
@@ -317,7 +415,7 @@
             return repo.text;
         }
         
-        var $box_item = $(`
+        let $box_item = $(`
             <div class="customer-item row">
                 <div class="col-auto">
                     <div class="avatar-sm">
@@ -330,6 +428,17 @@
                 </div>
             </div>
         `);
+
+        if(repo.id === -1) {
+            $box_item = $(`
+                <div class="customer-item row" id="div-create-new">
+                    <div class="item-create">
+                        <i class="ri-add-box-line text-white"></i>
+                        <span class="text-white">${repo.full_name}</span>    
+                    </div>
+                </div>
+            `);
+        }
 
         return $box_item;
     }
@@ -362,16 +471,11 @@
                                     </select>
                                 </div>
                                 <div class="col-6">
-                                    <select class="form-control select2" data-toggle="select2" name="district_code" id="district_code">
-                                        <option value=''>Chọn quận huyện</option>
-                                    </select>
-                                </div>
-                                <div class="col-6">
                                     <select class="form-control select2" data-toggle="select2" name="ward_code" id="ward_code">
                                         <option value=''>Chọn phường xã</option>
                                     </select>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-12">
                                     <input type="text" id="address" name="address" value="${data.address}" class="form-control" placeholder="-- Nhập địa chỉ --">
                                 </div>
                                 <div class="col-12 text-center">
@@ -395,6 +499,68 @@
             });
         }).fail(function() {
             $select.empty().append('<option value="-100">Không tải được dữ liệu</option>');
+        });
+    }
+
+    function _loadProvinceNew(type = 'provinces', province_id = null, ward_id = null, $select_province, $select_ward, value_trigger = null) {        
+        $.ajax({
+            url: @json(route('admin.province.get_province')),
+            method: "GET",
+            data: {
+                province_id: province_id,
+                ward_id: ward_id,
+                type: type,
+            },
+            beforeSend: function(){
+                if(type === 'all'){
+                    $select_province.find("option[value!='']").remove();
+                    $select_ward.find("option[value!='']").remove();
+                } else {
+                    let $select = $select_province;
+                    if(type === 'wards') {
+                        $select = $select_ward;
+                    }
+                    $select.find("option[value!='']").remove();
+                }
+            },
+            success: function(res){
+                if(res.success) {
+                    if(type === 'all') {
+
+                        let options = "<option></option>";
+                        $.each(res.data.provinces, function(index, item){
+                            options += `<option ${province_id && province_id == item.id ? "selected" : ''} value="${item.id}">${item.text}</option>`;
+                        });
+                        $select_province.html(options);
+
+                        options = "<option></option>";
+                        $.each(res.data.wards, function(index, item){
+                            options += `<option ${ward_id && ward_id == item.id ? "selected" : ''} value="${item.id}">${item.text}</option>`;
+                        });
+                        $select_ward.html(options);
+
+
+                    } else {
+                        let results = res.data[type];
+
+                        let $select = $select_province;
+
+                        let text = "Chọn tỉnh thành"
+                        if(type === 'wards') {
+                            text = "Chọn phường xã";
+                            $select = $select_ward;
+                        }
+
+                        results.unshift({
+                            id: "",
+                            text: text,
+                        });
+                        $select.select2({
+                            data: res.data[type],
+                        });
+                    }
+                }
+            }
         });
     }
 
@@ -454,7 +620,7 @@
                     </p>
                 </td>
                 <td class="quantity">
-                    <input data-toggle="touchspin" name="product_quantity[]" data-index=${index} data-bts-min="1" data-bts-max="${data.product_stock.available_quantity}" value="1" data-btn-vertical="true" type="text" class="form-control text-center product_quantity">
+                    <input data-toggle="touchspin" name="product_quantity[]" data-index=${index} data-bts-min="1" data-bts-max="999" value="1" data-btn-vertical="true" type="text" class="form-control text-center product_quantity">
                 </td>
                 <td>
                     <div class="text-center">${Number(data.price).toLocaleString('vi')} <input type="hidden" name="product_price[]" value="${data.price}"/></div>
@@ -501,6 +667,10 @@
         if(!image) {
             image = ASSETS.url_no_image;
         }
+
+        let text_price_province = CARD_INFO_CUSTOMER.find('#province_code option:selected').text();
+        text_price_province = text_price_province ? `Giá theo khu vực (${text_price_province}): ` : '';
+
         var $container = $(`
             <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
@@ -515,8 +685,7 @@
                     </div>
                 </div>
                 <div class="text-end">
-                    <span class="fw-bold">${Number(repo.price).toLocaleString("vi")}</span>
-                    <div class="">Tồn: <span class="link-danger">${Number(repo.product_stock.stock_quantity).toLocaleString('vi')}</span> | Có thể bán: <span class="link-danger">${Number(repo.product_stock.available_quantity).toLocaleString('vi')}</span></div>
+                    <span class="fw-bold">${text_price_province} ${Number(repo.price).toLocaleString("vi")}</span>
                 </div>
             </div>
         `);
@@ -532,6 +701,8 @@
     function calculateTotalProduct(){
         CARD_TOTAL.label_total_quantity_order.text(data_prod.length);
         CARD_TOTAL.input_total_balance.val(data_prod.reduce((tich_tru, item) => tich_tru + item.total, 0 ).toLocaleString('vi'));
+        CARD_TOTAL.coupon.val("").trigger("change");
+        $("#total_after_coupon").val(data_prod.reduce((tich_tru, item) => tich_tru + item.total, 0 ).toLocaleString('vi'));
         CARD_TOTAL.discount_total.val(0).trigger('keyup')
     }
 
@@ -566,7 +737,7 @@
             data: {
                 _token: $("[name='csrf-token']").attr('content'),
                 data: params,
-                store_id: $("#store_id").val(),
+                pick_address_id: $("#pick_address_id").val(),
                 customers: JSON.stringify({
                     id: ELEMENTS_INFO_CUSTOMER.select_find_customer.val(),
                     full_name: CARD_INFO_CUSTOMER.find('#customer_full_name').val(),
@@ -586,6 +757,107 @@
     }
 </script>
 <script>
+    // JS xử lý địa chỉ khách hàng khi show popup thêm mới
+
+    $("#modal_add_new_customer").find("#province_code").change(function(e, value_trigger = null){
+        let $this = $(this);
+        let code = $this.val();
+        if(code) {
+            _loadProvinceNew('wards', code, null, null, $("#modal_add_new_customer").find("#ward_code"), null);
+        } else {
+            $("#modal_add_new_customer").find("#ward_code").find('option[value!=""]').remove();
+        }
+    })
+
+    // JS xử lý khi modal ẩn đi thì sẽ clear hết value xã/phường
+    $("#modal_add_new_customer").on('hidden.bs.modal', function(){
+        let $this = $(this);
+        $this.find("#province_code option[value!='']").remove();
+        let default_province = {
+            id: '',
+            text: 'Chọn tỉnh thành',
+        };
+        $this.find("#province_code").select2({
+            data: [default_province,...@json($get_provinces)]
+        });
+        $this.find("#ward_code option[value!='']").remove();
+        $this.find("#address").val("");
+
+        $this.find('#form_action')[0].reset();
+
+       $this.find('#form_action').find('.form-control').removeClass('is-invalid');
+       $this.find('#form_action').find('.invalid-feedback').empty();
+    })
+
+    // JS xử lý khi thêm mới khách hàng
+    $("#modal_add_new_customer").find('#btn_add_new_customer').click(function(e){
+        e.preventDefault();
+        let $this = $(this);
+        let form = $("#modal_add_new_customer").find('#form_action');
+        $.ajax({
+            url: @json(route('admin.customer.store')),            
+            type: "POST",
+            data: form.serialize(),
+            beforeSend: function(){
+                form.find('.form-control').removeClass('is-invalid');
+                form.find('.invalid-feedback').empty();
+
+                $this.prop("disabled", true);
+                $this.find('#loading').show();
+                $this.find('.add-new').hide();
+            },
+            success: function(res){
+                if(res.success) {
+                    $("#modal_add_new_customer").modal('hide');
+                    createToast('success', res.message);
+
+                    let new_item = {
+                        id: res.data.id,     
+                        text: res.data.full_name,
+                        full_name: res.data.full_name,
+                        phone: res.data.phone,
+                        province_code: res.data.province_code,
+                        ward_code: res.data.ward_code,
+                        address: res.data.address,
+
+                    };
+
+                    let new_option = new Option(new_item.text, new_item.id, true, true);
+                    ELEMENTS_INFO_CUSTOMER.select_find_customer.append(new_option);
+
+                    ELEMENTS_INFO_CUSTOMER.select_find_customer.trigger({
+                        type: 'select2:select',
+                        params: {
+                            data: new_item
+                        }
+                    })
+                }
+            },
+            error: function(err){
+                let response_err = err.responseJSON;
+                if(response_err) {
+                    $.each(response_err.errors, function(key, item){
+                        if(key === 'gender') {
+                            form.find('#male').parent().parent().addClass('is-invalid')
+                            form.find('#male').parent().parent().next().text(item[0]);
+                        } else if(key === 'province_code' || key === 'district_code' || key === 'ward_code'){
+                            form.find("#"+key).addClass('is-invalid');
+                            form.find("#"+key).next().next().text(item[0]);
+                        } else {
+                            form.find("#"+key).addClass('is-invalid');
+                            form.find("#"+key).next().text(item[0]);
+                        }
+                    })
+                }
+            },
+            complete: function(){
+                $this.prop("disabled", false);
+                $this.find('#loading').hide();
+                $this.find('.add-new').show();
+            }
+        });
+    })
+
     // Javascript xử lý thông tin khách hàng
     const CARD_INFO_CUSTOMER = $("#card_customer");
     const ELEMENTS_INFO_CUSTOMER = {
@@ -593,7 +865,6 @@
         empty_customer: CARD_INFO_CUSTOMER.find("#empty_customer"),
     };
     ELEMENTS_INFO_CUSTOMER.select_find_customer.select2({
-        minimumInputLength: 3,
         language: "vi",
         ajax: {
             url: CARD_INFO_CUSTOMER.attr('data-route'),
@@ -609,9 +880,16 @@
             },
             processResults: function(response, params){
                 params.page = params.page || 1;
+                var results = response.data.data || [];
+                
+                results.unshift({
+                    id: -1,
+                    full_name: 'Tạo mới khách hàng',
+                    phone: "",
+                });
             
                 return {
-                    results: response.data.data,
+                    results: results,
                     pagination: {
                         more: response.data.current_page < response.data.last_page
                     }
@@ -622,18 +900,20 @@
         templateSelection: formatCustomerSelection
     }).on('select2:select', function(e){
         let $this = $(this);
-        let data = $this.select2('data')[0];
-        
-        ELEMENTS_INFO_CUSTOMER.empty_customer.addClass('d-none');
+        let data = e.params.data;
+
+        if(Number(data.id) === -1) {
+            $("#modal_add_new_customer").modal('show');
+            $this.val(null).trigger('change');
+            return;
+        }
+
         template = renderCustomer(data);
+        ELEMENTS_INFO_CUSTOMER.empty_customer.addClass('d-none');
         ELEMENTS_INFO_CUSTOMER.select_find_customer.next(".select2-container").hide();
         ELEMENTS_INFO_CUSTOMER.empty_customer.after(template);
-
         CARD_INFO_CUSTOMER.find('.data-customer .select2').select2();
-
-        _loadProvince('/dist/tinh_tp.json', $("#province_code"), data.province_code);
-        _loadProvince(`/dist/quan-huyen/${data.province_code}.json`, $("#district_code"), data.district_code);
-        _loadProvince(`/dist/xa-phuong/${data.district_code}.json`, $("#ward_code"), data.ward_code);
+        _loadProvinceNew('all', data.province_code, data.ward_code, CARD_INFO_CUSTOMER.find('#province_code'), CARD_INFO_CUSTOMER.find('#ward_code'), null);
     });
 
     CARD_INFO_CUSTOMER.on('click', '#clear_customer', function (e) {
@@ -645,33 +925,66 @@
         ELEMENTS_INFO_CUSTOMER.select_find_customer.select2('open');
     })
 
-    $(document).on('change', '#province_code', function(){
+    $(document).on('change', '#card_customer #province_code', function(e){
         let $this = $(this);
         let code = $this.val();
         if(code) {
-            _loadProvince(`/dist/quan-huyen/${code}.json`, CARD_INFO_CUSTOMER.find('#district_code'), null);
-            CARD_INFO_CUSTOMER.find('#ward_code').find('option[value!=""]').remove();
+            _loadProvinceNew('wards', code, null, null, CARD_INFO_CUSTOMER.find("#ward_code"), null);
         } else {
-            CARD_INFO_CUSTOMER.find('#district_code').find('option[value!=""]').remove();
-            CARD_INFO_CUSTOMER.find('#ward_code').find('option[value!=""]').remove();
+            CARD_INFO_CUSTOMER.find("#ward_code").find('option[value!=""]').remove();
         }
+
+        if(ELEMENTS_PRODUCT.table_product.find('tbody tr').length > 0) {
+            ELEMENTS_PRODUCT.table_product.find('tbody tr').each(function(index, item){
+                item.querySelector('.delete_item').click();
+            })
+        }
+
+        if($("input[name='object_transport']:checked").val() === "2") {
+            $("[name='object_transport'][value='2']").trigger('change');
+        }
+
         CARD_INFO_CUSTOMER.find('#btn_char_fee_transport').prop('disabled', false);
     })
-    $(document).on('change', '#district_code', function(){
-        let $this = $(this);
-        let code = $this.val();
-        if(code){
-            _loadProvince(`/dist/xa-phuong/${code}.json`, CARD_INFO_CUSTOMER.find('#ward_code'), null);
-        } else {
-            CARD_INFO_CUSTOMER.find('#ward_code').find('option[value!=""]').remove();
-        }
-        CARD_INFO_CUSTOMER.find('#btn_char_fee_transport').prop('disabled', false)
-    })
+
+    // $(document).on('change', '#province_code', function(){
+    //     let $this = $(this);
+    //     let code = $this.val();
+    //     if(code) {
+    //         _loadProvince(`/dist/quan-huyen/${code}.json`, CARD_INFO_CUSTOMER.find('#district_code'), null);
+    //         CARD_INFO_CUSTOMER.find('#ward_code').find('option[value!=""]').remove();
+    //     } else {
+    //         CARD_INFO_CUSTOMER.find('#district_code').find('option[value!=""]').remove();
+    //         CARD_INFO_CUSTOMER.find('#ward_code').find('option[value!=""]').remove();
+    //     }
+    //     CARD_INFO_CUSTOMER.find('#btn_char_fee_transport').prop('disabled', false);
+    // })
+    // $(document).on('change', '#district_code', function(){
+    //     let $this = $(this);
+    //     let code = $this.val();
+    //     if(code){
+    //         _loadProvince(`/dist/xa-phuong/${code}.json`, CARD_INFO_CUSTOMER.find('#ward_code'), null);
+    //     } else {
+    //         CARD_INFO_CUSTOMER.find('#ward_code').find('option[value!=""]').remove();
+    //     }
+    //     CARD_INFO_CUSTOMER.find('#btn_char_fee_transport').prop('disabled', false)
+    // })
     $(document).on('change', '#ward_code, #address', function(){
         CARD_INFO_CUSTOMER.find('#btn_char_fee_transport').prop('disabled', false)
     })
     $(document).on('click', '.btn_char_fee_transport', function(e){
         e.preventDefault();
+
+        if(!CARD_INFO_CUSTOMER.find('#province_code').val() || !CARD_INFO_CUSTOMER.find('#ward_code').val() || !CARD_INFO_CUSTOMER.find('#address').val()){
+            alert("Vui lòng chọn đầy đủ địa chỉ nhận hàng");
+            return;
+        }
+
+        if($("[name='object_transport']:checked:not([value='3'])").length === 0) {
+            alert("Chỉ hoạt động khi chọn Đẩy qua hãng hoặc vận chuyển ngoài");
+            return;
+        }
+
         if($("[name='object_transport']:checked").val() == 1) {
             let is_confirm = confirm('Ấn Ok để tính lại giá cước');
             if(!is_confirm) {
@@ -697,7 +1010,7 @@
 
     ELEMENTS_PRODUCT.select_find_prod.select2({
         closeOnSelect: false,
-        minimumInputLength: 3,
+        minimumInputLength: 0,
         language: "vi",
         ajax: {
             url: CARD_PRODUCT.attr('data-route'),
@@ -705,9 +1018,10 @@
             type: 'GET',
             data: function(params){
                 var query = {
-                    search: params.term,
+                    search: params.term || '',
                     page: params.page || 1,
                     store_id: $("#store_id").val(),
+                    province_id: CARD_INFO_CUSTOMER.find('#province_code').val(),
                 }
 
                 return query;
@@ -912,17 +1226,50 @@
         input_total_balance: ELEMENTS_TOTAL.find("#total"),
         discount_total: ELEMENTS_TOTAL.find("#discount_total"),
         discount_total_money: ELEMENTS_TOTAL.find("#discount_total_money"),
+        coupon: ELEMENTS_TOTAL.find("#coupon"),
         customer_paid_total: ELEMENTS_TOTAL.find("#customer_paid_total"),
         customer_has_paid_total: ELEMENTS_TOTAL.find("#customer_has_paid_total"),
         total_end: ELEMENTS_TOTAL.find("#total_end"),
     };
+
+    CARD_TOTAL.coupon.on('change', function(){
+        let $this = $(this);
+        let data_item_coupon = $this.find('option:selected').attr('data-item');
+        
+        let total = 0;
+        if(data_item_coupon) {
+            data_item_coupon = JSON.parse(data_item_coupon);
+            let total_order = Number(CARD_TOTAL.input_total_balance.val().replaceAll('.', ''));
+
+            if(data_item_coupon.type === "PHAN_TRAM") {
+                total = total_order - (total_order * parseFloat(data_item_coupon.fee)) / 100;
+                
+                if(total > total_order) {
+                    total = total_order;
+                }
+
+            } else {
+                total = total_order - parseFloat(data_item_coupon.fee);
+            }
+        } 
+
+        total = Math.round(total);
+        
+        $("#total_after_coupon").val(total.toLocaleString('vi'));
+
+        CARD_TOTAL.customer_paid_total.val(total.toLocaleString('vi'));
+        CARD_TOTAL.discount_total.val(0).trigger('keyup');
+        CARD_TOTAL.customer_has_paid_total.val(0).trigger('keyup');
+        
+    })
 
     CARD_TOTAL.discount_total.keyup(function(e){
         let $this = $(this);
 
         CARD_TOTAL.customer_has_paid_total.val(0).trigger('keyup');
 
-        let total_balance = Number(CARD_TOTAL.input_total_balance.val().replaceAll('.', ''));
+        // let total_balance = Number(CARD_TOTAL.input_total_balance.val().replaceAll('.', ''));
+        let total_balance = Number($("#total_after_coupon").val().replaceAll('.', ''));
         if(total_balance === 0) {
             let $this = $(this).val(0);
             return;
@@ -945,11 +1292,13 @@
         let discount_total_money = -(total_balance * value) / 100;
         
         if(discount_total_money !== -0){
-            CARD_TOTAL.discount_total_money.removeClass('d-none');                
+            CARD_TOTAL.discount_total_money.removeClass('d-none');  
+            discount_total_money = Math.round(discount_total_money);              
             CARD_TOTAL.discount_total_money.find('span').text(discount_total_money.toLocaleString('vi'))
         }
 
         let customer_paid_total = total_balance + discount_total_money;
+        customer_paid_total = Math.round(customer_paid_total);
         CARD_TOTAL.customer_paid_total.val(customer_paid_total.toLocaleString('vi'))
 
     })
@@ -960,7 +1309,8 @@
         let value = Number($this.val().replaceAll('.', ''));
 
         let customer_paid_total = Number(CARD_TOTAL.customer_paid_total.val().replaceAll('.', ''));
-        let total_balance = Number(CARD_TOTAL.input_total_balance.val().replaceAll('.', ''));
+        // let total_balance = Number(CARD_TOTAL.input_total_balance.val().replaceAll('.', ''));
+        let total_balance = Number($("#total_after_coupon").val().replaceAll('.', ''));
         if(total_balance === 0 && customer_paid_total === 0) {
             $this.val(0);
             value = 0;
@@ -980,6 +1330,8 @@
         }
 
         let total_end = customer_paid_total - value;
+        total_end = Math.round(total_end);
+        
         CARD_TOTAL.total_end.val(total_end.toLocaleString('vi'));
 
         if(total_end >= 0) {
@@ -1004,6 +1356,7 @@
                     let $this = $(this);
                     let units = $this.attr('data-units');
                     weight += Number(JSON.parse(units).weight) * $this.find('.product_quantity').val();
+
                     data.push({
                         product_id: $this.attr('data-product'),
                         quantity: $this.find('.product_quantity').val(),
@@ -1130,6 +1483,19 @@
             if (!$("#gam").val() || $("#gam").val() === '0') {
                 $("#gam").val(weight.toLocaleString('vi'));
             }
+
+           let province_id = CARD_INFO_CUSTOMER.find('#province_code').val();
+           let find_fee_province = SHIPPING_FEES.find(function(item){
+                return Number(item.province_id) === Number(province_id);
+            });
+
+            if(!find_fee_province) {
+                find_fee_province = SHIPPING_FEES.find(function(item){
+                    return Number(item.province_id) === -1;
+                });
+            }
+
+            $("#shipping_fee").val(parseFloat(find_fee_province.fee).toLocaleString('vi')).trigger('keyup');
         }
 
         if (id === 'option4') {
@@ -1233,9 +1599,9 @@
             return;
         }
 
-        const store_id = $("#store_id").val();
+        const pick_address_id = $("#pick_address_id").val();
 
-        if(!store_id) {
+        if(!pick_address_id) {
             alert("Vui lòng chọn cửa hàng");
             return;
         }
@@ -1313,7 +1679,7 @@
         data: {
             _token: $("[name='csrf-token']").attr('content'),
             customer: customer,
-            store_id: store_id,
+            pick_address_id: pick_address_id,
             source: source,
             products: JSON.stringify(products),
             note: note,
