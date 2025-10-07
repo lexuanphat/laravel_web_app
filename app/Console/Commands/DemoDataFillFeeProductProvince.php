@@ -33,7 +33,7 @@ class DemoDataFillFeeProductProvince extends Command
         ");
 
         $get_province_ids = DB::SELECT("
-            SELECT id FROM provinces
+            SELECT code as id FROM provinces
         ");
 
         $get_product_ids = collect($get_product_ids)->pluck('id')->toArray();
@@ -59,6 +59,7 @@ class DemoDataFillFeeProductProvince extends Command
         }
 
         if($data_insert) {
+            DB::table("fee_product_province")->delete();
             DB::table("fee_product_province")->insert($data_insert);
         } 
     }
