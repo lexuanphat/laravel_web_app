@@ -220,11 +220,11 @@ class OrderController extends Controller
         }
 
         if(isset($parsed['staff']) && !empty($parsed['staff'])) {
-            $query->where("user_id", $parsed['staff']);
+            $query->where("orders.user_id", $parsed['staff']);
         }
 
         if(isset($parsed['status_order']) && !empty($parsed['status_order']) && $parsed['status_order'] != -1) {
-            $query->where("status", self::ORDER_STATUS[$parsed['status_order']]);
+            $query->where("orders.status", self::ORDER_STATUS[$parsed['status_order']]);
         }
 
         if(isset($parsed['search'])) {
