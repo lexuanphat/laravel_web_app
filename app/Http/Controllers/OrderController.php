@@ -185,13 +185,15 @@ class OrderController extends Controller
         parse_str($search, $parsed);
 
         $query = DB::table("orders")
+        ->leftJoin("users", "orders.user_id", "=", "users.id")
         ->leftJoin("customers", "orders.customer_id", "=", "customers.id")
         ->leftJoin("order_shipments", "orders.id", "=", "order_shipments.order_id")
         ->leftJoin('transports', 'order_shipments.shipping_partner_id', '=', 'transports.id');
+        
 
-        if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']) {
-            $query = $query->where("orders.store_id", auth()->user()->store_id);
-        }
+        // if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']) {
+        //     $query = $query->where("orders.store_id", auth()->user()->store_id);
+        // }
 
         if(isset($parsed['date']) && !empty($parsed['date'])) {
             $current_date = date("Y-m-d");
@@ -239,7 +241,8 @@ class OrderController extends Controller
         }
 
         $query = $query->selectRaw("
-            orders.*, customers.full_name as main_customer_full_name, order_shipments.shipping_partner_id, transports.full_name as partner_name, orders.status as status_raw
+            orders.*, customers.full_name as main_customer_full_name, order_shipments.shipping_partner_id, transports.full_name as partner_name, orders.status as status_raw,
+            users.full_name as user_full_name
         ")
         ->orderBy("created_at", "DESC");
 
@@ -305,6 +308,9 @@ class OrderController extends Controller
                 </div>
             ';
         })
+        ->addColumn('user_order', function($item){
+            return "<div>{$item->user_full_name}</div>";
+        })
         ->addColumn('function', function($item){
             $link = route('admin.order.detail', ['id' => $item->id]);
             $elements = "<div class='d-flex flex-wrap justify-content-center'>";
@@ -329,7 +335,7 @@ class OrderController extends Controller
 
             return $elements;
         })
-        ->rawColumns(['total_amount', 'created_at', 'status', 'code', 'function', 'checkbox', 'object_partner']);
+        ->rawColumns(['total_amount', 'created_at', 'status', 'code', 'function', 'checkbox', 'object_partner', 'user_order']);
         return $datatables->toJson();
     }
 
