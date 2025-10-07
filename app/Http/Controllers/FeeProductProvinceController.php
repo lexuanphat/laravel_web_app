@@ -76,7 +76,7 @@ class FeeProductProvinceController extends Controller
         parse_str($search, $parsed);
 
         $model = DB::table("fee_product_province")
-        ->leftJoin('provinces', 'fee_product_province.province_id', '=', 'provinces.id')
+        ->leftJoin('provinces', 'fee_product_province.province_id', '=', 'provinces.code')
         ->leftJoin('products', 'fee_product_province.product_id', '=', 'products.id')
         ->leftJoin('users as created_user', 'fee_product_province.created_user_id', '=', 'created_user.id')
         ->leftJoin('users as updated_user', 'fee_product_province.updated_user_id', '=', 'updated_user.id')
@@ -94,7 +94,7 @@ class FeeProductProvinceController extends Controller
         }
 
         if(isset($parsed['province_id'])) {
-            $model->where("provinces.id", $parsed['search']);
+            $model->where("provinces.code", $parsed['search']);
         }
 
         $datatables = DataTables::of($model)
