@@ -15,6 +15,7 @@ use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\ShippingFeeController;
 use App\Http\Controllers\FeeProductProvinceController;
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -83,6 +84,14 @@ Route::group([
         $route->put('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
         $route->delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
         $route->get('/product/getDataCategory', [ProductController::class, 'getDataCategory'])->name('product.get_data_category');
+        $route->get('/product/getDataTag', [ProductController::class, 'getDataTag'])->name('product.get_data_tag');
+
+        $route->get('/tag', [TagController::class, 'index'])->name('tag');
+        $route->get('/tag/getData', [TagController::class, 'getData'])->name('tag.get_data');
+        $route->post('/tag/store', [TagController::class, 'store'])->name('tag.store');
+        $route->get('/tag/detail/{id}', [TagController::class, 'detail'])->name('tag.detail');
+        $route->put('/tag/update/{id}', [TagController::class, 'update'])->name('tag.update');
+        $route->delete('/tag/delete/{id}', [TagController::class, 'delete'])->name('tag.delete');
 
         // Quản lý kho
         $route->get('/product-stock', [ProductStockController::class, 'index'])->name('product_stock');

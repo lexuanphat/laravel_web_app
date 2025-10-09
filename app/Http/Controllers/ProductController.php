@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductValidateRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use DataTables;
 use Illuminate\Support\Facades\Storage;
@@ -95,6 +96,14 @@ class ProductController extends Controller
 
         $data = Category::where('name', 'like', '%'.$request->search.'%')
         ->select("id", "name")
+        ->get();
+
+        return $this->successResponse($data, 'Lấy dữ liệu thành công', ['exists' => $data->isNotEmpty()]);
+    }
+
+    public function getDataTag(Request $request){
+        $data = Tag::where('tag_name', 'like', '%'.$request->search.'%')
+        ->select("id", "tag_name")
         ->get();
 
         return $this->successResponse($data, 'Lấy dữ liệu thành công', ['exists' => $data->isNotEmpty()]);

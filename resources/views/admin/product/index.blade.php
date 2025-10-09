@@ -97,6 +97,8 @@
             delete: @json(route('admin.product.delete', ['id' => ':id'])),
             get_data_category: @json(route('admin.product.get_data_category')),
             create_new_category: @json(route("admin.category.store")),
+            get_data_tag: @json(route('admin.product.get_data_tag')),
+            create_new_tag: @json(route("admin.tag.store")),
         };
 
         const elements = {
@@ -112,6 +114,7 @@
             name: elements.modal.find('#name'),
             sku: elements.modal.find('#sku'),
             category: elements.modal.find('#category_id'),
+            tag: elements.modal.find('#tag_id'),
             price: elements.modal.find('#price'),
             desc: elements.modal.find('#desc'),
             snow_editor: elements.modal.find('#snow_editor'),
@@ -160,6 +163,26 @@
                 ],
                 order: [[1, 'asc']]
             });
+        }
+
+        function addTagItem(data){
+            $.ajax({
+                url: route.create_new_tag,
+                type: "POST",
+                data: data,
+                beforeSend: function(){},
+                success: function(response){
+                    if(response.success) {
+                        let data = response.data;
+                        let new_option = new Option(data.name, data.id, true, true);
+                        elements_modal.tag.append(new_option).trigger('change');
+                    }
+                },
+                error: function(err){
+                    alert("Có lỗi xảy ra, vui lòng thử lại");
+                    elements_modal.tag.val("").trigger('change');
+                },
+            })
         }
 
         function addCategoryItem(data){
@@ -415,6 +438,54 @@
                         addCategoryItem(data_send);
                     } else {
                         elements_modal.category.val("").trigger('change');
+                    }
+                }
+                
+            });
+
+            elements_modal.tag.select2({
+                language: "vi",
+                ajax: {
+                    url: route.get_data_tag,
+                    delay: 250,
+                    type: 'GET',
+                    data: function(params){
+                        var query = {
+                            search: params.term,
+                        }
+
+                        return query;
+                    },
+                    processResults: function(response, params){
+                        let data = response.data;
+                        let results = response.data.map(item => ({
+                            id: item.id,
+                            text: item.tag_name,
+                        }));
+
+                        if(response.exists === false) {
+                            results.push({
+                                id: -1,
+                                text: params.term,
+                                isNew: true,
+                            });
+                        }
+
+                        return { results };
+                    },
+                },
+            }).on('select2:select', function(e){
+                let data = e.params.data;
+                if(data.isNew) {
+                    let confirm_create = confirm(`Tạo mới tag ${data.text}`);
+                    if(confirm_create) {
+                        data_send = {
+                            tag_name: data.text,
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                        };
+                        addTagItem(data_send);
+                    } else {
+                        elements_modal.tag.val("").trigger('change');
                     }
                 }
                 

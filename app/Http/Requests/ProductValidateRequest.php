@@ -70,6 +70,10 @@ class ProductValidateRequest extends FormRequest
                 'regex:/^\d+$/',
                 'gt:0',
             ],
+            'tag_id' => [
+                'nullable',
+                'exists:tags,id',
+            ],
         ];
 
         if($this->_method === 'PUT') {

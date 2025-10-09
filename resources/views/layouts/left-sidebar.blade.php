@@ -39,6 +39,10 @@
                     'link' => route('admin.category'),
                 ],
                 [
+                    'name' => 'Danh sách tag',
+                    'link' => route('admin.tag'),
+                ],
+                [
                     'name' => 'Danh sách phí vận chuyển',
                     'link' => route('admin.shipping_fee'),
                 ],
