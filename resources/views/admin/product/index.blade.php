@@ -47,20 +47,16 @@
                         <div class=align-middle">STT</div>
                     </th>
                     <th>
+                        <div class=align-middle">Mã sản phẩm</div>
+                    </th>
+                    <th>
                         <div class=align-middle">Tên sản phẩm</div>
-                        <div class=align-middle">/ Mã sản phẩm</div>
-                        <div class=align-middle">/ Mã SKU</div>
                     </th>
                     <th>
                         <div class=align-middle">Danh mục</div>
-                        <div class=align-middle">/ Số lượng tồn</div>
-                        <div class=align-middle">/ Giá bán</div>
                     </th>
                     <th>
-                        <div class=align-middle">Ngày tạo</div>
-                    </th>
-                    <th>
-                        <div class=align-middle">Ngày cập nhật</div>
+                        <div class=align-middle">Ngày thao tác</div>
                     </th>
                     <th>
                         <div class=align-middle">Người thao tác</div>
@@ -147,10 +143,10 @@
                 serverSide: true,
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle', width: "5%"},
-                    { data: 'name', name: "name", class: 'align-middle all'},
-                    { data: 'data_col_3', width: '25%', class: 'align-middle'},
-                    { data: 'created_at', class: 'align-middle'},
-                    { data: 'updated_at', class: 'align-middle'},
+                    { data: 'code', name: "code", class: 'align-middle all'},
+                    { data: 'name', width: '25%', class: 'align-middle'},
+                    { data: 'category', class: 'align-middle'},
+                    { data: 'date_action', class: 'align-middle'},
                     { data: 'user.full_name', class: 'align-middle'},
                     { data: 'action', name: "action", class: 'align-middle', width: '10%',},
                 ],

@@ -33,6 +33,8 @@ class OrderValidateRequest extends FormRequest
             // 'pick_address_id' => 'required|integer|exists:stores,id',
             'pick_address_id' => 'required|integer',
 
+            'coupon' => 'nullable',
+
             'customer.id' => 'required',
             'customer.full_name' => 'required|string|max:255',
             'customer.phone' => 'required|string|regex:/^0\d{9}$/',

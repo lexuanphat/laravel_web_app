@@ -177,7 +177,8 @@
 
 <script>
     const elements = {
-        table_manage: $("#table_manage")
+        table_manage: $("#table_manage"),
+        route_delete: @json(route('admin.order.delete', ['id' => ':id']))
     };
     function renderTable(search){
         elements.table_manage.DataTable({
@@ -389,6 +390,49 @@
                 }
             });
         })
+    })
+
+    $(document).on("click", ".remove-record", async function(){
+        let result = confirm("Có chắc muốn xoá dữ liệu?");
+        if(!result) {
+            return;
+        }
+
+        let $this = $(this);
+        let record = $this.data('record');
+        let action = elements.route_delete;
+        action = action.replace(':id', record);
+
+        $.ajax({
+            url: action,
+            type: "DELETE",
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+            },
+            beforeSend: function(){
+                // $this.prop('disabled', true);
+                // $this.find('#loading').show();
+                // $this.find('i').hide();
+            },
+            success: function(res){
+                if(res.success) {
+                    createToast('success', res.message);
+                    $("#btn-filter").trigger('click');
+                }
+            },
+            error: function(err){
+                let data_error = err.responseJSON;
+                if(data_error.success === false) {
+                    $("#not_fount_modal").find('#modal_title_not_found').text(data_error.message);
+                    $("#not_fount_modal").modal('show');
+                }
+            },
+            complete: function(){
+            //     $this.prop('disabled', false);
+            //     $this.find('#loading').hide();
+            //     $this.find('i').show();
+            // }
+        }});
     })
 
     $("#modal_change_status_order").on('hidden.bs.modal', function (e) {

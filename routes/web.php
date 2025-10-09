@@ -58,6 +58,7 @@ Route::group([
         $route->post('/order/apiGetFee', [OrderController::class, 'apiGetFee'])->name('order.api_get_fee');
         $route->post('/order/createOrder', [OrderController::class, 'createOrder'])->name('order.create_order');
         $route->post('/order/cancelOrderPartner', [OrderController::class, 'cancelOrderPartner'])->name('order.cancel_order_partner');
+        $route->delete('/order/delete/{id}', [OrderController::class, 'delete'])->name('order.delete');
 
         // Quản lý danh mục sản phẩm
         $route->get('/category', [CategoryController::class, 'index'])->name('category');

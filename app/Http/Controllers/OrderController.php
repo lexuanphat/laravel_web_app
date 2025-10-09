@@ -313,6 +313,7 @@ class OrderController extends Controller
         })
         ->addColumn('function', function($item){
             $link = route('admin.order.detail', ['id' => $item->id]);
+            $link_delete = route('admin.order.delete', ['id' => $item->id]);
             $elements = "<div class='d-flex flex-wrap justify-content-center'>";
             $elements .= "<a href='$link'><i class='ri-eye-fill fs-4'> </i></a>";
             if(in_array($item->shipping_partner_id, array_keys(self::GUESS_TRANSPORT))) {
@@ -331,12 +332,34 @@ class OrderController extends Controller
                 }
                 $elements .= '<button class="btn btn-primary" '.$is_disabled.' onclick="cancelOrderPartner('.$item->store_id.', '.$item->id.', `'.$key_partner.'`)">'.$text.'</button>';
             }
+            $elements .= '<button class="btn btn-danger remove-record" data-action="'.$link_delete.'" data-record="'.$item->id.'"><i class="ri-delete-bin-fill"></i></button>';
             $elements .= "</div>";
 
             return $elements;
         })
         ->rawColumns(['total_amount', 'created_at', 'status', 'code', 'function', 'checkbox', 'object_partner', 'user_order']);
         return $datatables->toJson();
+    }
+
+    public function delete($id) {
+        $find_data_order = DB::table("orders")->where("id", $id);
+        
+        if(!$find_data_order->first()) {
+            return $this->errorResponse('Không tìm thấy dữ liệu, vui lòng F5 thử lại', 404);
+        }
+        
+        DB::beginTransaction();
+
+        try {
+            $find_data_order->delete();
+            DB::table("order_items")->where("order_id", $id)->delete();
+            DB::commit();
+
+            return $this->successResponse([], 'Đã xoá dữ liệu');
+        } catch (\Exception $e) {
+            DB::rollback();
+            // something went wrong
+        }
     }
 
     public function cancelOrderPartner(Request $request) {
@@ -571,6 +594,8 @@ class OrderController extends Controller
     public function detail($id, Request $request) {
         $data = DB::table("orders")
         ->leftJoin('order_shipments', 'orders.id', '=', 'order_shipments.order_id')
+        ->leftJoin('provinces', 'orders.customer_province', '=', 'provinces.code')
+        ->leftJoin('wards', 'orders.customer_ward', '=', 'wards.code')
         ->where("orders.id", $id);
 
         if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']){
@@ -580,7 +605,8 @@ class OrderController extends Controller
         $data = $data->selectRaw("
             orders.*, order_shipments.shipping_partner_id, order_shipments.shipping_fee, 
             order_shipments.current_status, order_shipments.tracking_number, order_shipments.cod,
-            order_shipments.note as note_transport, order_shipments.id as order_shipment_id
+            order_shipments.note as note_transport, order_shipments.id as order_shipment_id, provinces.name as customer_province_name, 
+            wards.name as customer_ward_name
         ")
         ->first();
 
@@ -773,6 +799,7 @@ class OrderController extends Controller
             'user_id' => auth()->user()->id,
             'created_at' => date("Y-m-d H:i:s"),
             'updated_at' => null,
+            'coupon_id' => $validated['coupon'],
         ];
 
         $get_products = $this->_getProducts();
@@ -805,7 +832,14 @@ class OrderController extends Controller
                 'weight' => (double) ($get_products[$prod['product_id']]->weight / 1000),
             ];
 
-            $calculate_price_quantity = $get_products[$prod['product_id']]->price * $prod['quantity'];
+            $price_prod = DB::table("fee_product_province")->where("product_id", $prod['product_id'])->where("province_id", $validated['customer']['province'])->value('fee');
+
+            if($price_prod) {
+                $calculate_price_quantity = $price_prod * $prod['quantity'];
+            } else {
+                $calculate_price_quantity = $get_products[$prod['product_id']]->price * $prod['quantity'];
+            }
+
             $product_total_discount = 0;
             if($prod['is_option'] === "1") { # giảm giá = GIÁ TRỊ
                 $product_total_discount = $calculate_price_quantity - $prod['discount'];
@@ -837,39 +871,23 @@ class OrderController extends Controller
         }
 
         $data_insert_order['total_price'] =  $total_price;
-        $data_insert_order['total_amount'] =  $total_price - (($total_price * $data_insert_order['total_discount']) / 100);
+        $find_coupon = DB::table("coupon")->where("id", $validated['coupon'])->first();
+        if($find_coupon) {
+            if($find_coupon->type === 'PHAN_TRAM') {
+                $data_insert_order['total_apply_coupon'] = round($total_price - ( ($total_price * $find_coupon->fee) / 100 ));
+            } else {
+                $data_insert_order['total_apply_coupon'] = $total_price - $find_coupon->fee;
+            }
+        } else {
+            $data_insert_order['total_apply_coupon'] =  $total_price;
+        }
+        $data_insert_order['total_amount'] = $data_insert_order['total_apply_coupon'] - (( $data_insert_order['total_apply_coupon'] * $data_insert_order['total_discount']) / 100);
 
         DB::beginTransaction();
 
         try {
 
-            /**
-             * Check số lượng tồn của sản phẩm
-             */
-            // $get_stocks = DB::table("product_stocks")
-            // ->where("store_id", $validated['store_id'])
-            // ->whereIn('product_id', array_keys($check_stocks))
-            // ->get();
-    
-            // foreach($get_stocks as $item) {
-            //     if( ($item->quantity_sold + $check_stocks[$item->product_id]) > $item->available_quantity ) {
-            //         DB::rollback();
-            //         $validator->errors()->add('products', 'Có sản phẩm bán vượt quá số lượng cho phép bán, vui lòng kiểm tra lại');
-            //         throw new \Illuminate\Validation\ValidationException($validator);
-            //     }
-    
-            //     $item->quantity_sold +=  $check_stocks[$item->product_id];
-            // }
-
-            /**
-             * Cập nhật lại số lượng tồn
-             */
-            // foreach($get_stocks as $item) {
-            //     DB::table("product_stocks")->where("store_id",  $validated['store_id'])->where("product_id", $item->product_id)->update([
-            //         'quantity_sold' => $item->quantity_sold,
-            //     ]);
-            // }
-
+            
             /**
              * Trường hợp nhận tại cửa hàng
              */
