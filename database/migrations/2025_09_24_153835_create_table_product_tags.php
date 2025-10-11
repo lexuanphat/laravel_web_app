@@ -26,7 +26,7 @@ return new class extends Migration
 
         Schema::create('product_tag_details', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('products_id');
+            $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('tag_id');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();

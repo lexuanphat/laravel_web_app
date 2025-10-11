@@ -24,7 +24,7 @@
                 @include('admin._partials.div-error')
             </div>
             <div class="mb-2">
-                <label for="tag_id" class="required">Tags <span class="text-danger">(*)</span></label>
+                <label for="tag_id">Tag</label>
                 <select class="form-control select2 tag_id select2-multiple" data-toggle="select2" multiple="multiple" id="tag_id" name="tag_id">
                     <option value="">Chọn tag</option>
                 </select>

@@ -105,8 +105,10 @@ class TagController extends Controller
             return $this->errorResponse('Không tìm thấy dữ liệu, vui lòng F5 thử lại', 404);
         }
 
-        if($data->products_count > 0) {
-            return $this->errorResponse('Danh mục này đang tồn tại nên sản phẩm không thể xoá', 404);
+        $exists = DB::table('product_tag_details')->where('tag_id', $id)->exists();
+
+        if($exists) {
+            return $this->errorResponse('Tag này đang tồn tại nên sản phẩm không thể xoá', 404);
         }
 
         $data->delete();

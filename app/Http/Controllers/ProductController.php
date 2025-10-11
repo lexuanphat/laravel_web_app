@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use DataTables;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -113,7 +114,19 @@ class ProductController extends Controller
         $validated['user_id'] = auth()->user()->id;
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        if($validated['tag_id']) {
+            $array_tag = explode(',', $validated['tag_id']);
+            $insert_tag = [];
+            foreach($array_tag as $tag_id) {
+                $insert_tag[] = [
+                    'product_id' => $product->id,
+                    'tag_id' => $tag_id,
+                ];
+            }
+            DB::table('product_tag_details')->insert($insert_tag);
+        }
 
         return $this->successResponse([], 'Thêm mới thành công');
     }
@@ -121,6 +134,11 @@ class ProductController extends Controller
     public function detail($id, Request $request){
         $data = Product::with('category:id,name')->find($id);
         $data->price = number_format($data->price, 0, ',', '.');
+
+        $tag = DB::table('product_tag_details')
+            ->where('product_tag_details.product_id', $id)
+            ->pluck('tag_id');
+        $data->tag_id = $tag ? $tag->toArray() : [];
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu', 404);
@@ -152,8 +170,20 @@ class ProductController extends Controller
         $validated['user_id'] = auth()->user()->id;
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
-
+        DB::table('product_tag_details')->where('product_id', $id)->delete();
         $data->update($validated);
+
+        if($validated['tag_id']) {
+            $array_tag = explode(',', $validated['tag_id']);
+            $insert_tag = [];
+            foreach($array_tag as $tag_id) {
+                $insert_tag[] = [
+                    'product_id' => $id,
+                    'tag_id' => $tag_id,
+                ];
+            }
+            DB::table('product_tag_details')->insert($insert_tag);
+        }
 
         return $this->successResponse([], 'Cập nhật thành công');
     }

@@ -44,25 +44,29 @@
             <thead class="table-light">
                 <tr>
                     <th>
-                        <div class=align-middle">STT</div>
+                        <div class="align-middle">STT</div>
                     </th>
                     <th>
-                        <div class=align-middle">Mã sản phẩm</div>
+                        <div class="align-middle">Tên sản phẩm</div>
+                        <div class="align-middle">/ Mã sản phẩm</div>
+                        <div class="align-middle">/ Mã SKU</div>
                     </th>
                     <th>
-                        <div class=align-middle">Tên sản phẩm</div>
+                        <div class="align-middle">Danh mục</div>
+                        <div class="align-middle">/ Số lượng tồn</div>
+                        <div class="align-middle">/ Giá bán</div>
                     </th>
                     <th>
-                        <div class=align-middle">Danh mục</div>
+                        <div class="align-middle">Ngày tạo</div>
                     </th>
                     <th>
-                        <div class=align-middle">Ngày thao tác</div>
+                        <div class="align-middle">Ngày cập nhật</div>
                     </th>
                     <th>
-                        <div class=align-middle">Người thao tác</div>
+                        <div class="align-middle">Người thao tác</div>
                     </th>
                     <th>
-                        <div class=align-middle">Chức năng</div>
+                        <div class="align-middle">Chức năng</div>
                     </th>
                 </tr>
             </thead>
@@ -111,6 +115,7 @@
             sku: elements.modal.find('#sku'),
             category: elements.modal.find('#category_id'),
             tag: elements.modal.find('#tag_id'),
+            tag_option: elements.modal.find('#tag_id option'),
             price: elements.modal.find('#price'),
             desc: elements.modal.find('#desc'),
             snow_editor: elements.modal.find('#snow_editor'),
@@ -170,7 +175,7 @@
                 success: function(response){
                     if(response.success) {
                         let data = response.data;
-                        let new_option = new Option(data.name, data.id, true, true);
+                        let new_option = new Option(data.tag_name, data.id, true, true);
                         elements_modal.tag.append(new_option).trigger('change');
                     }
                 },
@@ -459,14 +464,6 @@
                             text: item.tag_name,
                         }));
 
-                        if(response.exists === false) {
-                            results.push({
-                                id: -1,
-                                text: params.term,
-                                isNew: true,
-                            });
-                        }
-
                         return { results };
                     },
                 },
@@ -520,6 +517,8 @@
                 e.preventDefault();
                 elements_modal.desc.val(elements_modal.quill_editor.getSemanticHTML());
                 let form_data = new FormData(elements_modal.form[0]);
+                let array_tag = elements_modal.tag.val();
+                form_data.append('tag_id', array_tag.toString());
                 form_data.append('weight', $("#weight").val().replaceAll(".", ""))
 
                 if(elements_modal.text_action.text() === title.btn_create) {
