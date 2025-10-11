@@ -48,19 +48,15 @@ class CategoryController extends Controller
             return "<span class='badge bg-dark text-light'>Tổng: {$category->products_count}</span>";
         })
         ->addColumn('date_action', function($category){
-            $created_at = $category->created_at ? date("d/m/Y H:i", strtotime($category->created_at)) : 'X';
-            $updated_at = $category->updated_at ? date("d/m/Y H:i", strtotime($category->updated_at)) : 'X';
-            $user_action = $category->user->full_name;
+            $date_action = $category->updated_at ? date("d/m/Y", strtotime($category->updated_at)) : date("d/m/Y", strtotime($category->created_at));
+
             return "
-                <div>{$created_at}</div>
-                 <div>{$updated_at}</div>
-                 <div>{$user_action}</div>
+                <div class='text-body'>{$date_action}</div>
             ";
         })
         ->editColumn('name', function($category){
                 return "
                     <div>{$category->name}</div>
-                    <di class='text-warning'>{$category->code}</a></div>
                 ";
             }
         )

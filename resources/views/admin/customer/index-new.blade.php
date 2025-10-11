@@ -13,19 +13,16 @@
                         <div class="text-uppercase align-middle">STT</div>
                     </th>
                     <th>
+                        <div class="text-uppercase align-middle">Mã khách hàng</div>
+                    </th>
+                    <th>
                         <div class="text-uppercase align-middle">Tên</div>
-                        <div class="text-uppercase align-middle">/ Mã khách hàng</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Số điện thoại</div>
-                        <div class="text-uppercase align-middle">/ Email</div>
-                        <div class="text-uppercase align-middle">/ Ngày sinh</div>
                     </th>
                     <th>
-                        <div class="text-uppercase align-middle">Ngày tạo</div>
-                    </th>
-                    <th>
-                        <div class="text-uppercase align-middle">Ngày cập nhật</div>
+                        <div class="text-uppercase align-middle">Ngày thao tác</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Người thao tác</div>
@@ -79,12 +76,12 @@
             ordering: false,
             columns: [
                 { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
-                { data: 'full_name', width: '25%', class: 'align-middle'},
-                { data: 'info', width: '30%', class: 'align-middle'},
-                { data: 'created_at', class: 'align-middle'},
-                { data: 'updated_at', class: 'align-middle'},
+                { data: 'code', class: 'align-middle'},
+                { data: 'full_name', class: 'align-middle'},
+                { data: 'phone', class: 'align-middle'},
+                { data: 'date_action', class: 'align-middle'},
                 { data: 'user.full_name', class: 'align-middle'},
-                { data: 'action', name: "action", class: 'align-middle', width: '15%',},
+                { data: 'action', name: "action", class: 'align-middle',},
             ]
         });
     }
@@ -180,7 +177,7 @@
             // Reload với query string
             window.history.pushState({}, '', fullUrl);
             // mai xử lý search ajax
-            elements.table_manage_customer.DataTable().clear().destroy();
+            ELEMENTS.table_manage.DataTable().clear().destroy();
             renderTable(queryString)
         });
 

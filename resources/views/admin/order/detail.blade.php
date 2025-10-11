@@ -85,6 +85,10 @@
                                 <td class="text-end">{{number_format($data->total_price, 0, ",", ".")}}</td>
                             </tr>
                             <tr>
+                                <td>Áp dụng phiếu giảm:</td>
+                                <td class="text-end">{{number_format($data->total_apply_coupon, 0, ",", ".")}}</td>
+                            </tr>
+                            <tr>
                                 <td>Chiết khấu:</td>
                                 <td class="text-end">{{(int)$data->total_discount}}%</td>
                             </tr>
@@ -118,7 +122,7 @@
                 <h5>{{$data->customer_full_name}}</h5>
 
                 <address class="mb-0 font-14 address-lg">
-                    <abbr title="Địa chỉ khách hàng">ĐC:</abbr> {{$data->customer_address}}, {{$data->customer_ward}}, {{$data->customer_district}}, {{$data->customer_province}}<br>
+                    <abbr title="Địa chỉ khách hàng">ĐC:</abbr> {{$data->customer_address}}, {{$data->customer_ward_name}}, {{$data->customer_province_name}}<br>
                     <abbr title="Số điện thoại khách hàng">SDT:</abbr> <a href="tel:{{$data->customer_phone}}" class="link">{{$data->customer_phone}}</a> <br>
                 </address>
 

@@ -34,17 +34,16 @@
                         <div class="text-uppercase align-middle">STT</div>
                     </th>
                     <th>
+                        <div class="text-uppercase align-middle">Mã danh mục</div>
+                    </th>
+                    <th>
                         <div class="text-uppercase align-middle">Tên</div>
-                        <div class="text-uppercase align-middle">/ Mã danh mục</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Tổng sản phẩm</div>
                     </th>
                     <th>
-                        <div class="text-uppercase align-middle">Ngày tạo</div>
-                    </th>
-                    <th>
-                        <div class="text-uppercase align-middle">Ngày cập nhật</div>
+                        <div class="text-uppercase align-middle">Ngày thao tác</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Người thao tác</div>
@@ -259,12 +258,12 @@
                 ordering: false,
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
-                    { data: 'name', width: '30%', name: "abc", class: 'align-middle'},
-                    { data: 'products_count', width: '20%', class: 'align-middle text-center'},
-                    { data: 'created_at', class: 'align-middle'},
-                    { data: 'updated_at', class: 'align-middle'},
+                    { data: 'code', name: "code", class: 'align-middle'},
+                    { data: 'name', class: 'align-middle'},
+                    { data: 'products_count', class: 'align-middle text-center'},
+                    { data: 'date_action', class: 'align-middle'},
                     { data: 'user.full_name', class: 'align-middle'},
-                    { data: 'action', name: "action", class: 'align-middle', width: '15%',},
+                    { data: 'action', name: "action", class: 'align-middle'},
                 ],
             });
         }

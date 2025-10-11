@@ -55,22 +55,16 @@ class ProductController extends Controller
             }
         )
         ->addColumn('date_action', function($product){
-            $created_at = $product->created_at ? date("d/m/Y H:i", strtotime($product->created_at)) : 'X';
-            $updated_at = $product->updated_at ? date("d/m/Y H:i", strtotime($product->updated_at)) : 'X';
-            $user_action = $product->user->full_name;
+            $date_action = $product->updated_at ? date("d/m/Y", strtotime($product->updated_at)) : date("d/m/Y", strtotime($product->created_at));
+
             return "
-                <div class='text-body'>{$created_at}</div>
-                 <div class='text-body'>{$updated_at}</div>
-                 <div class='text-body'>{$user_action}</div>
+                <div class='text-body'>{$date_action}</div>
             ";
         })
-        ->addColumn('data_col_3', function($product){
-            $price = number_format($product->price);
+        ->addColumn('category', function($product){
             return "
                 <div>
-                    <p class='mb-0'>{$product->category->name}</p>
-                    <p class='mb-0'>X</p>
-                    <p class='mb-0'>{$price}</p>
+                    {$product->category->name}
                 </div>
             ";
         })
@@ -83,12 +77,11 @@ class ProductController extends Controller
                 <img src='{$image_prod}' loading='lazy' decoding='async' alt='contact-img' title='contact-img' class='rounded me-3' height='48' />
                 <div class='m-0 d-inline-block align-middle font-16'>
                     <p class='text-body m-0'>{$product->name}</p>
-                    <p class='text-warning m-0'>{$product->code}</p>
                     <p class='text-danger m-0'>{$product->sku}</p>
                 </div>
             ";
         })
-        ->rawColumns(['action', 'name', 'date_action', 'data_col_3']);
+        ->rawColumns(['action', 'name', 'date_action', 'category']);
         return $datatables->toJson();
     }
 

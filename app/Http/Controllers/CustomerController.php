@@ -49,34 +49,28 @@ class CustomerController extends Controller
             }
         )
         ->addColumn('date_action', function($customer){
-            $created_at = $customer->created_at ? date("d/m/Y H:i", strtotime($customer->created_at)) : 'X';
-            $updated_at = $customer->updated_at ? date("d/m/Y H:i", strtotime($customer->updated_at)) : 'X';
-            $user_action = $customer->user->full_name;
+            $date_action = $customer->updated_at ? date("d/m/Y", strtotime($customer->updated_at)) : date("d/m/Y", strtotime($customer->created_at));
+
             return "
-                <div>{$created_at}</div>
-                 <div>{$updated_at}</div>
-                 <div>{$user_action}</div>
+                <div class='text-body'>{$date_action}</div>
             ";
         })
-        ->addColumn('info', function($customer){
+        ->editColumn('phone', function($customer){
             $phone = $customer->phone;
-            $email = $customer->email ? $customer->email : 'X';
-            $date_of_birth = $customer->date_of_birth ? date("d/m/Y", strtotime($customer->date_of_birth)) : 'X';
+            
 
             return "
             <div><a href='tel:{$phone}'>{$phone}</a></div>
-             <div><a href='mailto:{$email}'>{$email}</a></div>
-             <div>{$date_of_birth}</div>
+             
         ";
         })
         ->editColumn('full_name', function($customer){
                 return "
                     <div>{$customer->full_name} <span class='badge badge-{$customer->getColorGender($customer->gender)}'>{$customer->getGender($customer->gender)}</span></div>
-                    <div class='text-warning'>{$customer->code}</div>
                 ";
             }
         )
-        ->rawColumns(['action', 'full_name', 'date_action', 'info']);
+        ->rawColumns(['action', 'full_name', 'date_action', 'phone']);
         return $datatables->toJson();
     }
 

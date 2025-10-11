@@ -17,6 +17,13 @@
             </div>
         </div>
 
+        <div class="col">
+            <div class="input-group">
+            <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+            <input type="text" id="provinceInput" class="form-control" placeholder="Tìm kiếm tỉnh thành">
+            </div>
+        </div>
+
     
         <!-- Nút lưu -->
         <div class="col-md-2">

@@ -62,13 +62,10 @@ class TransportController extends Controller
             }
         )
         ->addColumn('date_action', function($transport){
-            $created_at = $transport->created_at ? date("d/m/Y H:i", strtotime($transport->created_at)) : 'X';
-            $updated_at = $transport->updated_at ? date("d/m/Y H:i", strtotime($transport->updated_at)) : 'X';
-            $user_action = $transport->user->full_name;
+            $date_action = $transport->updated_at ? date("d/m/Y", strtotime($transport->updated_at)) : date("d/m/Y", strtotime($transport->created_at));
+
             return "
-                <div>{$created_at}</div>
-                 <div>{$updated_at}</div>
-                 <div>{$user_action}</div>
+                <div class='text-body'>{$date_action}</div>
             ";
         })
         ->addColumn('user_full_name', function($transport){
@@ -77,10 +74,12 @@ class TransportController extends Controller
                  <div>{$user_action}</div>
             ";
         })
+        ->editColumn('phone', function($transport){
+            return "<div class='text-warning'><a href='tel:{$transport->phone}'>{$transport->phone}</a></div>";
+        })
         ->editColumn('full_name', function($transport){
                 return "
                     <div>{$transport->full_name}</div>
-                    <di class='text-warning'><a href='tel:{$transport->phone}'>{$transport->phone}</a></div>
                 ";
             }
         )
@@ -89,7 +88,7 @@ class TransportController extends Controller
                 <div>".Transport::ROLE_RENDER_BLADE[$transport->role]."</div>
             ";
         })
-        ->rawColumns(['action', 'full_name', 'role', 'date_action', 'user_full_name']);
+        ->rawColumns(['action', 'full_name', 'role', 'date_action', 'user_full_name', 'phone']);
         return $datatables->toJson();
     }
 

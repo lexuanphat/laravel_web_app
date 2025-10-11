@@ -1686,6 +1686,7 @@
             discount_total: discount_total,
             customer_has_paid_total: customer_has_paid_total,
             client_request_transport: JSON.stringify(client_request_transport),
+            coupon: $("#coupon").val() ? $("#coupon").val() : '', 
         },
         beforeSend: function () {
             $this.find('span:first-child').hide();
