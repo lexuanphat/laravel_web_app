@@ -357,7 +357,17 @@
                             } else if(key === 'category'){
                                 let option = new Option(value.name, value.id, true, true);
                                 elements_modal.category.append(option).trigger('change');
-                            } else if(key === 'image_url'){
+                            }else if(key === 'tag_id'){
+                                elements_modal.tag.empty();
+                                if(value.length > 0) {
+                                    let new_options = [];
+                                    value.forEach(item => {
+                                        let option = new Option(item.tag_name, item.id, true, true);
+                                        new_options.push(option);
+                                    });
+                                    elements_modal.tag.append(new_options).trigger('change');
+                                }
+                            }else if(key === 'image_url'){
                                 elements_modal.file_image.image_preview.attr('src', @json(asset("storage/:url")).replace(':url', value))
                                 elements.modal.find('#current_image').val(value);
                             } else {
@@ -533,6 +543,7 @@
                 elements_modal.form.find('.form-control').removeClass('is-invalid')
                 elements_modal.form.find('.invalid-feedback').empty();
                 elements_modal.category.val("").trigger("change");
+                elements_modal.tag.val([]).trigger("change");
                 elements_modal.quill_editor.setContents([]);
                 elements_modal.form[0].reset();
             });

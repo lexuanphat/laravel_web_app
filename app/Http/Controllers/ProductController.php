@@ -136,9 +136,10 @@ class ProductController extends Controller
         $data->price = number_format($data->price, 0, ',', '.');
 
         $tag = DB::table('product_tag_details')
+            ->join('tags', 'tags.id', '=', 'product_tag_details.tag_id')
             ->where('product_tag_details.product_id', $id)
-            ->pluck('tag_id');
-        $data->tag_id = $tag ? $tag->toArray() : [];
+            ->select('tags.id', 'tags.tag_name')->get();
+        $data->tag_id = $tag->count() > 0 ? $tag : [];
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu', 404);
@@ -198,7 +199,8 @@ class ProductController extends Controller
         if(Product::checkProdHasOrder($id)) {
             return $this->errorResponse('Sản phẩm có đơn nên không thể xoá', 404);
         }
-
+        
+        DB::table('product_tag_details')->where('product_id', $id)->delete();
         $data->delete();
         return $this->successResponse($data, 'Đã xoá dữ liệu');
     }
