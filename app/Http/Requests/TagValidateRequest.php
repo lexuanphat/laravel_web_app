@@ -31,7 +31,7 @@ class TagValidateRequest extends FormRequest
         ];
 
         if($this->get('method') === "PUT") {
-            $rules['tag_name'][1] = "unique:tags,name,{$this->id}";
+            $rules['tag_name'][1] = "unique:tags,tag_name,{$this->id}";
         }
 
         return $rules;
