@@ -31,7 +31,7 @@
     <link href="https://fonts.cdnfonts.com/css/helvetica-neue" rel="stylesheet">
     <style>
         html, body {
-            /* font-family: 'Helvetica Neue', sans-serif !important; */
+            font-family: 'Helvetica Neue', sans-serif !important;
         }
     </style>
     @stack('style')
