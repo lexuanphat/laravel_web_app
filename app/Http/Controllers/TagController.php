@@ -6,6 +6,7 @@ use App\Http\Requests\TagValidateRequest;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
 {
