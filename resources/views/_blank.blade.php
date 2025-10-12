@@ -28,6 +28,12 @@
     <!-- Icons css -->
     <link href="{{asset('assets/css/icons.min.css')}}" rel="stylesheet" type="text/css" />
     <link href="{{asset('assets/css/app-custom.css')}}" rel="stylesheet" type="text/css" id="app-custom" />
+    <link href="https://fonts.cdnfonts.com/css/helvetica-neue" rel="stylesheet">
+    <style>
+        html, body {
+            /* font-family: 'Helvetica Neue', sans-serif !important; */
+        }
+    </style>
     @stack('style')
 </head>
 
