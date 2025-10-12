@@ -18,10 +18,12 @@
         </div>
 
         <div class="col">
-            <div class="input-group">
-            <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
-            <input type="text" id="provinceInput" class="form-control" placeholder="Tìm kiếm tỉnh thành">
-            </div>
+            <select id="provinceInput" class="form-control select2" data-toggle="select2">
+                <option value="">Chọn tỉnh thành</option>
+                @foreach($provinces as $province)
+                <option value="{{$province->id}}">{{$province->name}}</option>
+                @endforeach
+            </select>
         </div>
 
     

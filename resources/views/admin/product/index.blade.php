@@ -44,29 +44,25 @@
             <thead class="table-light">
                 <tr>
                     <th>
-                        <div class="align-middle">STT</div>
+                        <div class=align-middle">STT</div>
                     </th>
                     <th>
-                        <div class="align-middle">Tên sản phẩm</div>
-                        <div class="align-middle">/ Mã sản phẩm</div>
-                        <div class="align-middle">/ Mã SKU</div>
+                        <div class=align-middle">Mã sản phẩm</div>
                     </th>
                     <th>
-                        <div class="align-middle">Danh mục</div>
-                        <div class="align-middle">/ Số lượng tồn</div>
-                        <div class="align-middle">/ Giá bán</div>
+                        <div class=align-middle">Tên sản phẩm</div>
                     </th>
                     <th>
-                        <div class="align-middle">Ngày tạo</div>
+                        <div class=align-middle">Danh mục</div>
                     </th>
                     <th>
-                        <div class="align-middle">Ngày cập nhật</div>
+                        <div class=align-middle">Ngày thao tác</div>
                     </th>
                     <th>
-                        <div class="align-middle">Người thao tác</div>
+                        <div class=align-middle">Người thao tác</div>
                     </th>
                     <th>
-                        <div class="align-middle">Chức năng</div>
+                        <div class=align-middle">Chức năng</div>
                     </th>
                 </tr>
             </thead>
@@ -429,7 +425,7 @@
                         if(response.exists === false) {
                             results.push({
                                 id: -1,
-                                text: params.term,
+                                text: `+ Tạo mới "${params.term}"`,
                                 isNew: true,
                             });
                         }
@@ -440,7 +436,18 @@
             }).on('select2:select', function(e){
                 let data = e.params.data;
                 if(data.isNew) {
-                    let confirm_create = confirm(`Tạo mới danh mục ${data.text}`);
+                    let regex = /"([^"]*)"/;
+                    let regex_get_text = data.text.match(regex);
+
+                    let text_confirm = "";
+
+                    if (regex_get_text && regex_get_text[1]) {
+                        text_confirm = `Tạo mới danh mục "${regex_get_text[1]}"`;
+                    } else {
+                        text_confirm = data.text;
+                    }
+                    
+                    let confirm_create = confirm(text_confirm);
                     if(confirm_create) {
                         data_send = {
                             name: data.text,

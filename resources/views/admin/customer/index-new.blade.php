@@ -155,6 +155,7 @@
         let params = new URLSearchParams(window.location.search);
         if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
         if (params.get("phone")) $.trim($("#phoneInput").val(params.get("phone")));
+        if (params.get("province_id")) $.trim($("#provinceInput").val(params.get("province_id")));
 
         renderTable(window.location.search);
 
@@ -163,12 +164,14 @@
 
             let search = $.trim($("#searchInput").val());
             let phone = $.trim($("#phoneInput").val());
+            let province_id = $.trim($("#provinceInput").val());
             
 
             let params = new URLSearchParams();
 
             if (search) params.set("search", search);
             if (phone) params.set("phone", phone);
+            if (province_id) params.set("province_id", province_id);
             
 
             const queryString = params.toString();

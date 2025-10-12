@@ -6,11 +6,15 @@ use App\Http\Requests\CustomerValidateRequest;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use DataTables;
+use DB;
 
 class CustomerController extends Controller
 {
     public function index(){
-        return view('admin.customer.index-new');
+        $provinces = DB::table("provinces")->selectRaw("code as id, name")->get();
+        return view('admin.customer.index-new', [
+            'provinces' => $provinces,
+        ]);
     }
 
     public function getData(Request $request) {
@@ -25,6 +29,10 @@ class CustomerController extends Controller
         }
         if(isset($parsed['phone'])) {
             $model->where("phone", "LIKE" , "%".trim($parsed['phone'])."%");
+        }
+
+        if(isset($parsed['province_id'])) {
+            $model->where("province_code", trim($parsed['province_id']));
         }
 
         $datatables = DataTables::eloquent($model)
