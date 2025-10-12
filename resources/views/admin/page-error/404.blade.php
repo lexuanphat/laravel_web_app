@@ -59,7 +59,7 @@
                                 <h4 class="text-uppercase text-danger mt-3">Không tìm thấy trang</h4>
                                 <p class="text-muted mt-3">Vui lòng thử lại hoặc liên hệ Quản trị viên</p>
 
-                                <a class="btn btn-info mt-3" href="{{redirect()->back()}}"><i class="mdi mdi-reply"></i> Trở về</a>
+                                <a class="btn btn-info mt-3" href="javascrit:;" onclick="window.history.back();"><i class="mdi mdi-reply"></i> Trở về</a>
                             </div>
                         </div> <!-- end card-body-->
                     </div>

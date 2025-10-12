@@ -2,7 +2,7 @@
 @push('style')
 <style>
     .table .table-user img{
-        height: 45px !important;
+        height: 20px !important;
         width: auto !important;
     }
 
@@ -158,9 +158,9 @@
                             <th>
                                 <div class="align-middle text-center colorHeader">Người chịu trách ĐH</div>
                             </th>
-                            <th>
+                            {{-- <th>
                                 <div class="align-middle text-center colorHeader">Chức năng</div>
-                            </th>
+                            </th> --}}
                         </tr>
                     </thead>
         
@@ -206,7 +206,7 @@
                 { data: 'object_partner', class: 'align-middle'},
                 { data: 'total_amount', class: 'align-middle'},
                 { data: 'user_order', class: 'align-middle'},
-                { data: 'function', class: 'align-middle'},
+                // { data: 'function', class: 'align-middle'},
             ],
             createdRow: function (row, data, dataIndex){
                 if (data.status_raw == 4) {

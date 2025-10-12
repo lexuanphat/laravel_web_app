@@ -1,5 +1,34 @@
 @extends('_blank')
 @section('content')
+<div class="row">
+    <div class="col-left col">
+        <a href="{{route('admin.order')}}" class="btn btn-primary">Quay lại</a>
+    </div>
+    <div class="col-right col">
+        <div class="d-flex justify-content-end gap-2">
+            <button class='btn btn-danger remove-record'>Xoá đơn hàng</button>
+
+            @php
+            if(in_array($data->shipping_partner_id, [-1, -2])) {
+                $is_disabled = "";
+                $text = "Huỷ đơn hàng";
+                $key_partner = 'GHN';
+                if($data->shipping_partner_id == -2){
+                    $key_partner = 'GHTK';
+                }
+                if($data->status === 4) {
+                    $is_disabled = "disabled";
+                }
+                if($data->status === 9) {
+                    $is_disabled = "disabled";
+                    $text = "Đã gửi yêu cầu";
+                }
+                echo '<button class="btn btn-primary" '.$is_disabled.' onclick="cancelOrderPartner('.$data->store_id.', '.$data->id.', `'.$key_partner.'`)">'.$text.'</button>';
+            }
+            @endphp
+        </div>
+    </div>
+</div>
 <div class="row justify-content-center">
     <div class="col-lg-7 col-md-10 col-sm-11">
 
@@ -165,3 +194,103 @@
     </div>
 </div>
 @endsection
+@push('js')
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    function cancelOrderPartner(store_id, order_id, key_partner){
+        swal({
+            title: "Bạn có chắc huỷ đơn?",
+            text: "Ấn xác nhận để huy đơn hàng này",
+            icon: "warning",
+            buttons: ['Đóng', 'Xác nhận'],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+        if (willDelete) {
+            $.ajax({
+                url: @json(route('admin.order.cancel_order_partner')),
+                type: "POST",
+                data: {
+                    _token: $("[name='_token']").val(),
+                    store_id: store_id,
+                    order_id: order_id,
+                    key_partner: key_partner,
+                },
+                beforeSend: function(){},
+                success: function(response){
+                    if (response.success) {
+                        createToast('success', response.message);
+                        elements.table_manage.DataTable().destroy();
+                        renderTable(window.location.search);
+                    }
+                    
+                },
+                error: function(errors){
+                    console.log(errors);
+                    
+                    let err = errors.responseJSON.message;
+                    if(err) {
+                        swal({
+                            icon: "warning",
+                            title: "Thông báo",
+                            button: "Đóng",
+                            text: err,
+                        })
+                    } else {
+                        swal({
+                            icon: "error",
+                            title: "Có lỗi",
+                            text: "Liên hệ kỹ thuật",
+                            button: "Đóng",
+                        })
+                    }
+                },
+                
+            });
+        } 
+        });
+    }
+
+    $(document).on("click", ".remove-record", async function(){
+        let result = confirm("Có chắc muốn xoá dữ liệu?");
+        if(!result) {
+            return;
+        }
+
+        let $this = $(this);
+        let record = $this.data('record');
+        let action = @json(route('admin.order.delete', ['id' => ':id']));
+        action = action.replace(':id', @json($data->id));
+
+        $.ajax({
+            url: action,
+            type: "DELETE",
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+            },
+            beforeSend: function(){
+                // $this.prop('disabled', true);
+                // $this.find('#loading').show();
+                // $this.find('i').hide();
+            },
+            success: function(res){
+                if(res.success) {
+                    window.location = @json(route('admin.order'));
+                }
+            },
+            error: function(err){
+                let data_error = err.responseJSON;
+                if(data_error.success === false) {
+                    $("#not_fount_modal").find('#modal_title_not_found').text(data_error.message);
+                    $("#not_fount_modal").modal('show');
+                }
+            },
+            complete: function(){
+            //     $this.prop('disabled', false);
+            //     $this.find('#loading').hide();
+            //     $this.find('i').show();
+            // }
+        }});
+    })
+</script>
+@endpush
