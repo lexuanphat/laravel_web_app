@@ -92,7 +92,7 @@ class UserController extends Controller
 
                 
                 return "
-                    <div class='button-list'>{$edit}{$delete}</div>
+                    <div class='button-list d-flex flex-wrap gap-1'>{$edit}{$delete}</div>
                 ";
             }
         )
@@ -150,7 +150,7 @@ class UserController extends Controller
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
         $validated['create_user_id'] = auth()->user()->id;
-
+        $validated['store_id'] = 0;
         if($validated['role'] === User::ROLE_ACCESS_PAGE['admin']) {
             $validated['store_id'] = null;
         }

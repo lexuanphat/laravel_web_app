@@ -422,13 +422,19 @@
                             text: item.name,
                         }));
 
-                        if(response.exists === false) {
-                            results.push({
-                                id: -1,
-                                text: `+ Tạo mới "${params.term}"`,
-                                isNew: true,
-                            });
-                        }
+                        results.unshift({
+                            id: -1,
+                            text: '+ Tạo mới danh mục',
+                            isNew: true,
+                        });
+
+                        // if(response.exists === false) {
+                        //     results.push({
+                        //         id: -1,
+                        //         text: `+ Tạo mới "${params.term}"`,
+                        //         isNew: true,
+                        //     });
+                        // }
 
                         return { results };
                     },
@@ -436,21 +442,22 @@
             }).on('select2:select', function(e){
                 let data = e.params.data;
                 if(data.isNew) {
-                    let regex = /"([^"]*)"/;
-                    let regex_get_text = data.text.match(regex);
+                    // let regex = /"([^"]*)"/;
+                    // let regex_get_text = data.text.match(regex);
 
-                    let text_confirm = "";
+                    // let text_confirm = "";
 
-                    if (regex_get_text && regex_get_text[1]) {
-                        text_confirm = `Tạo mới danh mục "${regex_get_text[1]}"`;
-                    } else {
-                        text_confirm = data.text;
-                    }
+                    // if (regex_get_text && regex_get_text[1]) {
+                    //     text_confirm = `Tạo mới danh mục "${regex_get_text[1]}"`;
+                    // } else {
+                    //     text_confirm = data.text;
+                    // }
                     
-                    let confirm_create = confirm(text_confirm);
+                    let confirm_create = prompt("Tạo mới danh mục");
+                    
                     if(confirm_create) {
                         data_send = {
-                            name: data.text,
+                            name: confirm_create,
                             _token: $('meta[name="csrf-token"]').attr('content'),
                         };
                         addCategoryItem(data_send);

@@ -12,7 +12,12 @@
     </div>
     <div class="mb-2">
         <label for="password" class="required">Mật khẩu <span class="text-danger">(*)</span></label>
-        <input type="password" id="password" name="password" placeholder="-- Nhập mật khẩu --" class="form-control" required>
+        <div class="input-group input-group-merge">
+            <input type="password" id="password" name="password" placeholder="-- Nhập mật khẩu --" class="form-control" required>
+            <div class="input-group-text" data-password="false">
+                <span class="password-eye"></span>
+            </div>
+        </div>
         @include('admin._partials.div-error')
     </div>
     <div class="mb-2">
@@ -20,7 +25,7 @@
         <input type="text" id="phone" name="phone" placeholder="-- Nhập số điện thoại --" class="form-control" required>
         @include('admin._partials.div-error')
     </div>
-    <div class="mb-2">
+    <div class="mb-2 d-none">
         <label for="store_id" class="required">Cửa hàng <span class="text-danger">(*)</span></label>
         <select class="form-control role" id="store_id" name="store_id">
             @if(auth()->user()->role === 'admin')

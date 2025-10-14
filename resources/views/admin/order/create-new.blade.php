@@ -170,7 +170,7 @@
             <div class="result-product">
                 <div class="empty_prod py-5 text-center" id="empty_prod">
                     <i class="ri-gift-line fs-1"></i>
-                    <p>Chưa có thông tin khách hàng</p>
+                    <p>Chưa có sản phẩm</p>
                     <button type="button" class="btn btn-outline-info" id="btn_infor_product">Thêm sản phẩm</button>
                 </div>
             </div>
@@ -1095,6 +1095,11 @@
 
         data_prod.splice(index, 1);
         calculateTotalProduct();
+    })
+
+    ELEMENTS_PRODUCT.btn_infor_prod.click(function(e){
+        e.preventDefault();
+        ELEMENTS_PRODUCT.select_find_prod.select2('open');
     })
 
     CARD_PRODUCT.on('keyup', '.input_discount', function(){

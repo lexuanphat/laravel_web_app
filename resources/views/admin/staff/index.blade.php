@@ -52,9 +52,9 @@
                     <th>
                         <div class="text-uppercase align-middle">Phân loại</div>
                     </th>
-                    <th>
+                    {{-- <th>
                         <div class="text-uppercase align-middle">Cửa hàng</div>
-                    </th>
+                    </th> --}}
                     <th>
                         <div class="text-uppercase align-middle">Ngày tạo</div>
                     </th>
@@ -207,7 +207,12 @@
                     if(response_err) {
                         $.each(response_err.errors, function(key, item){
                             elements.modal_create.find("#"+key).addClass('is-invalid');
-                            elements.modal_create.find("#"+key).next().text(item[0]);
+                            if(key === 'password') {
+                                elements.modal_create.find("#"+key).parent().next().text(item[0]);
+                                elements.modal_create.find("#"+key).parent().next().show();
+                            } else {
+                                elements.modal_create.find("#"+key).next().text(item[0]);
+                            }
                         })
                     }
                     
@@ -249,7 +254,13 @@
                     if(response_err) {
                         $.each(response_err.errors, function(key, item){
                             elements.modal_edit.find("#"+key).addClass('is-invalid');
-                            elements.modal_edit.find("#"+key).next().text(item[0]);
+                            
+                            if(key === 'password') {
+                                elements.modal_edit.find("#"+key).parent().next().text(item[0]);
+                                elements.modal_edit.find("#"+key).parent().next().show();
+                            } else {
+                                elements.modal_edit.find("#"+key).next().text(item[0]);
+                            }
                         })
 
                         if(response_err.data?.length === 0){
@@ -291,7 +302,7 @@
                     { data: 'phone', name: "phone", class: 'align-middle'},
                     { data: 'email', name: "email", class: 'align-middle'},
                     { data: 'role', class: 'align-middle text-center'},
-                    { data: 'store_name', class: 'align-middle text-center'},
+                    // { data: 'store_name', class: 'align-middle text-center'},
                     { data: 'created_at', class: 'align-middle'},
                     { data: 'updated_at', class: 'align-middle'},
                     { data: 'user_full_name', class: 'align-middle'},

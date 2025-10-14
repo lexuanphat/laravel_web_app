@@ -59,10 +59,10 @@ class UserValidateRequest extends FormRequest
                 'required',
                 'in:'.$list_role
             ],
-            'store_id' => [
-                'required',
-                'exists:stores,id'
-            ],
+            // 'store_id' => [
+            //     'required',
+            //     'exists:stores,id'
+            // ],
         ];
 
         if($this->get('method') === "PUT") {
@@ -71,9 +71,9 @@ class UserValidateRequest extends FormRequest
             $rules['password'][0] = 'nullable';
         }
 
-        if($this->role === User::ROLE_ACCESS_PAGE['admin']) {
-            $rules['store_id'][0] = 'nullable';
-        }
+        // if($this->role === User::ROLE_ACCESS_PAGE['admin']) {
+        //     $rules['store_id'][0] = 'nullable';
+        // }
 
         return $rules;
     }
