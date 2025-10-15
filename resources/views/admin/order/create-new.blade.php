@@ -675,8 +675,8 @@
             <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
                     <div class="d-flex">
-                        <div style="width: 50px; height: 50px;">
-                            <img src="${image}" class="img-fluid">
+                        <div style="width: 50px; height: 65px;">
+                            <img src="${image}" class="w-100 h-100 object-fit-cover">
                         </div>
                         <div class="ms-2">
                             <div class="fw-bold">${repo.name}</div>

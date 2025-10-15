@@ -69,20 +69,26 @@ class ProductController extends Controller
                 </div>
             ";
         })
-        ->editColumn('name', function($product){
+        ->addColumn('image', function($product){
             $image_prod = asset("storage/{$product->image_url}");
             if(!$product->image_url) {
                 $image_prod = "/assets/images/no-image.jpg";
             }
             return "
                 <img src='{$image_prod}' loading='lazy' decoding='async' alt='contact-img' title='contact-img' class='rounded me-3' height='48' />
+            ";
+        })
+        ->editColumn('name', function($product){
+           
+            return "
                 <div class='m-0 d-inline-block align-middle font-16'>
                     <p class='text-body m-0'>{$product->name}</p>
-                    <p class='text-danger m-0'>{$product->sku}</p>
+                    <p class='badge badge-primary-lighten'>{$product->code}</p>
+                    <p class='badge badge-warning-lighten'>{$product->sku}</p>
                 </div>
             ";
         })
-        ->rawColumns(['action', 'name', 'date_action', 'category']);
+        ->rawColumns(['action', 'name', 'date_action', 'category', 'image']);
         return $datatables->toJson();
     }
 
