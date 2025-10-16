@@ -11,17 +11,17 @@
 @section('content')
 <div class="card mt-2">
     <div class="card-body">
-        <div class="row g-2 align-items-center">
+        <div class="row g-2 align-items-center filter-row">
     
             <!-- Thanh tìm kiếm chính -->
-            <div class="col">
+            <div class="col-md-5">
                 <div class="input-group">
                 <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
                 <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên sản phẩm">
                 </div>
             </div>
     
-            <div class="col">
+            <div class="col-md-5">
                 <select id="categorySelect" class="form-control select2" data-toggle="select2">
                     <option value="">Danh mục</option>
                     @foreach($categories as $cate)

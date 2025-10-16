@@ -5,7 +5,7 @@
         <div class="row g-2 align-items-center">
     
         <!-- Thanh tìm kiếm chính -->
-        <div class="col">
+        <div class="col-md-5">
             <div class="input-group">
             <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
             <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên sản phẩm">
@@ -13,7 +13,7 @@
         </div>
     
         <!-- Dropdown Trạng thái -->
-        <div class="col">
+        <div class="col-md-5">
             <select id="provinceSelect" class="form-control select2" data-toggle="select2">
                 <option value="">Khu vực</option>
                 @foreach($provinces as $item)

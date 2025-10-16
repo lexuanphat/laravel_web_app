@@ -5,7 +5,7 @@
         <div class="row g-2 align-items-center">
     
         <!-- Thanh tìm kiếm chính -->
-        <div class="col">
+        <div class="col-md-4 col-12">
             <div class="input-group">
             <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
             <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên vận chuyển">
@@ -13,7 +13,7 @@
         </div>
     
         <!-- Dropdown Ngày tạo -->
-        <div class="col">
+        <div class="col-md-3 col-12">
             <select id="dateSelect" class="form-control select2" data-toggle="select2">
             <option value="">Ngày tạo</option>
             <option value="today">Hôm nay</option>
@@ -23,7 +23,7 @@
         </div>
     
         <!-- Dropdown Trạng thái -->
-        <div class="col">
+        <div class="col-md-3 col-12">
             <select id="statusSelect" class="form-control select2" data-toggle="select2">
                 <option value="">Phân loại</option>
                 <option value="shipper">Shipper</option>

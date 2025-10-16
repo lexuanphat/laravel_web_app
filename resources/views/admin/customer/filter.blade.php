@@ -3,14 +3,14 @@
         <div class="row g-2 align-items-center">
     
         <!-- Thanh tìm kiếm chính -->
-        <div class="col">
+        <div class="col-md-5">
             <div class="input-group">
             <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
             <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên khách hàng">
             </div>
         </div>
 
-        <div class="col">
+        <div class="col-md-5">
             <div class="input-group">
             <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
             <input type="text" id="phoneInput" class="form-control" placeholder="Tìm kiếm số điện thoại">

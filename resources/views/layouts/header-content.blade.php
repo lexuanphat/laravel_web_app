@@ -10,7 +10,7 @@
                         <img src="{{asset('assets/images/logo-new.png')}}" alt="logo">
                     </span>
                     <span class="logo-sm">
-                        <img src="{{asset('assets/images/logo-sm.png')}}" alt="small logo">
+                        <img src="{{asset('assets/images/logo-new.png')}}" alt="small logo">
                     </span>
                 </a>
 
