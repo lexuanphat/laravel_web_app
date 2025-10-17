@@ -13,6 +13,18 @@
     }
 }
 
+table.dataTable>tbody>tr.child span.dtr-title {
+  width: 100%;
+  text-align: left;
+}
+
+table.dataTable>tbody>tr.child span.dtr-data div{
+  text-align: left;
+}
+.logo-sm img {
+  height: 50px;
+  width: 50px;
+}
   .colorHeader:nth-child(5n+1) {
     color: var(--ct-black);
   }
