@@ -179,6 +179,8 @@ return [
         Barryvdh\Debugbar\ServiceProvider::class,
         Yajra\DataTables\DataTablesServiceProvider::class,
         A6digital\Image\DefaultProfileImageServiceProvider::class,
+        
+        Jenssegers\Agent\AgentServiceProvider::class,
     ],
 
     /*
@@ -194,6 +196,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // ...
+        'Agent' => Jenssegers\Agent\Facades\Agent::class,
     ])->toArray(),
 
 ];

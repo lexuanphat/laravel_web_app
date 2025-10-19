@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
+use Jenssegers\Agent\Agent;
 
 use DataTables;
 class OrderController extends Controller
@@ -106,6 +107,18 @@ class OrderController extends Controller
         7 => 'Đã hoàn tiền',
         8 => 'Hoàn tất đơn',
         9 => 'Đã gửi yêu cầu huỷ đơn',
+    ];
+
+    const ORDER_STATUS_MESSAGE_MOBILE = [
+        1 => 'Chuẩn bị hàng',
+        2 => 'Đang giao',
+        3 => 'Thành công',
+        4 => 'Đã hủy đơn',
+        5 => 'Thất bại',
+        6 => 'Trả hàng',
+        7 => 'Hoàn tiền',
+        8 => 'Hoàn tất',
+        9 => 'Yêu cầu huỷ đơn',
     ];
 
     public function index(){
@@ -618,10 +631,18 @@ class OrderController extends Controller
         ->where("order_id", $id)
         ->get()->toArray();
 
+        $agent = new Agent();
+
         $data->logs = DB::table("order_shipment_status_logs")
         ->where("order_shipment_id", $data->order_shipment_id)
         ->orderBy("status_time")
         ->get()->toArray();
+
+        if($agent->isMobile() && !in_array($data->shipping_partner_id, self::GUESS_TRANSPORT)) {
+            foreach($data->logs as $item) {
+                $item->status_text = self::ORDER_STATUS_MESSAGE_MOBILE[$item->status_code];
+            }
+        }
 
         $data->transport_partner = 'Nhận tại cửa hàng';
         if($data->shipping_partner_id === -1) {
