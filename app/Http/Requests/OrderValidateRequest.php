@@ -33,6 +33,10 @@ class OrderValidateRequest extends FormRequest
             // 'pick_address_id' => 'required|integer|exists:stores,id',
             'pick_address_id' => 'required|integer',
 
+            'user_order' => 'required|integer|exists:customers,id',
+            'user_consignee' => 'required|integer|exists:customers,id',
+            'user_payer' => 'required|integer|exists:customers,id',
+
             'coupon' => 'nullable',
 
             'customer.id' => 'required',
@@ -73,7 +77,7 @@ class OrderValidateRequest extends FormRequest
             'client_request_transport.shipping_fee' => 'required',
         ];
 
-        if($this->client_request_transport['type'] == 3) { // NHẬN TẠI CỬA HÀNG
+        if(isset($this->client_request_transport['type']) && $this->client_request_transport['type'] == 3) { // NHẬN TẠI CỬA HÀNG
             $rules['client_request_transport.length'] = 'nullable';
             $rules['client_request_transport.height'] = 'nullable';
             $rules['client_request_transport.width'] = 'nullable';
@@ -152,9 +156,23 @@ class OrderValidateRequest extends FormRequest
 
             'client_request_transport.shipping_partner_id.required' => 'Vui lòng chọn đối tác giao hàng',
             'client_request_transport.shipping_fee.required' => 'Vui lòng nhập phí giao hàng',
+
+            'client_request_transport.type.required' => 'Vui lòng chọn kiểu đóng gói và giao hàng',
+
+            'user_order.required' => 'Vui lòng chọn :attribute',
+            'user_consignee.required' => 'Vui lòng chọn :attribute',
+            'user_payer.required' => 'Vui lòng chọn :attribute',
     
         ];
 
         return $messages;
+    }
+
+    public function attributes(){
+        return [
+            "user_order" => "người đặt hàng",
+            "user_consignee" => "người nhận hàng",
+            "user_payer" => "người trả tiền",
+        ];
     }
 }

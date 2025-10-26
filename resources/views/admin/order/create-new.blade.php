@@ -264,6 +264,41 @@
         </div>
     </div>
 </div>
+
+<div class="card" id="object_order">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="mb-3 col-md-4">
+                <label for="user_order" class="form-label">Người đặt hàng <span class="text-danger">(*)</span></label>
+                <select class="form-control select2" id="user_order" data-toggle="select2">
+                    <option value="">Chọn người đặt hàng</option>
+                   @foreach($get_customers as $customer)
+                    <option value="{{$customer->id}}">{{$customer->full_name}} - {{$customer->phone}}</option>
+                   @endforeach
+                </select>
+            </div>
+            <div class="mb-3 col-md-4">
+                <label for="user_consignee" class="form-label">Người nhận hàng <span class="text-danger">(*)</span></label>
+                <select class="form-control select2" id="user_consignee" data-toggle="select2">
+                    <option value="">Chọn người nhận hàng</option>
+                    @foreach($get_customers as $customer)
+                    <option value="{{$customer->id}}">{{$customer->full_name}} - {{$customer->phone}}</option>
+                   @endforeach
+                </select>
+            </div>
+            <div class="mb-3 col-md-4">
+                <label for="user_payer" class="form-label">Người trả tiền <span class="text-danger">(*)</span></label>
+                <select class="form-control select2" id="user_payer" data-toggle="select2">
+                    <option value="">Chọn người trả tiền</option>
+                    @foreach($get_customers as $customer)
+                    <option value="{{$customer->id}}">{{$customer->full_name}} - {{$customer->phone}}</option>
+                   @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card" id="package_and_delivery">
     <form action="POST" id="form_transport">
         <div class="card-body">
@@ -398,6 +433,22 @@
         </button>
     </div>
 </div>
+
+
+<div id="order_modal_error" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content modal-filled bg-danger">
+            <div class="modal-body p-4">
+                <div class="text-center">
+                    <i class="ri-close-circle-line h1"></i>
+                    <h4 class="mt-2">Có lỗi, vui lòng kiểm tra lại</h4>
+                    <div id="html_elements"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 @push('js')
 <script>
@@ -914,6 +965,18 @@
         ELEMENTS_INFO_CUSTOMER.empty_customer.after(template);
         CARD_INFO_CUSTOMER.find('.data-customer .select2').select2();
         _loadProvinceNew('all', data.province_code, data.ward_code, CARD_INFO_CUSTOMER.find('#province_code'), CARD_INFO_CUSTOMER.find('#ward_code'), null);
+
+        if(!$("#user_order").val()){
+            $("#user_order").val(data.id).trigger('change.select2');
+        }
+
+        if(!$("#user_consignee").val()){
+            $("#user_consignee").val(data.id).trigger('change.select2');
+        }
+
+        if(!$("#user_payer").val()){
+            $("#user_payer").val(data.id).trigger('change.select2');
+        }
     });
 
     CARD_INFO_CUSTOMER.on('click', '#clear_customer', function (e) {
@@ -1692,6 +1755,9 @@
             customer_has_paid_total: customer_has_paid_total,
             client_request_transport: JSON.stringify(client_request_transport),
             coupon: $("#coupon").val() ? $("#coupon").val() : '', 
+            user_order: $("#user_order").val() ? $("#user_order").val() : '',
+            user_consignee: $("#user_consignee").val() ? $("#user_consignee").val() : '',
+            user_payer: $("#user_payer").val() ? $("#user_payer").val() : '',
         },
         beforeSend: function () {
             $this.find('span:first-child').hide();
@@ -1715,28 +1781,8 @@
                 })
                 html_error += `</ul>`;
 
-                $("body").append(`
-                    <div id="order_modal_error" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-                        <div class="modal-dialog modal-sm">
-                            <div class="modal-content modal-filled bg-danger">
-                                <div class="modal-body p-4">
-                                    <div class="text-center">
-                                        <i class="ri-close-circle-line h1"></i>
-                                        <h4 class="mt-2">Có lỗi, vui lòng kiểm tra lại</h4>
-                                        ${html_error}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `);
-
+                $("body").find("#order_modal_error #html_elements").html(html_error);
                 $("body").find("#order_modal_error").modal('show');
-
-                setTimeout(function () {
-                    $("body").find("#order_modal_error").modal('hide');
-                    $("body").find("#order_modal_error").remove();
-                }, 5000);
             }
             
         },
@@ -1746,6 +1792,10 @@
             $this.prop('disabled', false);
         }
     });
+
+    $("body").find("#order_modal_error").on('hidden.bs.modal', function(){
+        $(this).find("#html_elements").empty();
+    })
 })
 </script>
 @endpush

@@ -78,6 +78,16 @@
                             <option value="-1">Tất cả</option>
                         </select>
                     </div>
+
+                    {{-- Đối tượng đặt hàng, giao hàng, trả tiền --}}
+                    <div class='col-md-6'>
+                        <select id="object_order" class="form-control select2" data-toggle="select2">
+                            <option value="">Đối tượng đặt hàng - giao hàng - trả tiền</option>
+                            @foreach($get_customers as $customer)
+                            <option value="{{$customer->id}}">{{$customer->full_name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                </div>
             
                 <!-- Nút lưu -->
@@ -276,6 +286,7 @@
         if (params.get("date")) $("#dateSelect").val(params.get("date")).trigger("change");
         if (params.get("status")) $("#statusSelect").val(params.get("status")).trigger("change");
         if (params.get("staff")) $("#staffSelect").val(params.get("staff")).trigger("change");
+        if (params.get("object_order")) $("#object_order").val(params.get("object_order")).trigger("change");
         if (params.get("status_order")) $("#status_order").val(params.get("status_order")).trigger("change");
         if (params.get("status_return")) {
             $("#status_return").val(params.get("status_return").split(",")).trigger('change');
@@ -292,6 +303,7 @@
             let staff = $("#staffSelect").val();
             let status_return = $("#status_return").val();
             let status_order = $("#status_order").val();
+            let object_order = $("#object_order").val();
 
             let params = new URLSearchParams();
 
@@ -299,6 +311,7 @@
             if (date) params.set("date", date);
             if (status) params.set("status", status);
             if (staff) params.set("staff", staff);
+            if (object_order) params.set("object_order", object_order);
             if (status_order) params.set("status_order", status_order);
             if (status_return && status_return.length > 0) params.set("status_return", status_return.join(","));
 

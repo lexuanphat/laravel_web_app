@@ -128,9 +128,15 @@ class OrderController extends Controller
 
         $status_order = self::ORDER_STATUS_MESSAGE;
 
+        
+        $get_customers  = DB::table("customers")
+        ->selectRaw("id, full_name, phone, code")
+        ->get();
+
         return view("admin.order.index", [
             'staffs' => $staffs,
             'status_order' => $status_order,
+            'get_customers' => $get_customers,
         ]);
     }
 
@@ -234,6 +240,12 @@ class OrderController extends Controller
 
         if(isset($parsed['staff']) && !empty($parsed['staff'])) {
             $query->where("orders.user_id", $parsed['staff']);
+        }
+
+        if(isset($parsed['object_order']) && !empty($parsed['object_order'])) {
+            $query->whereRaw("( (orders.user_order = ?) OR (orders.user_consignee = ?) OR (orders.user_payer = ?) )", [
+                $parsed['object_order'], $parsed['object_order'], $parsed['object_order']
+            ]);
         }
 
         if(isset($parsed['status_order']) && !empty($parsed['status_order']) && $parsed['status_order'] != -1) {
@@ -774,6 +786,11 @@ class OrderController extends Controller
         ->orderByRaw("created_at ASC, name ASC")
         ->get();
 
+        $get_customers  = DB::table("customers")
+        ->selectRaw("id, full_name, phone, code")
+        ->get();
+        
+
 
         return view('admin.order.create-new', [
             'get_transport' => $get_transport,
@@ -782,6 +799,7 @@ class OrderController extends Controller
             'shipping_fees' => $shipping_fees,
             'get_list_pick_add_ghtk' =>  $this->gthk_list_pick_add,
             'coupons' => $coupons,
+            'get_customers' => $get_customers ,
         ]);
     }
 
@@ -820,7 +838,10 @@ class OrderController extends Controller
             'user_id' => auth()->user()->id,
             'created_at' => date("Y-m-d H:i:s"),
             'updated_at' => null,
-            'coupon_id' => $validated['coupon'],
+            'coupon_id' => $validated['coupon'] ?  $validated['coupon'] : 0,
+            'user_order' => $validated['user_order'],
+            'user_consignee' => $validated['user_consignee'],
+            'user_payer' => $validated['user_payer'],
         ];
 
         $get_products = $this->_getProducts();
