@@ -147,14 +147,23 @@
         <div class="card">
             <div class="card-body">
                 <h4 class="header-title mb-3">Thông tin khách hàng</h4>
-
                 <h5>{{$data->customer_full_name}}</h5>
-
                 <address class="mb-0 font-14 address-lg">
                     <abbr title="Địa chỉ khách hàng">ĐC:</abbr> {{$data->customer_address}}, {{$data->customer_ward_name}}, {{$data->customer_province_name}}<br>
                     <abbr title="Số điện thoại khách hàng">SDT:</abbr> <a href="tel:{{$data->customer_phone}}" class="link">{{$data->customer_phone}}</a> <br>
                 </address>
-
+                <hr>
+                <ul class="list-unstyled mb-0">
+                    <li>
+                        <span class="fw-bold me-2">Người đặt hàng:</span> {{isset($customers[$data->user_order]) ? $customers[$data->user_order]->full_name : ""}}
+                    </li>
+                    <li>
+                        <span class="fw-bold me-2">Người nhận hàng:</span> {{isset($customers[$data->user_consignee]) ? $customers[$data->user_consignee]->full_name : ""}}
+                    </li>
+                    <li>
+                        <span class="fw-bold me-2">Người trả tiến:</span> {{isset($customers[$data->user_payer]) ? $customers[$data->user_payer]->full_name : ""}}
+                    </li>
+                </ul>
             </div>
         </div>
     </div> <!-- end col -->
@@ -166,7 +175,7 @@
 
                 <ul class="list-unstyled mb-0">
                     <li>
-                        <p class="mb-2"><span class="fw-bold me-2">Người bán:</span> {{$data->user_id}}</p>
+                        <p class="mb-2"><span class="fw-bold me-2">Người lên đơn:</span> {{$data->user_full_name}}</p>
                         <p class="mb-2"><span class="fw-bold me-2">Cửa hàng:</span> {{$data->store_id}}</p>
                         <p class="mb-2"><span class="fw-bold me-2">Nguồn:</span> {{$data->source}}</p>
                         <p class="mb-2"><span class="fw-bold me-2">Hẹn giao:</span> {{date("d/m/Y", strtotime($data->created_at))}}</p>

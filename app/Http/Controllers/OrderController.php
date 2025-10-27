@@ -621,6 +621,7 @@ class OrderController extends Controller
         ->leftJoin('order_shipments', 'orders.id', '=', 'order_shipments.order_id')
         ->leftJoin('provinces', 'orders.customer_province', '=', 'provinces.code')
         ->leftJoin('wards', 'orders.customer_ward', '=', 'wards.code')
+        ->leftJoin('users', 'orders.user_id', '=', 'users.id')
         ->where("orders.id", $id);
 
         if(auth()->user()->role !== User::ROLE_ACCESS_PAGE['admin']){
@@ -631,7 +632,7 @@ class OrderController extends Controller
             orders.*, order_shipments.shipping_partner_id, order_shipments.shipping_fee, 
             order_shipments.current_status, order_shipments.tracking_number, order_shipments.cod,
             order_shipments.note as note_transport, order_shipments.id as order_shipment_id, provinces.name as customer_province_name, 
-            wards.name as customer_ward_name
+            wards.name as customer_ward_name, users.full_name as user_full_name
         ")
         ->first();
 
@@ -666,8 +667,13 @@ class OrderController extends Controller
             $data->transport_partner = Transport::ROLE_RENDER_BLADE[$data->transport_partner];
         }
 
+        $customers = DB::table("customers")
+        ->selectRaw("id, full_name")
+        ->get()->keyBy('id');
+
         return view("admin.order.detail", [
             'data' => $data,
+            'customers' => $customers,
         ]);
     }
 

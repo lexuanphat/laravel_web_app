@@ -80,7 +80,7 @@
                     </div>
 
                     {{-- Đối tượng đặt hàng, giao hàng, trả tiền --}}
-                    <div class='col-md-6'>
+                    <div class='col-md-4'>
                         <select id="object_order" class="form-control select2" data-toggle="select2">
                             <option value="">Đối tượng đặt hàng - giao hàng - trả tiền</option>
                             @foreach($get_customers as $customer)
