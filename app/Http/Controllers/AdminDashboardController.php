@@ -49,6 +49,9 @@ class AdminDashboardController extends Controller
             'orders.customer_id',
             'customers.full_name'
         ])
+        ->havingRaw("
+            sum_paid_amount > 0
+        ")
         ->orderByRaw('sum_paid_amount DESC')
         ->limit(10)
         ->get();
