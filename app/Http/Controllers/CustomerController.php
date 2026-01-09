@@ -25,7 +25,10 @@ class CustomerController extends Controller
 
         $model = Customer::with('user:id,full_name')
         ->leftJoin('orders', 'customers.id', '=', 'orders.customer_id')
-        ->groupBy('customers.id')
+        ->groupBy([
+            'customers.id',
+            'customers.code',
+        ])
         ->selectRaw("
             customers.*, COUNT(orders.id) as total_order,
             SUM(orders.total_amount) as sum_total_amount,
