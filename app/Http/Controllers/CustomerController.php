@@ -27,8 +27,6 @@ class CustomerController extends Controller
         ->leftJoin('orders', 'customers.id', '=', 'orders.customer_id')
         ->groupBy([
             'customers.id',
-            'customers.code',
-            'customers.full_name',
         ])
         ->selectRaw("
             customers.*, COUNT(orders.id) as total_order,
