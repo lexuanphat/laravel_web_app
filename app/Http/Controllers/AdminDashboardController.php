@@ -41,7 +41,7 @@ class AdminDashboardController extends Controller
         ->join('customers', 'orders.customer_id', '=', 'customers.id')
         ->selectRaw("
             orders.customer_id,
-            customers.full_name as customer_full_name,
+            ANY_VALUE(customers.full_name) as customer_full_name,
             SUM(orders.paid_amount) as sum_paid_amount,
             COUNT(orders.id) as cnt_order
         ")
