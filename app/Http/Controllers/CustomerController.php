@@ -28,6 +28,7 @@ class CustomerController extends Controller
         ->groupBy([
             'customers.id',
             'customers.code',
+            'customers.full_name',
         ])
         ->selectRaw("
             customers.*, COUNT(orders.id) as total_order,
