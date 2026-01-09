@@ -37,6 +37,9 @@
                         <div class="text-uppercase align-middle">Tên tag</div>
                     </th>
                     <th>
+                        <div class="text-uppercase align-middle">Phân loại</div>
+                    </th>
+                    <th>
                         <div class="text-uppercase align-middle">Ngày tạo</div>
                     </th>
                     <th>
@@ -89,7 +92,12 @@
                     if(res.success) {
                         $.each(res.data, function(key, value){
                             // console.log(key, value)
-                            elements.modal_edit.find('#'+key).val(value);
+                            if(elements.modal_edit.find('#'+key).is('select')) {
+                                elements.modal_edit.find('#'+key).val(value).trigger('change.select2');
+                            } else {
+                                elements.modal_edit.find('#'+key).val(value);
+                            }
+                            
                         })
                         let form_action = elements.form_edit.attr('action');
                         elements.form_edit.attr('action', elements.action_update.replace(':id', id));
@@ -255,7 +263,8 @@
                 ordering: false,
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
-                    { data: 'tag_name', width: '30%', name: "abc", class: 'align-middle'},
+                    { data: 'tag_name', width: '25%', name: "abc", class: 'align-middle'},
+                    { data: 'tag_is', class: 'align-middle'},
                     { data: 'create_date', class: 'align-middle'},
                     { data: 'update_date', class: 'align-middle'},
                     { data: 'user.full_name', class: 'align-middle'},

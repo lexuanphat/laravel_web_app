@@ -15,8 +15,10 @@ class ProductController extends Controller
 {
     public function index(){
         $categories = Category::get();
+        $tags = Tag::baseQuery()->where('type', Tag::TAG_IS['PRODUCT'])->get();
         return view('admin.product.index', [
             'categories' => $categories,
+            'tags' => $tags,
         ]);
     }
 
@@ -25,7 +27,9 @@ class ProductController extends Controller
         $search = ltrim($search, '?');
         parse_str($search, $parsed);
 
-        $model = Product::with('user:id,full_name', 'category:id,name')->orderBy('id', 'desc');
+        $model = Product::with('user:id,full_name', 'category:id,name', 'tags')
+        
+        ->orderBy('id', 'desc');
 
         if(isset($parsed['search']) && !empty(trim($parsed['search']))) {
             $model->where("products.name", "LIKE", "%".trim($parsed['search'])."%");
@@ -35,12 +39,13 @@ class ProductController extends Controller
            $model->where("products.category_id", trim($parsed['category']));
         }
 
+        if(isset($parsed['tag'])) {
+            $model->whereHas('tags', function($query)use($parsed){
+                $query->where('tags.id', $parsed['tag']);
+            });
+        }
+
         $datatables = DataTables::eloquent($model)
-        ->order(function($query){
-            if(request()->has('order')) {
-                $query->orderBy('name', request()->order[0]['dir']);
-            }
-        })
         ->addIndexColumn()
         ->addColumn(
             'action', function($product){
@@ -78,6 +83,14 @@ class ProductController extends Controller
                 <img src='{$image_prod}' loading='lazy' decoding='async' alt='contact-img' title='contact-img' class='rounded me-3' height='48' />
             ";
         })
+        ->addColumn('tags', function($product){
+            $content = "";
+            foreach($product->tags as $tag) {
+               $content .= "<span class='badge bg-success'>$tag->tag_name</span>";
+            }
+
+            return "<div class='d-flex flex-wrap gap-1'>$content</div>";
+        })
         ->editColumn('name', function($product){
            
             return "
@@ -88,7 +101,7 @@ class ProductController extends Controller
                 </div>
             ";
         })
-        ->rawColumns(['action', 'name', 'date_action', 'category', 'image']);
+        ->rawColumns(['action', 'name', 'date_action', 'category', 'image', 'tags']);
         return $datatables->toJson();
     }
 
@@ -103,6 +116,7 @@ class ProductController extends Controller
 
     public function getDataTag(Request $request){
         $data = Tag::where('tag_name', 'like', '%'.$request->search.'%')
+        ->where('type', Tag::TAG_IS['PRODUCT'])
         ->select("id", "tag_name")
         ->get();
 
@@ -177,7 +191,13 @@ class ProductController extends Controller
         $validated['user_id'] = auth()->user()->id;
         $validated['created_at'] = date("Y-m-d H:i:s");
         $validated['updated_at'] = null;
-        DB::table('product_tag_details')->where('product_id', $id)->delete();
+        
+        DB::table('product_tag_details')
+        ->join('tags', 'product_tag_details.tag_id', '=', 'tags.id')
+        ->where('product_tag_details.product_id', $id)
+        ->where('tags.type', Tag::TAG_IS['PRODUCT'])
+        ->delete();
+
         $data->update($validated);
 
         if($validated['tag_id']) {

@@ -47,6 +47,16 @@ class TagController extends Controller
                 ";
             }
         )
+        ->addColumn('tag_is', function($tag){
+            
+            if($tag->type === Tag::TAG_IS['CUSTOMER']) {
+                return '<span class="badge bg-primary">Khách hàng</span>';
+            }
+
+            return '<span class="badge bg-success">Sản phẩm</span>';
+
+            
+        })
         ->addColumn('create_date', function($tag){
             $created_at = $tag->created_at ? date("d/m/Y H:i", strtotime($tag->created_at)) : 'X';
             return "$created_at";
@@ -59,7 +69,7 @@ class TagController extends Controller
                 return "$tag->name";
             }
         )
-        ->rawColumns(['action', 'name', 'create_date', 'update_date']);
+        ->rawColumns(['action', 'name', 'create_date', 'update_date', 'tag_is']);
         return $datatables->toJson();
     }
 
@@ -90,7 +100,7 @@ class TagController extends Controller
     }
 
     public function detail($id, Request $request){
-        $data = Tag::find($id, ['tag_name']);
+        $data = Tag::find($id, ['tag_name', 'type']);
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu', 404);

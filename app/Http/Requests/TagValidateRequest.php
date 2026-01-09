@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Tag;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TagValidateRequest extends FormRequest
@@ -27,6 +28,10 @@ class TagValidateRequest extends FormRequest
             'tag_name' => [
                 'required',
                 'unique:tags'
+            ],
+            'type' => [
+                'required',
+                'in:'.implode(", ", array_values(Tag::TAG_IS))
             ],
         ];
 

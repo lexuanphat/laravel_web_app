@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use Jenssegers\Agent\Agent;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use DataTables;
 class OrderController extends Controller
@@ -127,7 +128,6 @@ class OrderController extends Controller
         ->get();
 
         $status_order = self::ORDER_STATUS_MESSAGE;
-
         
         $get_customers  = DB::table("customers")
         ->selectRaw("id, full_name, phone, code")
@@ -203,6 +203,8 @@ class OrderController extends Controller
         $search = ltrim($search, '?');
         parse_str($search, $parsed);
 
+        
+
         $query = DB::table("orders")
         ->leftJoin("users", "orders.user_id", "=", "users.id")
         ->leftJoin("customers", "orders.customer_id", "=", "customers.id")
@@ -240,6 +242,14 @@ class OrderController extends Controller
 
         if(isset($parsed['staff']) && !empty($parsed['staff'])) {
             $query->where("orders.user_id", $parsed['staff']);
+        }
+
+        if(auth()->user()->role !== User::ROLE_VALUE['admin']) {
+            $query->where("orders.user_id", auth()->user()->id);
+        }
+
+        if(isset($parsed['customer_id']) && !empty($parsed['customer_id'])) {
+            $query->where("orders.customer_id", $parsed['customer_id']);
         }
 
         if(isset($parsed['object_order']) && !empty($parsed['object_order'])) {
@@ -314,8 +324,10 @@ class OrderController extends Controller
         })
         ->editColumn('code', function($item){
             $link = route('admin.order.detail', ['id' => $item->id]);
+            $link_print = route('admin.order.printA4', ['id' => $item->id]);
             return "
                 <div class='text-center'><a href='$link'>{$item->code}</a></div>
+                <div class='text-center'><a target='_blank' class='btn btn-primary' href='$link_print'><i class='ri-printer-line'></i></a></div>
             ";
         })
         ->addColumn('checkbox', function($item){
@@ -851,6 +863,7 @@ class OrderController extends Controller
         ];
 
         $get_products = $this->_getProducts();
+
         $total_price = 0;
         $data_insert_order_items = [];
         $check_stocks = [];
@@ -902,7 +915,7 @@ class OrderController extends Controller
                 'product_id' => $prod['product_id'],
                 'product_name' => $get_products[$prod['product_id']]->name,
                 'product_quantity' => $prod['quantity'],
-                'product_price' => $get_products[$prod['product_id']]->price,
+                'product_price' => $price_prod ? $price_prod : $get_products[$prod['product_id']]->price,
                 'is_discount' => $prod['is_option'],
                 'product_discount' => $prod['discount'],
                 'product_total' => $get_products[$prod['product_id']]->price * $prod['quantity'],
@@ -935,7 +948,6 @@ class OrderController extends Controller
 
         try {
 
-            
             /**
              * Trường hợp nhận tại cửa hàng
              */
@@ -2057,5 +2069,41 @@ class OrderController extends Controller
         }
 
         return false;
+    }
+
+    public function printA4($id, Request $request)
+    {
+        $order = DB::table('orders')
+        ->where('id', $id)
+        ->first();
+
+        $order->items = DB::table("order_items")
+        ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
+        ->where("order_items.order_id", $id)
+        ->selectRaw("
+            order_items.*, products.code as product_code,
+            products.name as product_name
+        ")
+        ->get();
+
+        $order->shipments = DB::table("order_shipments")
+        ->where('order_id', $id)
+        ->first();
+
+        $order->customer = DB::table('customers')
+        ->leftJoin('provinces', 'customers.province_code', '=', 'provinces.code')
+        ->leftJoin('wards', 'customers.ward_code', '=', 'wards.code')
+        ->where('customers.id', $order->customer_id)
+        ->selectRaw("
+            customers.*, provinces.name as province_name, 
+            wards.name as ward_name
+        ")
+        ->first();
+        // dd($order);
+        return Pdf::loadView('admin.invoices.print-a4', [
+            'order' => $order,
+        ])
+            ->setPaper('A4', 'portrait')
+            ->stream("don-hang-{$order->code}.pdf");
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Tag;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CustomerValidateRequest extends FormRequest
@@ -23,6 +24,9 @@ class CustomerValidateRequest extends FormRequest
      */
     public function rules()
     {
+        $list_tags = Tag::baseQuery()->where('type', Tag::TAG_IS['CUSTOMER'])->implode('id', ',');
+        $in_tags = $list_tags ? "in:$list_tags" : "";
+
         $rules = [
             'full_name' => [
                 'required',
@@ -58,6 +62,13 @@ class CustomerValidateRequest extends FormRequest
                 'required',
                 'numeric',
                 'gt:0',
+            ],
+            'tags' => [
+                'nullable',
+            ],
+            'tags.*' => [
+                'distinct',
+                $in_tags,
             ],
         ];
 

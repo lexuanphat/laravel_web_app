@@ -19,14 +19,23 @@
                         <div class="text-uppercase align-middle">Tên</div>
                     </th>
                     <th>
-                        <div class="text-uppercase align-middle">Số điện thoại</div>
+                        <div class="text-uppercase align-middle">SL đơn hàng</div>
                     </th>
                     <th>
+                        <div class="text-uppercase align-middle">Nợ phải thu</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Tổng chi tiêu</div>
+                    </th>
+                    <th>
+                        <div class="text-uppercase align-middle">Số điện thoại</div>
+                    </th>
+                    <!-- <th>
                         <div class="text-uppercase align-middle">Ngày thao tác</div>
                     </th>
                     <th>
                         <div class="text-uppercase align-middle">Người thao tác</div>
-                    </th>
+                    </th> -->
                     <th>
                         <div class="text-uppercase align-middle">Chức năng</div>
                     </th>
@@ -78,9 +87,12 @@
                 { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle'},
                 { data: 'code', class: 'align-middle'},
                 { data: 'full_name', class: 'align-middle'},
+                { data: 'total_order', class: 'align-middle'},
+                { data: 'no_phai_thu', class: 'align-middle'},
+                { data: 'tong_chi_tieu', class: 'align-middle'},
                 { data: 'phone', class: 'align-middle'},
-                { data: 'date_action', class: 'align-middle'},
-                { data: 'user.full_name', class: 'align-middle'},
+                // { data: 'date_action', class: 'align-middle'},
+                // { data: 'user.full_name', class: 'align-middle'},
                 { data: 'action', name: "action", class: 'align-middle',},
             ]
         });

@@ -88,6 +88,16 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <!-- Khách hàng -->
+                    <div class='col-md-4'>
+                        <select id="customer_id" class="form-control select2" data-toggle="select2">
+                            <option value="">Chọn khách hàng</option>
+                            @foreach($get_customers as $customer)
+                            <option value="{{$customer->id}}">{{$customer->full_name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                </div>
             
                 <!-- Nút lưu -->
@@ -288,6 +298,7 @@
         if (params.get("staff")) $("#staffSelect").val(params.get("staff")).trigger("change");
         if (params.get("object_order")) $("#object_order").val(params.get("object_order")).trigger("change");
         if (params.get("status_order")) $("#status_order").val(params.get("status_order")).trigger("change");
+        if (params.get("customer_id")) $("#customer_id").val(params.get("customer_id")).trigger("change");
         if (params.get("status_return")) {
             $("#status_return").val(params.get("status_return").split(",")).trigger('change');
         }
@@ -304,6 +315,7 @@
             let status_return = $("#status_return").val();
             let status_order = $("#status_order").val();
             let object_order = $("#object_order").val();
+            let customer_id = $("#customer_id").val();
 
             let params = new URLSearchParams();
 
@@ -313,6 +325,7 @@
             if (staff) params.set("staff", staff);
             if (object_order) params.set("object_order", object_order);
             if (status_order) params.set("status_order", status_order);
+            if (customer_id) params.set("customer_id", customer_id);
             if (status_return && status_return.length > 0) params.set("status_return", status_return.join(","));
 
             const queryString = params.toString();

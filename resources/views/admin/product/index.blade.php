@@ -14,14 +14,14 @@
         <div class="row g-2 align-items-center filter-row">
     
             <!-- Thanh tìm kiếm chính -->
-            <div class="col-md-5">
+            <div class="col-md-3">
                 <div class="input-group">
                 <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
                 <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tên sản phẩm">
                 </div>
             </div>
     
-            <div class="col-md-5">
+            <div class="col-md-3">
                 <select id="categorySelect" class="form-control select2" data-toggle="select2">
                     <option value="">Danh mục</option>
                     @foreach($categories as $cate)
@@ -29,10 +29,19 @@
                     @endforeach
                 </select>
             </div>
+
+            <div class="col-md-3">
+                <select id="tagSelect" class="form-control select2" data-toggle="select2">
+                    <option value="">Tags</option>
+                    @foreach($tags as $tag)
+                    <option value="{{$tag['id']}}">{{$tag['tag_name']}}</option>
+                    @endforeach
+                </select>
+            </div>
     
         
             <!-- Nút lưu -->
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <button class="btn btn-outline-danger" id="clear-filter">Xoá lọc</button>
                 <button class="btn btn-outline-primary" id="btn-filter">Lọc</button>
             </div>
@@ -56,6 +65,9 @@
                     </th>
                     <th>
                         <div class=align-middle">Tên sản phẩm</div>
+                    </th>
+                    <th>
+                        <div class=align-middle">Tags</div>
                     </th>
                     <th>
                         <div class=align-middle">Danh mục</div>
@@ -153,7 +165,8 @@
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', class: 'align-middle', width: "5%"},
                     { data: 'image', name: "image", class: 'align-middle all'},
-                    { data: 'name', width: '30%', class: 'align-middle'},
+                    { data: 'name', width: '25%', class: 'align-middle'},
+                    { data: 'tags', class: 'align-middle'},
                     { data: 'category', class: 'align-middle'},
                     { data: 'date_action', class: 'align-middle'},
                     { data: 'user.full_name', class: 'align-middle'},
@@ -397,6 +410,7 @@
             let params = new URLSearchParams(window.location.search);
             if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
             if (params.get("category")) $("#categorySelect").val(params.get("category")).trigger("change");
+            if (params.get("tag")) $("#tagSelect").val(params.get("tag")).trigger("change");
             
             renderTable(window.location.search);
 
@@ -576,11 +590,13 @@
 
                 let search = $.trim($("#searchInput").val());
                 let categorySelect = $("#categorySelect").val();
+                let tagSelect = $("#tagSelect").val();
 
                 let params = new URLSearchParams();
 
                 if (search) params.set("search", search);
                 if (categorySelect) params.set("category", categorySelect);
+                if (tagSelect) params.set("tag", tagSelect);
 
                 const queryString = params.toString();
                 const fullUrl = window.location.pathname + '?' + queryString;

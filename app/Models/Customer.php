@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -62,5 +63,25 @@ class Customer extends Model
 
     public function getColorGender($gender){
         return in_array($gender, array_keys(self::COLOR_GENDER)) ? self::COLOR_GENDER[$gender] : 'primary';
+    }
+
+    public static function getJoinedCustomer(Carbon $date)
+    {
+        $diff = $date->diff(now());
+        $parts = [];
+
+        if ($diff->y > 0) {
+            $parts[] = $diff->y . ' năm';
+        }
+
+        if ($diff->m > 0 || $diff->y > 0) {
+            $parts[] = $diff->m . ' tháng';
+        }
+
+        if ($diff->d > 0 || $diff->y > 0 || $diff->m > 0) {
+            $parts[] = $diff->d . ' ngày';
+        }
+
+        return implode(' ', $parts);
     }
 }

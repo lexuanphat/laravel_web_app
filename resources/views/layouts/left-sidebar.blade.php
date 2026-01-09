@@ -1,11 +1,11 @@
 @php
     $count = 1;
     $list_sidebar = [
-        // [
-        //     'name' => 'Thống kê tổng quan',
-        //     'link' => route('admin.dashboard'),
-        //     'icon' => '<i class="ri-dashboard-fill"></i>'
-        // ],
+        [
+            'name' => 'Thống kê tổng quan',
+            'link' => route('admin.dashboard'),
+            'icon' => '<i class="ri-dashboard-fill"></i>'
+        ],
         [
             'name' => 'Quản lý đơn hàng',
             'link' => '',

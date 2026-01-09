@@ -60,6 +60,7 @@ Route::group([
         $route->post('/order/createOrder', [OrderController::class, 'createOrder'])->name('order.create_order');
         $route->post('/order/cancelOrderPartner', [OrderController::class, 'cancelOrderPartner'])->name('order.cancel_order_partner');
         $route->delete('/order/delete/{id}', [OrderController::class, 'delete'])->name('order.delete');
+        $route->get('/order/printA4/{id}', [OrderController::class, 'printA4'])->name('order.printA4');
 
         // Quản lý danh mục sản phẩm
         $route->get('/category', [CategoryController::class, 'index'])->name('category');
@@ -144,6 +145,7 @@ Route::group([
         $route->get('/customer/getData', [CustomerController::class, 'getData'])->name('customer.get_data');
         $route->post('/customer/store', [CustomerController::class, 'store'])->name('customer.store');
         $route->get('/customer/detail/{id}', [CustomerController::class, 'detail'])->name('customer.detail');
+        $route->get('/customer/detail-view/{id}', [CustomerController::class, 'detailView'])->name('customer.detail_view');
         $route->put('/customer/update/{id}', [CustomerController::class, 'update'])->name('customer.update');
         $route->delete('/customer/delete/{id}', [CustomerController::class, 'delete'])->name('customer.delete');
 

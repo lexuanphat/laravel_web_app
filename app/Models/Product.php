@@ -51,6 +51,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function tags(){
+        return $this->belongsToMany(Tag::class, 'product_tag_details', 'product_id', 'tag_id')
+        ->where('tags.type', Tag::TAG_IS['PRODUCT']);
+    }
+
     public static function checkProdHasOrder($product_id){
         return DB::table("order_items")->where("product_id", $product_id)->exists();
     }

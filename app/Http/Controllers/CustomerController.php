@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerValidateRequest;
 use App\Models\Customer;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use DataTables;
 use DB;
@@ -22,7 +23,15 @@ class CustomerController extends Controller
         $search = ltrim($search, '?');
         parse_str($search, $parsed);
 
-        $model = Customer::with('user:id,full_name')->orderBy('id', 'desc');
+        $model = Customer::with('user:id,full_name')
+        ->leftJoin('orders', 'customers.id', '=', 'orders.customer_id')
+        ->groupBy('customers.id')
+        ->selectRaw("
+            customers.*, COUNT(orders.id) as total_order,
+            SUM(orders.total_amount) as sum_total_amount,
+            SUM(orders.paid_amount) as sum_paid_amount  
+        ")
+        ->orderBy('id', 'desc');
 
         if(isset($parsed['search'])) {
             $model->where("full_name", "LIKE" , "%".trim($parsed['search'])."%");
@@ -36,22 +45,18 @@ class CustomerController extends Controller
         }
 
         $datatables = DataTables::eloquent($model)
-        ->with('user:full_name')
-        ->order(function($query){
-            if(request()->has('order')) {
-                $query->orderBy('full_name', request()->order[0]['dir']);
-            }
-        })
         ->addIndexColumn()
         ->addColumn(
             'action', function($customer){
                 $view_loading = view("admin._partials.loading");
                 $action_edit = route('admin.customer.detail', ['id' => $customer->id]);
                 $action_delete = route('admin.customer.delete', ['id' => $customer->id]);
+                $action_detail = route('admin.customer.detail_view', ['id' => $customer->id]);
                 return "
-                    <div class='button-list'>
+                    <div class='d-flex flex-wrap gap-1'>
                         <button class='btn btn-warning edit-record' data-action='{$action_edit}' data-record='{$customer->id}'><i class='ri-edit-box-fill'></i>{$view_loading}</button>
                         <button class='btn btn-danger remove-record' data-action='{$action_delete}' data-record='{$customer->id}'><i class='ri-delete-bin-fill'></i></button>
+                        <a class='btn btn-primary' href='$action_detail'><i class='ri-eye-line'></i></a>
                     </div>
                 ";
             }
@@ -78,8 +83,66 @@ class CustomerController extends Controller
                 ";
             }
         )
-        ->rawColumns(['action', 'full_name', 'date_action', 'phone']);
+        ->editColumn('total_order', function($customer){
+                $content = number_format($customer->total_order);
+                return "
+                    <div class='text-end'>$content</div>
+                ";
+            }
+        )
+        ->editColumn('no_phai_thu', function($customer){
+                $content = $customer->sum_total_amount - $customer->sum_paid_amount;
+
+                if($content > 0) {
+                    $content = number_format($content);
+                }else {
+                    $content = 0;
+                }
+
+                return "
+                    <div>$content đ</div>
+                ";
+            }
+        )
+        ->editColumn('tong_chi_tieu', function($customer){
+            $content = number_format($customer->sum_paid_amount);
+            return "
+                <div>$content đ</div>
+            ";
+        }
+        )
+        ->rawColumns(['action', 'full_name', 'date_action', 'phone', 'total_order', 'no_phai_thu', 'tong_chi_tieu']);
         return $datatables->toJson();
+    }
+
+    public function detailView(Request $request, $id) {
+        $find_data = Customer::where('id', $id)
+        ->first();
+
+        $find_data->list_order = DB::table('orders')
+        ->where('customer_id', $id)
+        ->get();
+
+        $find_data->tags_customer = DB::table('product_tag_details')
+        ->join('tags', 'product_tag_details.tag_id', '=', 'tags.id')
+        ->where('product_tag_details.product_id', $id)
+        ->where('tags.type', Tag::TAG_IS['CUSTOMER'])
+        ->selectRaw('product_tag_details.tag_id')
+        ->get()->pluck('tag_id')->toArray();
+
+
+        $get_customer_tags = DB::table('tags')
+        ->where('type', Tag::TAG_IS['CUSTOMER'])
+        ->selectRaw('id, tag_name')
+        ->get();
+
+        $get_customer_join = Customer::getJoinedCustomer($find_data->created_at);
+
+        return view('admin.customer.detail_view', [
+            'find_data' => $find_data,
+            'get_customer_tags' => $get_customer_tags,
+            'get_customer_join' => $get_customer_join,
+        ]);
     }
 
     public function store(CustomerValidateRequest $request){
@@ -113,9 +176,34 @@ class CustomerController extends Controller
         $data_update = $request->validated();
         $data_update['user_id'] = auth()->user()->id;
         $data_update['updated_at'] = date("Y-m-d H:i:s");
-        $data->update($data_update);
 
-        return $this->successResponse($data, 'Cập nhật thành công');
+        DB::beginTransaction();
+        try {
+            if(isset($data_update['tags'])){
+                $insert_tag = [];
+
+                DB::table('product_tag_details')
+                ->join('tags', 'product_tag_details.tag_id', '=', 'tags.id')
+                ->where('product_tag_details.product_id', $id)
+                ->where('tags.type', Tag::TAG_IS['CUSTOMER'])
+                ->delete();
+
+                foreach($data_update['tags'] as $tag_id) {
+                    $insert_tag[] = [
+                        'product_id' => $id,
+                        'tag_id' => $tag_id,
+                    ];
+                }
+                DB::table('product_tag_details')->insert($insert_tag);
+            }
+    
+            $data->update($data_update);
+            DB::commit(); 
+            return $this->successResponse($data, 'Cập nhật thành công');
+        } catch (\Throwable $th) {
+            throw $th;
+            DB::rollBack();
+        }
     }
 
     public function delete($id) {
