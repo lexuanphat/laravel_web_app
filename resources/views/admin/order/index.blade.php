@@ -9,6 +9,27 @@
     #table_manage tr.cancle {
         background: #ff898a;
     }
+    .dp-months {
+        flex-wrap: nowrap !important;
+        max-width: none !important;
+    }
+    .dp-months .dp-month{
+        width: 290px !important;
+        flex: 0 0 290px !important;
+    }
+    @media (max-width: 767.98px) {
+        .dp-months {
+            flex-wrap: wrap !important;
+        }
+
+        .dp-month {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+        }
+    }
+    .css-icon-bsdatepicker{
+        font-size: 1.5rem;
+    }
 </style>
 @endpush
 @section('content')
@@ -29,7 +50,7 @@
                     </div>
                 
                     <!-- Dropdown Ngày tạo -->
-                    <div class='col-md-4'>
+                    <!-- <div class='col-md-4'>
                         <select id="dateSelect" class="form-control select2" data-toggle="select2">
                         <option value="">Ngày tạo</option>
                         <option value="today">Hôm nay</option>
@@ -38,6 +59,11 @@
                         <option value="1year">1 năm</option>
                         <option value="2year">2 năm</option>
                         </select>
+                    </div> -->
+
+                    <div id="rangeDropdown" class="col-md-4">
+                        <input type="hidden" name="start_date">
+                        <input type="hidden" name="end_date">
                     </div>
                 
                     <!-- Dropdown Trạng thái -->
@@ -194,12 +220,28 @@
 @endsection
 @push('js')
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="{{asset('assets')}}/js/bs-date-picker-range-custom/dist/bs-datepicker.min.js"></script>
+<script type="text/template" id="datepicker-presets">
+    <div class="dp-presets d-flex flex-column gap-1">
+        <button class="btn btn-outline-primary text-start" data-type="today">Hôm nay</button>
+        <button class="btn btn-outline-primary text-start" data-type="yesterday">Hôm qua</button>
+        <button class="btn btn-outline-primary text-start" data-type="7days">7 ngày trước</button>
+        <button class="btn btn-outline-primary text-start" data-type="1month">1 tháng trước</button>
+        <button class="btn btn-outline-primary text-start" data-type="2month">2 tháng trước</button>
+    </div>
+</script>
 
 <script>
     const elements = {
         table_manage: $("#table_manage"),
         route_delete: @json(route('admin.order.delete', ['id' => ':id']))
     };
+
+    function parseYmd(dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    }
+
     function renderTable(search){
         elements.table_manage.DataTable({
             language: {
@@ -291,9 +333,95 @@
     }
 
     $(document).ready(function(){
+
+        const $input_date_range = $('#rangeDropdown');
+
+        $input_date_range.bsDatepicker({
+            autoClose: true,
+            format: 'dd/mm/yyyy',
+            inline: false,
+            locale: 'vi-VN',
+            months: 2,
+            placeholder: 'Ngày tạo',
+            separator:' - ',
+            icons: {
+                prevYear:'ri-arrow-left-circle-fill icon-preYear css-icon-bsdatepicker',
+                prev:'ri-arrow-left-s-line icon-prev css-icon-bsdatepicker',
+                today:'ri-radio-button-line icon-today css-icon-bsdatepicker',
+                next:'ri-arrow-right-s-line icon-next css-icon-bsdatepicker',
+                nextYear:'ri-arrow-right-circle-fill icon-nextYear css-icon-bsdatepicker',
+            }
+        });
+
+        $input_date_range.on('render.bs.datepicker',function(e) {
+            const $picker = $('.bs-datepicker');
+            
+            if ($picker.find('.dp-presets').length) return;
+
+            const html = $('#datepicker-presets').html();
+            if($picker.find('.dp-months #datepicker-presets').length == 0) {
+                $picker.find('.dp-months').prepend(html);
+            }
+
+        });
+
+
+        $input_date_range.on('show.bs.datepicker', function () {
+            const $picker = $('.bs-datepicker');
+            
+            if ($picker.find('.dp-presets').length) return;
+
+            const html = $('#datepicker-presets').html();
+            
+            $picker.find('.dp-months').prepend(html);
+        });
+
+        $(document).on('click', '.dp-presets button', function () {
+            const type = $(this).data('type');
+            const today = new Date();
+
+            let start, end;
+            end = new Date(today);
+
+            switch (type) {
+                case 'today':
+                    start = new Date(today);
+                    break;
+
+                case 'yesterday':
+                    start = new Date(today);
+                    start.setDate(start.getDate() - 1);
+                    end = new Date(start);
+                    break;
+
+                case '7days':
+                    start = new Date(today);
+                    start.setDate(start.getDate() - 6);
+                    break;
+
+                case '1month':
+                    start = new Date(today);
+                    start.setMonth(start.getMonth() - 1);
+                    break;
+                case '2month':
+                    start = new Date(today);
+                    start.setMonth(start.getMonth() - 2);
+                    break;
+            }
+
+            $input_date_range.bsDatepicker('setDate', [start, end]);
+        });
+
+
         let params = new URLSearchParams(window.location.search);
         if (params.get("search")) $.trim($("#searchInput").val(params.get("search")));
-        if (params.get("date")) $("#dateSelect").val(params.get("date")).trigger("change");
+        
+        if (params.get("date")) {
+            let dates = params.get("date").split(',');
+            let start = parseYmd(dates[0]);
+            let end   = parseYmd(dates[1]);
+            $input_date_range.bsDatepicker('setDate', [start, end]);
+        }
         if (params.get("status")) $("#statusSelect").val(params.get("status")).trigger("change");
         if (params.get("staff")) $("#staffSelect").val(params.get("staff")).trigger("change");
         if (params.get("object_order")) $("#object_order").val(params.get("object_order")).trigger("change");
@@ -309,7 +437,7 @@
             e.preventDefault();
 
             let search = $.trim($("#searchInput").val());
-            let date = $("#dateSelect").val();
+            let date = $input_date_range.bsDatepicker('val');
             let status = $("#statusSelect").val();
             let staff = $("#staffSelect").val();
             let status_return = $("#status_return").val();

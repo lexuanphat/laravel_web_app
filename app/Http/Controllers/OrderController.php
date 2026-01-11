@@ -217,27 +217,27 @@ class OrderController extends Controller
         // }
 
         if(isset($parsed['date']) && !empty($parsed['date'])) {
-            $current_date = date("Y-m-d");
-
-            switch ($parsed['date']) {
-                case '7days':
-                    $filter_date = date("Y-m-d", strtotime("-7 days"));
-                    break;
-                case '30days':
-                    $filter_date = date("Y-m-d", strtotime("-30 days"));
-                    break;
-                case '1year':
-                    $filter_date = date("Y-m-d", strtotime("-1 year"));
-                    break;
-                case '2year':
-                    $filter_date = date("Y-m-d", strtotime("-2 year"));
-                    break;
+            $explode_date = explode(",", $parsed['date']);
+            [$start_date, $end_date] = $explode_date;
+            // switch ($parsed['date']) {
+            //     case '7days':
+            //         $filter_date = date("Y-m-d", strtotime("-7 days"));
+            //         break;
+            //     case '30days':
+            //         $filter_date = date("Y-m-d", strtotime("-30 days"));
+            //         break;
+            //     case '1year':
+            //         $filter_date = date("Y-m-d", strtotime("-1 year"));
+            //         break;
+            //     case '2year':
+            //         $filter_date = date("Y-m-d", strtotime("-2 year"));
+            //         break;
                 
-                default:
-                    $filter_date = date("Y-m-d");
-                    break;
-            }
-            $query->where("orders.created_at", ">=", "$filter_date 00:00:00")->where("orders.created_at", "<=", "$current_date 23:59:59");
+            //     default:
+            //         $filter_date = date("Y-m-d");
+            //         break;
+            // }
+            $query->where("orders.created_at", ">=", "$start_date 00:00:00")->where("orders.created_at", "<=", "$end_date 23:59:59");
         }
 
         if(isset($parsed['staff']) && !empty($parsed['staff'])) {
