@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class AdminDashboardController extends Controller
 {
     public function index(){
-        $current_date = date("Y-m-08");
+        $current_date = date("Y-m-d");
 
         $start_month_current = date("Y-m-01");
         $end_month_current = date("Y-m-t");
