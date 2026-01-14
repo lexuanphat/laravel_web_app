@@ -47,6 +47,7 @@ Route::group([
     $route->middleware(['auth', 'check_transport_init'])->group(function($route){
         // Thống kê tổng quan
         $route->get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        $route->get('/dashboard/getData', [AdminDashboardController::class, 'getData'])->name('dashboard.get_data');
 
         // Quản lý đơn hàng
         $route->get('/order', [OrderController::class, 'index'])->name('order');

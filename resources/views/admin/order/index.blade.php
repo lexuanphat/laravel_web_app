@@ -17,6 +17,10 @@
         width: 290px !important;
         flex: 0 0 290px !important;
     }
+    .dp-months .dp-month .dp-start, .dp-months .dp-month .dp-end{
+        background-color: #ff898a !important;
+        color: #c01415 !important;
+    }
     @media (max-width: 767.98px) {
         .dp-months {
             flex-wrap: wrap !important;
