@@ -134,6 +134,41 @@
         //     'icon' => '<i class="uil-chart-growth"></i>',
         // ],
     ];
+    $list_sidebar_sanxuat = [
+        [
+            'name' => 'Quản lý bồn chứa',
+            'link' => '',
+            'icon' => '<i class="ri-shopping-bag-fill"></i>',
+            'sub_menu' => [
+                [
+                    'name' => 'Danh sách',
+                    'link' => route('admin.tank'),
+                ],
+            ],
+        ],
+        [
+            'name' => 'Quản lý thùng',
+            'link' => '',
+            'icon' => '<i class="ri-shopping-bag-fill"></i>',
+            'sub_menu' => [
+                [
+                    'name' => 'Danh sách',
+                    'link' => route('admin.vat'),
+                ],
+            ],
+        ],
+        [
+            'name' => 'Bản đồ vị trí',
+            'link' => '',
+            'icon' => '<i class="ri-map-pin-fill"></i>',
+            'sub_menu' => [
+                [
+                    'name' => 'Danh sách',
+                    'link' => route('admin.map_tank_vat'),
+                ],
+            ],
+        ],
+    ];
 @endphp
 <div class="leftside-menu">
     <a href="javascript:;" class="logo logo-light">
@@ -179,6 +214,32 @@
         <!--- Sidemenu -->
         <ul class="side-nav">
             <li class="side-nav-title">Quản lý sản xuất</li>
+            @foreach($list_sidebar_sanxuat as $key_sx => $sidebar_sx) 
+            @if(isset($sidebar_sx['sub_menu']) && $sidebar_sx['sub_menu'])
+            <li class="side-nav-item">
+                <a data-bs-toggle="collapse" href="#sidebarSubMenu{{$key_sx}}" aria-expanded="false" aria-controls="sidebarSubMenu{{$key_sx}}" class="side-nav-link">
+                    {!!$sidebar_sx['icon']!!}
+                    <span> {{$sidebar_sx['name']}} </span>
+                </a>
+                <div class="collapse" id="sidebarSubMenu{{$key_sx}}">
+                    <ul class="side-nav-second-level">
+                        @foreach($sidebar_sx['sub_menu'] as $item)
+                        <li>
+                            <a href="{{$item['link']}}">{{$item['name']}}</a>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </li>
+            @else
+            <li class="side-nav-item">
+                <a href="{{$sidebar['link']}}" class="side-nav-link">
+                    {!!$sidebar_sx['icon']!!}
+                    <span> {{$sidebar_sx['name']}} </span>
+                </a>
+            </li>
+            @endif
+            @endforeach
             <li class="side-nav-title">Quản lý bán hàng</li>
 
             @foreach($list_sidebar as $key => $sidebar) 

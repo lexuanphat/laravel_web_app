@@ -15,8 +15,11 @@ use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\ShippingFeeController;
 use App\Http\Controllers\FeeProductProvinceController;
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\MapOrderTankVatController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TankController;
+use App\Http\Controllers\VatController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +48,33 @@ Route::group([
     $route->post('login', [LoginController::class, 'login'])->name('login.post');
 
     $route->middleware(['auth', 'check_transport_init'])->group(function($route){
+
+        // Bản đồ trực quan
+        $route->get('/map-tank-vat', [MapOrderTankVatController::class, 'index'])->name('map_tank_vat');
+        $route->post('/map-tank-vat/create', [MapOrderTankVatController::class, 'create'])->name('map_tank_vat.create');
+        $route->delete('/map-tank-vat/delete/{id}', [MapOrderTankVatController::class, 'delete'])->name('map_tank_vat.delete');
+        $route->get('/map-tank-vat/getDataTarget', [MapOrderTankVatController::class, 'getDataTarget'])->name('map_tank_vat.get_data_target');
+        $route->post('/map-tank-vat/getHandle', [MapOrderTankVatController::class, 'handle'])->name('map_tank_vat.handle');
+        $route->get('/map-tank-vat/getTransLog', [MapOrderTankVatController::class, 'transLog'])->name('map_tank_vat.trans_log');
+
+        // Quản lý thùng
+        $route->get('/vat', [VatController::class, 'index'])->name('vat');
+        $route->get('/vat/getData', [VatController::class, 'getData'])->name('vat.get_data');
+        $route->get('/vat/create', [VatController::class, 'create'])->name('vat.create');
+        $route->post('/vat/store', [VatController::class, 'store'])->name('vat.store');
+        $route->delete('/vat/delete/{id}', [VatController::class, 'delete'])->name('vat.delete');
+        $route->put('/vat/update/{id}', [VatController::class, 'update'])->name('vat.update');
+        $route->get('/vat/detail/{id}', [VatController::class, 'detail'])->name('vat.detail');
+
+        // Quản lý sản xuất
+        $route->get('/tank', [TankController::class, 'index'])->name('tank');
+        $route->get('/tank/getData', [TankController::class, 'getData'])->name('tank.get_data');
+        $route->get('/tank/create', [TankController::class, 'create'])->name('tank.create');
+        $route->post('/tank/store', [TankController::class, 'store'])->name('tank.store');
+        $route->delete('/tank/delete/{id}', [TankController::class, 'delete'])->name('tank.delete');
+        $route->put('/tank/update/{id}', [TankController::class, 'update'])->name('tank.update');
+        $route->get('/tank/detail/{id}', [TankController::class, 'detail'])->name('tank.detail');
+
         // Thống kê tổng quan
         $route->get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         $route->get('/dashboard/getData', [AdminDashboardController::class, 'getData'])->name('dashboard.get_data');
