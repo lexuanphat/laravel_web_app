@@ -6,6 +6,7 @@
             <option value="thanh_pham">Bồn chứa thành phẩm: Dùng để chứa nước mắm thô</option>
             <option value="ra_chai">Bồn chứa ra chai: Dùng để chứa nước mắm trước khi đóng chai</option>
             <option value="nhua">Bồn nhựa: Tạm chứa nước mắm từ thùng này kéo ra để bơm lên thùng khác hoặc trộn nước muối</option>
+            <option value="bon_ra">Bồn ra</option>
         </select>
         @include('admin._partials.div-error')
     </div>

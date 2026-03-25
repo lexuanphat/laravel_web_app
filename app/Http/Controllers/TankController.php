@@ -13,6 +13,7 @@ class TankController extends Controller
         'thanh_pham' => 'THÀNH PHẨM',
         'ra_chai' => 'RA CHAI',
         'nhua' => 'NHỰA',
+        'bon_ra' => 'BỒN RA',
     ];
     public function index(){
         return view('admin.tank.index');
