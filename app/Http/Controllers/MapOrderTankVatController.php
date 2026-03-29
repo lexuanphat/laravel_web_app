@@ -19,7 +19,7 @@ class MapOrderTankVatController extends Controller
         })
         ->selectRaw("
             map_order_tank_vat.*, 
-            IFNULL(CONCAT('Bồn - ', tanks.code), CONCAT('Thùng - ', vats.code)) as code, 
+            IFNULL(tanks.code, vats.code) as code, 
             IFNULL(tanks.current_capacity, vats.current_capacity) as current_capacity,
             IF(tanks.id, 1, 2) as target_type,
             IF(target_type = 1, type, status) as status
@@ -326,7 +326,6 @@ class MapOrderTankVatController extends Controller
 
         $data = DB::table('map_order_tank_vat')->where('order', $request->order)->first();
         $data->code = $find_target_type->code;
-        $data->code = $find_target_type->target_type == 1 ? "Bồn - {$data->code}" : "Thùng - {$data->code}";
         $data->status = $find_target_type->status;
         $data->current_capacity = $find_target_type->current_capacity;
 
