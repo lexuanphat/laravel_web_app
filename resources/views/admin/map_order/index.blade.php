@@ -30,10 +30,10 @@
         transition: all 0.3s ease;
     }
 
-    .add-card:hover .plus-icon {
+    /* .add-card:hover .plus-icon {
         color: #727cf5;
         transform: scale(1.2);
-    }
+    } */
 
     .card-title-sub {
         font-size: 0.9rem;
@@ -42,7 +42,7 @@
         font-weight: 500;
     }
     .element_root .active{
-        background-color: #727cf5;
+        background-color: #d41920;
     }
 
     .element_root .element {
@@ -61,6 +61,25 @@
 
 </style>
 @endpush
+@php
+$list_color = [
+    1 => [
+        'thanh_pham' => '#28a745',
+        'ra_chai' => '#007bff',
+        'nhua' => '#6c757d',
+        'bon_ra' => '#6f42c1',
+    ],
+    2 => [
+        'nguyen' => '#191970',
+        'long_tron' => '#ffc107',
+        'keo_rut' => '#fd7e14',
+        'keo_ra_bon_chua' => '#20c997',
+        'keo_ra_bon_chai' => '#17a2b8',
+        'ban_xac' => '#dc3545',
+        'danh_nuoc_muoi' => '#795548',
+    ]
+];
+@endphp
 <div class="card d-none">
     <div class="card-body">
         <div class="row g-2 align-items-center">
@@ -85,12 +104,71 @@
 </div>
 <div class="card">
     <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-0">
+            <h4 class="header-title mb-0">Chú giải ký hiệu</h4>
+            <a data-bs-toggle="collapse" href="#legendCollapse" role="button" aria-expanded="false" class="text-dark">
+                <i class="mdi mdi-chevron-down font-20 transition-icon"></i>
+            </a>
+        </div>
+
+        <div class="collapse" id="legendCollapse">
+            <div class="mt-3">
+                <p class="text-muted font-13 text-uppercase fw-bold mb-2">
+                    Phân loại Bồn
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[1]['thanh_pham']}}"></i> Thành phẩm</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[1]['ra_chai']}}"></i> Ra chai</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[1]['nhua']}}"></i> Nhựa</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[1]['bon_ra']}}"></i> Bồn ra</div>
+                </div>
+
+                <hr>
+
+                <p class="text-muted font-13 text-uppercase fw-bold mb-2">
+                    Trạng thái Thùng
+                </p>
+                <div class="row flex-wrap mb-1">
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[2]['nguyen']}}"></i> Nguyên</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[2]['long_tron']}}"></i> Long trộn</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[2]['keo_rut']}}"></i> Kéo rút</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[2]['ban_xac']}}"></i> Bán xác</div>
+                </div>
+                <div class="row flex-wrap">
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[2]['keo_ra_bon_chua']}}"></i> Kéo bồn chứa</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[2]['keo_ra_bon_chai']}}"></i> Kéo bồn chai</div>
+                    <div class="col-md-2"><i class="mdi mdi-circle" style="color: {{$list_color[2]['danh_nuoc_muoi']}}"></i> Đánh nước muối</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+   
+    .transition-icon {
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+    [aria-expanded="true"] .transition-icon {
+        transform: rotate(180deg);
+    }
+
+    .text-orange { color: #fd7e14 !important; }
+   
+    @media (max-width: 768px) {
+        .col-md-2 { margin-bottom: 5px; }
+    }
+</style>
+<div class="card">
+    <div class="card-body">
         <div class="row g-4">
             @for($i = 1; $i <= 500; $i++)
             @if($data->has($i))
             <div class="col-xl-3 col-lg-4 col-md-6 element_root" data-id="{{$data->get($i)->id}}" data-code="{{$data->get($i)->code}}">
-                <div class="add-card text-center d-flex flex-column active">
-                    <button class="btn-delete btn-danger btn" title="Xoá bồn này" onclick="confirmDelete({{$data->get($i)->id}}, {{$i}}, this)">
+                <div class="add-card text-center d-flex flex-column active" style="border: 5px dashed {{$list_color[$data->get($i)->target_type][$data->get($i)->status]}}">
+                    <button class="btn-delete btn-danger btn" title="Xoá bồn này" onclick="confirmDelete(event, {{$data->get($i)->id}}, {{$i}}, this)">
                         <i class="bi bi-x-lg">×</i>
                     </button>
                     <div class="element">
@@ -143,20 +221,48 @@
 @push('js')
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script>
+
+        const _LIST_COLOR = @json($list_color);
+
         function btnAdd(e, div_element){
             let jquery_el = $(div_element);
             let order = jquery_el.data('order');
             let find_element_replace_to_input = jquery_el.find('.element');
             find_element_replace_to_input.html(`
-                <div class="input-group">
-                        <input type="text" 
-                        class="form-control target_id" 
-                        name="target_id" 
-                        onclick="event.stopPropagation()">
-                   <button type="button" class="btn btn-primary" onclick="handleAdd(event, this, ${order})">OK</button>
+                <div class="d-flex flex-column align-content-center" onclick="event.stopPropagation()">
+                    <select class="form-control form-select select2-ajax target_id" style="width: 100%">
+                        <option value="">Chọn mã</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" onclick="handleAdd(event, this, ${order})">OK</button>
                 </div>
-
             `);
+
+            // 2. Khởi tạo Select2 với Ajax
+            let selectElement = find_element_replace_to_input.find('.select2-ajax');
+
+            selectElement.select2({
+                ajax: {
+                    url: @json(route('admin.map_tank_vat.load_target_ids')),
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term, // Từ khóa tìm kiếm
+                        };
+                    },
+                    processResults: function (data) {
+                    
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            selectElement.on('select2:open', function() {
+                $('.select2-search__field').get(0).focus();
+            });
         }
 
         function handleAdd(e, button, order) {
@@ -195,6 +301,7 @@
                                     <circle cx="50" cy="80" r="4" fill="white" fill-opacity="0.5"/>
                                 </svg>
                         `;
+                        
                         if(data.target_type == 2) {
                             svg = `
                                 <svg width="65" height="65" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -211,12 +318,17 @@
                                     </svg>
                             `;
                         }
+
+                        $border_color = _LIST_COLOR[data.target_type][data.status];
+                        
+
                         let $parent = input.parents('.element_root');
+
                         $parent.removeAttr('onclick');
                         $parent.removeAttr('data-order');
                         $parent.html(`
-                            <div class="add-card text-center d-flex flex-column active">
-                                <button class="btn-delete btn-danger btn" title="Xoá bồn này" onclick="confirmDelete(${data.id}, ${data.order}, this)">
+                            <div class="add-card text-center d-flex flex-column active" style="border:5px dashed ${$border_color}">
+                                <button class="btn-delete btn-danger btn" title="Xoá bồn này" onclick="confirmDelete(e, ${data.id}, ${data.order}, this)">
                                     <i class="bi bi-x-lg">×</i>
                                 </button>
                                 <div class="element">
@@ -228,6 +340,9 @@
                                 </div>
                             </div>
                         `);
+                        $parent.data('id', res.data['id']);
+                        $parent.data('code', res.data['code']);
+                        
                     }
                     createToast('success', res.message);
                     return;
@@ -242,7 +357,8 @@
             });
         }
 
-        function confirmDelete(id, order, button){
+        function confirmDelete(event, id, order, button){
+            event.stopPropagation();
             let result = confirm("Có chắc muốn xoá dữ liệu?");
             if(!result) {
                 return;
@@ -272,6 +388,9 @@
                         `);
                         $parent.attr('onclick', 'btnAdd(event, this)');
                         $parent.attr('data-order', order);
+                        $parent.removeAttr('data-id')
+                        $parent.removeAttr('data-code')
+                        $parent.removeAttr('style')
                         createToast('success', res.message);
                     }
                 },

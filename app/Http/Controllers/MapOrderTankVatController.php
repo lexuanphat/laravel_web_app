@@ -19,14 +19,37 @@ class MapOrderTankVatController extends Controller
         })
         ->selectRaw("
             map_order_tank_vat.*, 
-            IFNULL(tanks.code, vats.code) as code, 
+            IFNULL(CONCAT('Bồn - ', tanks.code), CONCAT('Thùng - ', vats.code)) as code, 
             IFNULL(tanks.current_capacity, vats.current_capacity) as current_capacity,
-            IF(tanks.id, 1, 2) as target_type
+            IF(tanks.id, 1, 2) as target_type,
+            IF(target_type = 1, type, status) as status
         ")
         ->get()->keyBy('order');    
         return view("admin.map_order.index", [
             'data' => $data,
         ]);
+    }
+
+    public function loadTargetIds(Request $request) {
+        $keyword_code = $request->has('q') ? $request->get('q') : '';
+        $keyword_code = "%".$keyword_code."%";
+
+        $load_ids_map = DB::table('map_order_tank_vat')->get()->groupBy('target_type');
+        $target_type_tank = $load_ids_map->has('1') ? $load_ids_map->get(1)->implode('target_id', ",") : 0;
+        $target_type_vat = $load_ids_map->has('2') ? $load_ids_map->get(2)->implode('target_id', ",") : 0;
+
+        $data = DB::select("
+            SELECT CONCAT(id, '_', 1) as id, code as text FROM tanks
+            WHERE code LIKE :code_tank AND id NOT IN ($target_type_tank)
+            UNION ALL
+            SELECT CONCAT(id, '_', 2) as id, code as text FROM vats
+            WHERE code LIKE :code_vat AND id NOT IN ($target_type_vat)
+        ", [
+            'code_tank' => $keyword_code,
+            'code_vat' => $keyword_code,
+        ]);
+
+        return $data;
     }
 
     public function transLog(Request $request) {
@@ -266,17 +289,23 @@ class MapOrderTankVatController extends Controller
     }
 
     public function create(Request $request) {
+        [$id, $target_type] = explode("_", $request->code);
+
         $find_target_type = DB::selectOne("
-            SELECT id, 1 as target_type, current_capacity FROM tanks
-            WHERE code = :code_tanks
-            AND tanks.id NOT IN (SELECT target_id FROM map_order_tank_vat WHERE target_type = 1)
-            UNION ALL
-            SELECT id, 2 as target_type, current_capacity FROM vats
-            WHERE code = :code_vats
-            AND vats.id NOT IN (SELECT target_id FROM map_order_tank_vat WHERE target_type = 2)
+            SELECT * FROM (
+                SELECT id, 1 as target_type, current_capacity, code, type as status FROM tanks
+                WHERE id = :id_tank
+                AND tanks.id NOT IN (SELECT target_id FROM map_order_tank_vat WHERE target_type = 1)
+                UNION ALL
+                SELECT id, 2 as target_type, current_capacity, code, status FROM vats
+                WHERE id = :id_vat
+                AND vats.id NOT IN (SELECT target_id FROM map_order_tank_vat WHERE target_type = 2)
+            ) AS temp
+            WHERE temp.target_type = :target_type
         ", [
-            'code_tanks' => $request->code,
-            'code_vats' => $request->code,
+            'id_tank' => $id,
+            'id_vat' => $id,
+            'target_type' => $target_type,
         ]);
 
         if(!$find_target_type) {
@@ -296,7 +325,9 @@ class MapOrderTankVatController extends Controller
         );
 
         $data = DB::table('map_order_tank_vat')->where('order', $request->order)->first();
-        $data->code = $request->code;
+        $data->code = $find_target_type->code;
+        $data->code = $find_target_type->target_type == 1 ? "Bồn - {$data->code}" : "Thùng - {$data->code}";
+        $data->status = $find_target_type->status;
         $data->current_capacity = $find_target_type->current_capacity;
 
         return $this->successResponse($data, "Thực hiện thành công");
@@ -307,7 +338,7 @@ class MapOrderTankVatController extends Controller
 
         if(!$data) {
             return $this->errorResponse('Không tìm thấy dữ liệu', 404);
-        }
+        };
 
         DB::table('map_order_tank_vat')->delete($id);
 

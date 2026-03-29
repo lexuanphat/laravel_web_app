@@ -56,6 +56,7 @@ Route::group([
         $route->get('/map-tank-vat/getDataTarget', [MapOrderTankVatController::class, 'getDataTarget'])->name('map_tank_vat.get_data_target');
         $route->post('/map-tank-vat/getHandle', [MapOrderTankVatController::class, 'handle'])->name('map_tank_vat.handle');
         $route->get('/map-tank-vat/getTransLog', [MapOrderTankVatController::class, 'transLog'])->name('map_tank_vat.trans_log');
+        $route->get('/map-tank-vat/loadTargetIds', [MapOrderTankVatController::class, 'loadTargetIds'])->name('map_tank_vat.load_target_ids');
 
         // Quản lý thùng
         $route->get('/vat', [VatController::class, 'index'])->name('vat');
