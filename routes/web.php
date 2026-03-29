@@ -20,6 +20,7 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TankController;
 use App\Http\Controllers\VatController;
+use App\Http\Controllers\VatReportController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +49,15 @@ Route::group([
     $route->post('login', [LoginController::class, 'login'])->name('login.post');
 
     $route->middleware(['auth', 'check_transport_init'])->group(function($route){
+
+        // Quản lý chỉ tiêu chất lượng
+        $route->get('/vat-report', [VatReportController::class, 'index'])->name('vat_report');
+        $route->get('/vat-report/getData', [VatReportController::class, 'getData'])->name('vat_report.get_data');
+        $route->get('/vat-report/create', [VatReportController::class, 'create'])->name('vat_report.create');
+        $route->post('/vat-report/store', [VatReportController::class, 'store'])->name('vat_report.store');
+        $route->delete('/vat-report/delete/{id}', [VatReportController::class, 'delete'])->name('vat_report.delete');
+        $route->put('/vat-report/update/{id}', [VatReportController::class, 'update'])->name('vat_report.update');
+        $route->get('/vat-report/detail/{id}', [VatReportController::class, 'detail'])->name('vat_report.detail');
 
         // Bản đồ trực quan
         $route->get('/map-tank-vat', [MapOrderTankVatController::class, 'index'])->name('map_tank_vat');

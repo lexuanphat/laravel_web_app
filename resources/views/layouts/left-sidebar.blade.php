@@ -168,6 +168,17 @@
                 ],
             ],
         ],
+        [
+            'name' => 'Quản lý chỉ tiêu chất lượng',
+            'link' => '',
+            'icon' => '<i class="ri-map-pin-fill"></i>',
+            'sub_menu' => [
+                [
+                    'name' => 'Danh sách',
+                    'link' => route('admin.vat_report'),
+                ],
+            ],
+        ],
     ];
 @endphp
 <div class="leftside-menu">
