@@ -10,6 +10,21 @@ use DataTables;
 class MapOrderTankVatController extends Controller
 {
     public function index(Request $request){
+        $data = DB::table('transfer_logs')
+            ->whereIn('from_type', ['tanks', 'vats'])
+            ->orWhereIn('to_type', ['tanks', 'vats'])
+            ->get(['from_id', 'to_id', 'from_type', 'to_type']);
+
+        // Tách ra cho tanks
+        $data_log_tank = $data->filter(function ($item) {
+            return $item->from_type === 'tanks' || $item->to_type === 'tanks';
+        })->flatMap(fn($item) => [$item->from_id, $item->to_id])->values()->unique()->toArray();
+
+        // Tách ra cho vats
+        $data_log_vat = $data->filter(function ($item) {
+            return $item->from_type === 'vats' || $item->to_type === 'vats';
+        })->flatMap(fn($item) => [$item->from_id, $item->to_id])->values()->unique()->toArray();
+
         $data = DB::table('map_order_tank_vat')
         ->leftJoin('tanks', function($query){
             $query->on('map_order_tank_vat.target_id', '=', 'tanks.id')->where('map_order_tank_vat.target_type', 1);
@@ -24,7 +39,14 @@ class MapOrderTankVatController extends Controller
             IF(tanks.id, 1, 2) as target_type,
             IF(target_type = 1, type, status) as status
         ")
-        ->get()->keyBy('order');    
+        ->get()->keyBy('order');
+
+        foreach($data as $item) {
+            $item->is_has_trans_log = (
+            ($item->target_type == 1 && in_array($item->target_id, $data_log_tank)) ||
+            ($item->target_type == 2 && in_array($item->target_id, $data_log_vat))
+        ) ? 1 : 0;
+        }
         return view("admin.map_order.index", [
             'data' => $data,
         ]);

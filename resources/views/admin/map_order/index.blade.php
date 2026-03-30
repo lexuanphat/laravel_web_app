@@ -41,8 +41,15 @@
         margin-top: 10px;
         font-weight: 500;
     }
-    .element_root .active{
+    .element_root.is_has_trans_log .active{
         background-color: #d41920;
+    }
+    .element_root .active {
+        background-color: #fff;
+        color: #333;
+    }
+    .element_root:not(.is_has_trans_log) .active .card-title-sub {
+        color: #333 !important;
     }
 
     .element_root .element {
@@ -166,7 +173,7 @@ $list_color = [
         <div class="row g-4">
             @for($i = 1; $i <= 500; $i++)
             @if($data->has($i))
-            <div class="col-xl-3 col-lg-4 col-md-6 element_root" data-id="{{$data->get($i)->id}}" data-code="{{$data->get($i)->code}}">
+            <div class="col-xl-3 col-lg-4 col-md-6 element_root {{$data->get($i)->is_has_trans_log == 1 ? 'is_has_trans_log' : ''}}" data-id="{{$data->get($i)->id}}" data-code="{{$data->get($i)->code}}">
                 <div class="add-card text-center d-flex flex-column active" style="border: 5px dashed {{$list_color[$data->get($i)->target_type][$data->get($i)->status]}}">
                     <button class="btn-delete btn-danger btn" title="Xoá bồn này" onclick="confirmDelete(event, {{$data->get($i)->id}}, {{$i}}, this)">
                         <i class="bi bi-x-lg">×</i>
