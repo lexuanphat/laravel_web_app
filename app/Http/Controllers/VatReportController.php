@@ -11,8 +11,10 @@ class VatReportController extends Controller
 {
     public function index(){
         $data_vats = DB::table('vats')->get();
+        $data_type_report = DB::table('list_type_report')->get();
         return view('admin.vat_report.index', [
-            'data_vats' => $data_vats
+            'data_vats' => $data_vats,
+            'data_type_report' => $data_type_report,
         ]);
     }
 
@@ -40,6 +42,7 @@ class VatReportController extends Controller
         ->leftJoin('users', 'vat_quality_reports.staff_id', '=', 'users.id')
         ->leftJoin('vats', 'vat_quality_reports.vat_id', '=', 'vats.id');
 
+        $data_list_type_report = DB::table('list_type_report')->get();
         $query_builder->selectRaw("
             vat_quality_reports.*,
             users.full_name as user_full_name,
@@ -48,15 +51,15 @@ class VatReportController extends Controller
 
         $datatables = DataTables::of($query_builder)
         ->addIndexColumn()
-        ->addColumn('chi_tieu_dg', function($item){
+        ->addColumn('chi_tieu_dg', function($item)use($data_list_type_report){
             return "
                 <div class='d-flex flex-column'>
-                    <span>Độ đạm: {$item->protein_level}</span>
-                    <span>Nồng độ muối: {$item->salt_level}</span>
-                    <span>Histamin: {$item->histamine_level}</span>
-                    <span>Admin: {$item->acid_level}</span>
-                    <span>Amon: {$item->amon_level}</span>
-                    <span>Màu sắc: {$item->color}</span>
+                    <span>Độ đạm: {$data_list_type_report->where('type_report', 'protein_level')->where('id', '=', $item->protein_level)->first()->name}</span>
+                    <span>Nồng độ muối: {$data_list_type_report->where('type_report', 'salt_level')->where('id', '=', $item->salt_level)->first()->name}</span>
+                    <span>Histamin: {$data_list_type_report->where('type_report', 'histamine_level')->where('id', '=', $item->histamine_level)->first()->name}</span>
+                    <span>Admin: {$data_list_type_report->where('type_report', 'acid_level')->where('id', '=', $item->acid_level)->first()->name}</span>
+                    <span>Amon: {$data_list_type_report->where('type_report', 'amon_level')->where('id', '=', $item->amon_level)->first()->name}</span>
+                    <span>Màu sắc: {$data_list_type_report->where('type_report', 'color')->where('id', '=', $item->color)->first()->name}</span>
                 </div>
             ";
         })

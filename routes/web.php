@@ -21,6 +21,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TankController;
 use App\Http\Controllers\VatController;
 use App\Http\Controllers\VatReportController;
+use App\Http\Controllers\TypeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,15 @@ Route::group([
     $route->post('login', [LoginController::class, 'login'])->name('login.post');
 
     $route->middleware(['auth', 'check_transport_init'])->group(function($route){
+
+        // Quản lý chỉ tiêu
+        $route->get('/type', [TypeController::class, 'index'])->name('type');
+        $route->get('/type/getData', [TypeController::class, 'getData'])->name('type.get_data');
+        $route->get('/type/create', [TypeController::class, 'create'])->name('type.create');
+        $route->post('/type/store', [TypeController::class, 'store'])->name('type.store');
+        $route->delete('/type/delete/{id}', [TypeController::class, 'delete'])->name('type.delete');
+        $route->put('/type/update/{id}', [TypeController::class, 'update'])->name('type.update');
+        $route->get('/type/detail/{id}', [TypeController::class, 'detail'])->name('type.detail');
 
         // Quản lý chỉ tiêu chất lượng
         $route->get('/vat-report', [VatReportController::class, 'index'])->name('vat_report');
