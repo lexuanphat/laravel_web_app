@@ -207,6 +207,9 @@ $list_color = [
                     </div>
                     <div class="card-title-sub text-white fw-bold">{{$data->get($i)->code}}</div>
                     <div class="rut-nuoc">
+                        @if($data->get($i)->target_type == 2)
+                        <button class="btn btn-success" onclick="btnDanhGia(event, this, {{$data->get($i)->target_type}}, '{{$data->get($i)->target_id}}')">ĐGCT</button>
+                        @endif
                         <button class="btn btn-info" onclick="btnRut(event, this, '{{$data->get($i)->code}}', {{$data->get($i)->current_capacity}}, {{$data->get($i)->target_type}})">Rút</button>
                     </div>
                 </div>
@@ -224,6 +227,7 @@ $list_color = [
 </div>
 @include('admin.map_order.modal-rut')
 @include('admin.map_order.modal-trans-log')
+@include('admin.vat_report.modals.create')
 @endsection
 @push('js')
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
@@ -270,6 +274,62 @@ $list_color = [
             selectElement.on('select2:open', function() {
                 $('.select2-search__field').get(0).focus();
             });
+        }
+
+        $("#modal_create").find('#btn_create').click(function(e){
+            e.preventDefault();
+            let $this = $(this);
+            let form = $("#modal_create").find('#form_create');
+            createDG(form.attr('action'), form, $this);
+        });
+
+        function createDG(url, form, button_click){
+            let formData = new FormData(form[0]);
+            formData.append('vat_id', $("#modal_create").find('#vat_id').val());
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function(){
+                    form.find('.form-control').removeClass('is-invalid');
+                    form.find('.invalid-feedback').empty();
+
+                    button_click.prop("disabled", true);
+                    button_click.find('#loading').show();
+                    button_click.find('.add-new').hide();
+                },
+                success: function(response){
+                    if(response.success) {
+                       $("#modal_create").modal('hide');
+                        createToast('success', response.message);
+                    }
+                    
+                },
+                error: function(err){
+                    let response_err = err.responseJSON;
+                    if(response_err) {
+                        $.each(response_err.errors, function(key, item){
+                            $("#modal_create").find("#"+key).addClass('is-invalid');
+                            $("#modal_create").find("#"+key).next().text(item[0]);
+                        })
+                    }
+                    
+                },
+                complete: function(){
+                    button_click.prop("disabled", false);
+                    button_click.find('#loading').hide();
+                    button_click.find('.add-new').show();
+                }
+            })
+        }
+
+        function btnDanhGia(e, button, target_type, id) {
+            e.stopPropagation();
+            $("#modal_create").find('#vat_id').val(id).trigger('change')
+            $("#modal_create").find('#vat_id').prop('disabled', true)
+            $("#modal_create").modal('show');
         }
 
         function handleAdd(e, button, order) {
@@ -331,6 +391,11 @@ $list_color = [
 
                         let $parent = input.parents('.element_root');
 
+                        let button_dg = "";
+                        if(data.target_type == 2) {
+                            button_dg = `<button class="btn btn-success" onclick="btnDanhGia(event, this, ${data.target_type}, '${data.target_id}')">ĐGCT</button>`;
+                        }
+
                         $parent.removeAttr('onclick');
                         $parent.removeAttr('data-order');
                         $parent.html(`
@@ -343,6 +408,7 @@ $list_color = [
                                 </div>
                                 <div class="card-title-sub text-white fw-bold">${data.code}</div>
                                 <div class="rut-nuoc">
+                                    ${button_dg}
                                     <button class="btn btn-info" onclick="btnRut(event, this, '${data.code}', ${data.current_capacity}, ${data.target_type})">Rút</button>
                                 </div>
                             </div>

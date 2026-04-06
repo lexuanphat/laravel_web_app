@@ -47,8 +47,14 @@ class MapOrderTankVatController extends Controller
             ($item->target_type == 2 && in_array($item->target_id, $data_log_vat))
         ) ? 1 : 0;
         }
+
+        $data_type_report = DB::table('list_type_report')->get();
+        $data_vats = DB::table('vats')->get();
+
         return view("admin.map_order.index", [
             'data' => $data,
+            'data_vats' => $data_vats,
+            'data_type_report' => $data_type_report,
         ]);
     }
 
