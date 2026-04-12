@@ -42,7 +42,7 @@
         font-weight: 500;
     }
     .element_root.is_has_trans_log .active{
-        background-color: #d41920;
+        background-color: #582123a8;
     }
     .element_root .active {
         background-color: #fff;
@@ -167,6 +167,18 @@ $list_color = [
     @media (max-width: 768px) {
         .col-md-2 { margin-bottom: 5px; }
     }
+    .select2-container .select2-selection--single .select2-selection__rendered{
+        font-size: 14px !important;
+    }
+    /* Trạng thái mặc định của icon */
+.accordion-arrow {
+    transition: transform 0.3s ease;
+}
+
+/* Khi nút có aria-expanded="true" (đang mở), xoay icon 180 độ */
+[aria-expanded="true"] .accordion-arrow {
+    transform: rotate(180deg);
+}
 </style>
 <div class="card">
     <div class="card-body">
@@ -216,8 +228,8 @@ $list_color = [
             </div>
             @else
             <div class="col-xl-3 col-lg-4 col-md-6 element_root" onclick="btnAdd(event, this)" data-order="{{$i}}">
-                <div class="add-card text-center d-flex flex-column">
-                    <div class="plus-icon element">+</div>
+                <div class="add-card text-center d-flex flex-column col-12">
+                    <div class="plus-icon element w-100 p-2">+</div>
                 </div>
             </div>
             @endif
@@ -240,7 +252,7 @@ $list_color = [
             let order = jquery_el.data('order');
             let find_element_replace_to_input = jquery_el.find('.element');
             find_element_replace_to_input.html(`
-                <div class="d-flex flex-column align-content-center" onclick="event.stopPropagation()">
+                <div class="d-flex flex-column align-content-center w-100" onclick="event.stopPropagation()">
                     <select class="form-control form-select select2-ajax target_id" style="width: 100%">
                         <option value="">Chọn mã</option>
                     </select>
@@ -455,8 +467,8 @@ $list_color = [
                     if(res.success) {
                         let $parent = $(button).parents('.element_root');
                         $parent.html(`
-                            <div class="add-card text-center d-flex flex-column">
-                                <div class="plus-icon element">+</div>
+                            <div class="add-card text-center d-flex flex-column col-12">
+                                <div class="plus-icon element w-100 p-2">+</div>
                             </div>
                         `);
                         $parent.attr('onclick', 'btnAdd(event, this)');

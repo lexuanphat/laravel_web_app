@@ -91,6 +91,8 @@ class MapOrderTankVatController extends Controller
             $type = 'vats';
         }
 
+        $get_report_vat = DB::table('vat_quality_reports')->orderBy('id', 'DESC')->get();
+
         $query_builder = DB::table('transfer_logs')
         ->leftJoin('users as user_create', 'transfer_logs.create_user_id', '=', 'user_create.id')
         ->leftJoin('tanks as tanks_from', function($join) {
@@ -110,6 +112,7 @@ class MapOrderTankVatController extends Controller
                 ->where('transfer_logs.to_type', '=', 'vats');
         })
         ->select([
+            'transfer_logs.id',
             'transfer_logs.from_id',
             'transfer_logs.from_type',
             'transfer_logs.to_id',
@@ -142,12 +145,28 @@ class MapOrderTankVatController extends Controller
 
         $datatables = DataTables::of($query_builder)
         ->addColumn('date', function($item){  
-            return date("d/m/Y H:i", strtotime($item->created_at));
+            $date = date("d/m/Y H:i", strtotime($item->created_at));
+            $collapse_to_id = "collapse-to-{$item->id}";
+            $collapse_from_id = "collapse-from-{$item->id}";
+            $class_multi_collapse = ".multi-collapse-{$item->id}";
+            $html = "
+                <div>{$date}</div>
+            ";
+            // if($item->from_type === 'vats' || ($item->to_type === 'vats')){
+            //     $html .= '
+            //     <button class="btn btn-primary button-collapse" type="button" data-bs-toggle="collapse"
+            //         data-bs-target="'.$class_multi_collapse.'" aria-expanded="true" aria-controls="'.$collapse_from_id.' '.$collapse_to_id.'">
+            //         Đánh giá chỉ tiêu
+            //     </button>
+            // ';
+            
+            // }
+            return $html;
         })
         ->editColumn('amount', function($item){
             return number_format($item->amount * 1, 0, ",", ".") . " lít";
         })
-        ->addColumn('target_from_html', function($item){
+        ->addColumn('target_from_html', function($item)use($get_report_vat){
             $from_current_capacity = $item->from_current_capacity * 1;
             $div = "
                 <div>
@@ -155,9 +174,28 @@ class MapOrderTankVatController extends Controller
                     <div>DTHT: $from_current_capacity LÍT</div>
                 </div>
             ";
+
+            if($item->from_type === 'vats'){
+                $class_multi_collapse = "multi-collapse-{$item->id}";
+                $find_report = $get_report_vat->firstWhere('vat_id', '=', $item->from_id);
+                $collapse_id = "collapse-from-{$item->id}";
+                 $div .= '                                                  
+                    <div id="'.$collapse_id.'" class="'.$class_multi_collapse.' accordion-collapse collapse show">
+                        <ul class="ps-1">
+                            <li class="">Độ đạm: '.optional($find_report)->protein_level.'</li>
+                            <li class="">Nồng độ muối: '.optional($find_report)->salt_level.'</li>
+                            <li class="">Histamin: '.optional($find_report)->histamine_level.'</li>
+                            <li class="">Acid: '.optional($find_report)->acid_level.'</li>
+                            <li class="">Amon: '.optional($find_report)->amon_level.'</li>
+                            <li class="">Màu sắc: '.optional($find_report)->color.'</li>
+                        </ul>
+                    </div>
+                 ';
+            }
+
             return $div . '<i class="mdi mdi-arrow-right-bold text-danger font-18 position-absolute top-50 start-100 translate-middle"></i>';
         })
-        ->addColumn('target_to_html', function($item){
+        ->addColumn('target_to_html', function($item)use($get_report_vat){
             $to_current_capacity = $item->to_current_capacity * 1;
             $div = "
                 <div>
@@ -165,6 +203,26 @@ class MapOrderTankVatController extends Controller
                     <div>DTHT: $to_current_capacity LÍT</div>
                 </div>
             ";
+
+            if($item->to_type === 'vats'){
+                $class_multi_collapse = "multi-collapse-{$item->id}";
+                $find_report = $get_report_vat->firstWhere('vat_id', '=', $item->to_id);
+                $collapse_id = "collapse-to-{$item->id}";
+                 $div .= '                                                  
+                    
+                    <div id="'.$collapse_id.'" class="'.$class_multi_collapse.' accordion-collapse collapse show">
+                       <ul class="ps-1">
+                        <li class="">Độ đạm: '.optional($find_report)->protein_level.'</li>
+                        <li class="">Nồng độ muối: '.optional($find_report)->salt_level.'</li>
+                        <li class="">Histamin: '.optional($find_report)->histamine_level.'</li>
+                        <li class="">Acid: '.optional($find_report)->acid_level.'</li>
+                        <li class="">Amon: '.optional($find_report)->amon_level.'</li>
+                        <li class="">Màu sắc: '.optional($find_report)->color.'</li>
+                    </ul>
+                    </div>
+                 ';
+            }
+
             return $div;
         })
         ->rawColumns(['date', 'target_from_html', 'target_to_html']);

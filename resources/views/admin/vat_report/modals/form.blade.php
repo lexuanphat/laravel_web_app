@@ -11,56 +11,32 @@
     </div>
     <div class="mb-2">
         <label for="protein_level" class="required">Độ đạm <span class="text-danger">(*)</span></label>
-        <select class="form-control select2" data-toggle="select2" id="protein_level" name="protein_level">
-           @foreach($data_type_report->where('type_report', 'protein_level') as $item)
-           <option value="{{$item->id}}">{{$item->name}}</option>
-           @endforeach
-        </select>
+        <input type="text" class="form-control" name="protein_level" id="protein_level" value="">
         @include('admin._partials.div-error')
     </div>
     <div class="mb-2">
         <label for="salt_level" class="required">Nồng độ muối <span class="text-danger">(*)</span></label>
-        <select class="form-control select2" data-toggle="select2" id="salt_level" name="salt_level">
-            @foreach($data_type_report->where('type_report', 'salt_level') as $item)
-           <option value="{{$item->id}}">{{$item->name}}</option>
-           @endforeach
-        </select>
+        <input type="text" class="form-control" name="salt_level" id="salt_level" value="">
         @include('admin._partials.div-error')
     </div>
     <div class="mb-2">
         <label for="histamine_level" class="required">Histamin <span class="text-danger">(*)</span></label>
-        <select class="form-control select2" data-toggle="select2" id="histamine_level" name="histamine_level">
-            @foreach($data_type_report->where('type_report', 'histamine_level') as $item)
-           <option value="{{$item->id}}">{{$item->name}}</option>
-           @endforeach
-        </select>
+        <input type="text" class="form-control" name="histamine_level" id="histamine_level" value="">
         @include('admin._partials.div-error')
     </div>
     <div class="mb-2">
         <label for="acid_level" class="required">Admin <span class="text-danger">(*)</span></label>
-        <select class="form-control select2" data-toggle="select2" id="acid_level" name="acid_level">
-            @foreach($data_type_report->where('type_report', 'acid_level') as $item)
-           <option value="{{$item->id}}">{{$item->name}}</option>
-           @endforeach
-        </select>
+        <input type="text" class="form-control" name="acid_level" id="acid_level" value="">
         @include('admin._partials.div-error')
     </div>
     <div class="mb-2">
         <label for="amon_level" class="required">Amon <span class="text-danger">(*)</span></label>
-        <select class="form-control select2" data-toggle="select2" id="amon_level" name="amon_level">
-           @foreach($data_type_report->where('type_report', 'amon_level') as $item)
-           <option value="{{$item->id}}">{{$item->name}}</option>
-           @endforeach
-        </select>
+        <input type="text" class="form-control" name="amon_level" id="amon_level" value="">
         @include('admin._partials.div-error')
     </div>
     <div class="mb-2">
         <label for="color" class="required">Màu sắc <span class="text-danger">(*)</span></label>
-        <select class="form-control select2" data-toggle="select2" id="color" name="color">
-             @foreach($data_type_report->where('type_report', 'color') as $item)
-           <option value="{{$item->id}}">{{$item->name}}</option>
-           @endforeach
-        </select>
+        <input type="text" class="form-control" name="color" id="color" value="">
         @include('admin._partials.div-error')
     </div>
 </form>
